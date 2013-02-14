@@ -71,14 +71,15 @@
 //#include "llvm/Analysis/DebugInfo.h"
 //#include "llvm/Analysis/Verifier.h"
 #include "llvm/Assembly/Parser.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/CallingConv.h"
-#include "llvm/Module.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/CallingConv.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Linker.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/Support/TargetSelect.h"
-#include "llvm/DataLayout.h"
+#include "llvm/IR/DataLayout.h"
 
 //#include "llvm/ModuleProvider.h"
 
@@ -95,6 +96,8 @@
 
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/JITMemoryManager.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 
@@ -509,6 +512,12 @@ static unsigned long string_hash(unsigned char* str)
     hash = c + (hash << 6) + (hash << 16) - hash;
   
   return hash;
+}
+
+void llvm_print_mark(int a)
+{
+  printf("XTM_MARK:%d\n",a);
+  return;
 }
 
 int llvm_printf(char* format, ...)
@@ -1077,9 +1086,14 @@ namespace extemp {
           llvm::TargetOptions Opts;
           Opts.GuaranteedTailCallOpt = true;
           Opts.JITEmitDebugInfo = true;
+          Opts.JITEmitDebugInfoToDisk = true;
+          //Opts.PrintMachineCode = true;
   
           llvm::InitializeNativeTarget();
           llvm::InitializeNativeTargetAsmPrinter();
+          llvm::InitializeNativeTargetAsmParser();
+          // llvm::InitializeNativeTarget();
+          // llvm::InitializeNativeTargetAsmPrinter();
           llvm::LLVMContext &context = llvm::getGlobalContext();
           //llvm::IRBuilder<> theBuilder(context);
   
@@ -1091,9 +1105,18 @@ namespace extemp {
           factory.setEngineKind(llvm::EngineKind::JIT);
           factory.setAllocateGVsWithCode(false);
           factory.setTargetOptions(Opts);
-          factory.setUseMCJIT(false);
+          //factory.setMArch("");
+          //factory.setMCPU("");
+          //factory.setRelocationModel(llvm::Reloc::Default);
+          //factory.setCodeModel(llvm::CodeModel::JITDefault);
+          factory.setOptLevel(llvm::CodeGenOpt::None); //None,Less,Default,Aggressive
+          if (true) { // use mcjit
+            llvm::JITMemoryManager *JMM = new llvm::SectionMemoryManager();
+            factory.setJITMemoryManager(JMM);
+            factory.setUseMCJIT(true);
+          }
           EE = factory.create();
-          EE->DisableLazyCompilation(true);
+          //EE->DisableLazyCompilation(true);
 
 	    // //llvm::llvm_start_multithreaded();
 	    // bool result = llvm::InitializeNativeTarget();			
@@ -1108,8 +1131,8 @@ namespace extemp {
 	    // EE->DisableLazyCompilation(true);
 	    // //std::cout << "Lazy Compilation: OFF" << std::endl;
 
+
 			
-	    //EE = llvm::EngineBuilder(M).create();
 	    PM = new llvm::PassManager();
 	    //PM->add(new llvm::TargetData(*EE->getTargetData()));
             PM->add(new llvm::DataLayout(*(EE->getDataLayout())));
@@ -1130,6 +1153,8 @@ namespace extemp {
 	    PM->add(llvm::createIndVarSimplifyPass());
 	    // Simplify the control flow graph (deleting unreachable blocks, etc).
 	    PM->add(llvm::createCFGSimplificationPass());
+
+
 
 	    //llvm::PerformTailCallOpt = true;
 	    //llvm::GuaranteedTailCallOpt = true;
@@ -1191,6 +1216,8 @@ namespace extemp {
 	    EE->updateGlobalMapping(gv,(void*)&free_after_delay);			
 	    gv = M->getNamedValue(std::string("next_prime"));
 	    EE->updateGlobalMapping(gv,(void*)&llvm_get_next_prime);			
+	    gv = M->getNamedValue(std::string("llvm_print_mark"));
+	    EE->updateGlobalMapping(gv,(void*)&llvm_print_mark);  
 	    gv = M->getNamedValue(std::string("llvm_printf"));
 	    EE->updateGlobalMapping(gv,(void*)&llvm_printf);  
 	    gv = M->getNamedValue(std::string("llvm_sprintf"));
@@ -1361,10 +1388,13 @@ namespace extemp {
             
 
 	    gv = M->getNamedValue(std::string("list_ref"));
-	    EE->updateGlobalMapping(gv,(void*)&list_ref);
+	    EE->updateGlobalMapping(gv,(void*)&list_ref);            
 
-
-	}	
+	}
+        L = NULL; //new llvm::Linker("XTM",M); // not actually using this!
+        //printf("MOD Dump:\n");
+        EXTLLVM::I()->EE->recompileAndRelinkFunction((llvm::Function*)M);
+        //M->dump();
 	return;
     }
 }

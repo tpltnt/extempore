@@ -76,6 +76,7 @@ bool regex_split(char* str, char** a, char** b);
 
 
   void* llvm_memset(void* ptr, int32_t c, int64_t n);
+  void llvm_print_mark(int a);
   int llvm_printf(char* format, ...);
   int llvm_sprintf(char* str, char* format, ...);
   void llvm_send_udp(char* host, int port, void* message, int message_length);
@@ -106,6 +107,7 @@ namespace llvm {
     class ModuleProvider;
     class ExecutionEngine;
     class PassManager;
+    class Linker;
 } // end llvm namespace
 
 namespace extemp {
@@ -122,6 +124,7 @@ namespace extemp {
 	static bool OPTIMIZE_COMPILES;	
 		
 	llvm::Module* M;
+        llvm::Linker* L;
 	llvm::ModuleProvider* MP;
 	llvm::ExecutionEngine* EE;
 	llvm::PassManager* PM;		

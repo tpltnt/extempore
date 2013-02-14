@@ -3991,8 +3991,12 @@
                                   (if (not (llvm:compile fstr))
                                       (begin (if *impc:compiler:verbose*
                                                  (print-error "Compiler Failed On: " fstr)
-                                                 (print-error "Compiler Failed"))					     
-                                             (error "")))))
+                                                 (print-error "Compiler Failed"))
+                                             (error "")))
+                                  ;;(println 'bingo-function (caddr ast))
+                                  (llvm:get-function-pointer (caddr ast))
+                                  ;;(println 'compiled....)
+                                  ))
 		       (if *impc:compiler:precomp-llvm*
 			   (emit "(llvm:compile \"" fstr "\")\n\n" *impc:compiler:precomp*))
                        lstr))

@@ -161,6 +161,8 @@ namespace extemp {
 	static pointer llvm_count_set(scheme* _sc, pointer args);
 	static pointer llvm_count_inc(scheme* _sc, pointer args);
 	static pointer callClosure(scheme* _sc, pointer args);
+        static pointer llvm_emitModule(scheme* _sc, pointer args);
+        static pointer llvm_finalizeModule(scheme* _sc, pointer args);
 	static pointer printLLVMModule(scheme* _sc, pointer args);
 	static pointer printLLVMFunction(scheme* _sc, pointer args);
 	static pointer bind_symbol(scheme* _sc, pointer args);

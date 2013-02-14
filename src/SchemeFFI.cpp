@@ -89,12 +89,13 @@
 
 /////////////////////// llvm includes
 #include "llvm/Assembly/Parser.h"
-#include "llvm/LLVMContext.h"
-#include "llvm/CallingConv.h"
-#include "llvm/Module.h"
-#include "llvm/Constants.h"
-#include "llvm/DerivedTypes.h"
-#include "llvm/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/CallingConv.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Linker.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 //#include "llvm/ModuleProvider.h"
 #include "llvm/ExecutionEngine/JIT.h"
@@ -289,7 +290,9 @@ namespace extemp {
 
 	    // llvm stuff
 	    { "llvm:optimize",			&SchemeFFI::optimizeCompiles },
-	    { "llvm:compile",			&SchemeFFI::compile },
+	    //{ "llvm:compile",			&SchemeFFI::compile },
+	    { "llvm:compile",			&SchemeFFI::llvm_emitModule },
+	    { "llvm:finalize",			&SchemeFFI::llvm_finalizeModule },
 	    { "llvm:bind-global-var",		&SchemeFFI::bind_global_var },
 	    { "llvm:get-function",			&SchemeFFI::get_function },
 	    { "llvm:get-globalvar",			&SchemeFFI::get_globalvar },
@@ -1503,10 +1506,10 @@ namespace extemp {
 	//ParseError pa;
 	long long num_of_funcs = M->getFunctionList().size();		
 	const Module* newM = ParseAssemblyString(assm, M, pa, getGlobalContext());
-	if(EXTLLVM::OPTIMIZE_COMPILES)
-	{
-	    PM->run(*M);
-	}
+	// if(EXTLLVM::OPTIMIZE_COMPILES)
+	// {
+	//     PM->run(*M);
+	// }
 
 	//std::stringstream ss;
 	if(newM == 0)
@@ -1538,11 +1541,11 @@ namespace extemp {
 		    func->removeFromParent();
 		}							
 		return _sc->F;
-	    } 
+	    }            
 	    return _sc->T;
 	}
     }
-	
+
     pointer SchemeFFI::bind_global_var(scheme* _sc, pointer args)
     {
 	using namespace llvm;
@@ -1777,6 +1780,61 @@ namespace extemp {
 	return mk_string(_sc, ss.str().c_str()); //var->getType()->getDescription().c_str());
     }	
 
+    pointer SchemeFFI::llvm_finalizeModule(scheme* _sc, pointer args)
+    {
+      EXTLLVM::I()->EE->finalizeObject();
+      return _sc->T;
+    }
+
+    static long llvm_emitcounter = 0;
+    pointer SchemeFFI::llvm_emitModule(scheme* _sc, pointer args)
+    {   
+        using namespace llvm;        
+        char modname[256];
+        sprintf(modname,"module_%lld",++llvm_emitcounter);
+        llvm::LLVMContext &context = llvm::getGlobalContext();
+        Module* m = new Module(modname,context);
+
+	char* assm = string_value(pair_car(args));
+	SMDiagnostic pa;
+	//ParseError pa;
+        // printf("\n-------------------------------\n");
+        // printf("Parse IR for m\n");
+        Module* M = EXTLLVM::I()->M;
+	const Module* newM = ParseAssemblyString(assm, m, pa, getGlobalContext());
+        // printf("done with ir parseing\n");
+	//std::stringstream ss;
+	if(newM == 0)
+	{
+	    std::string errstr;
+	    llvm::raw_string_ostream ss(errstr);
+	    pa.print("xtlang:",ss);
+	    printf("%s\n",ss.str().c_str());
+            delete m;
+	    return _sc->F;
+	}else{
+	    std::string Err;
+	    if (verifyModule(*m, ReturnStatusAction, &Err)) {
+		printf("%s\n%s","Parsed, but not valid!\n",Err.c_str());
+                delete m;
+		return _sc->F;
+	    }
+            // SUCCESS SO FAR SO ADD TO MAIN MODULE
+            // printf("MOD DUMP:\n");
+            // m->dump();
+            // printf("\n\n");
+            std::string Err2;
+            EXTLLVM::I()->EE->recompileAndRelinkFunction((Function*)m);
+            // ADD TO Main MODULE (Just used for IR book-keeping)
+            ParseAssemblyString(assm, M, pa, getGlobalContext());
+            // if(!EXTLLVM::I()->L->LinkInModule(m,&Err2)) {
+            //   printf("Error linking Module:'%s'",Err2.c_str());
+            // }
+            //EXTLLVM::I()->EE->finalizeObject();
+	    return _sc->T;
+	}       
+    }
+
     pointer SchemeFFI::get_function_pointer(scheme* _sc, pointer args)
     {
 	using namespace llvm;
@@ -1790,7 +1848,6 @@ namespace extemp {
 	}
         // this should be safe without a lock
 	void* p = EXTLLVM::I()->EE->getPointerToFunction(func);
-
 	if(p==NULL) {
 	    //[[LogView sharedInstance] error:@"LLVM: Bad Function Ptr\n"];
 	    return _sc->F;
