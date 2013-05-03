@@ -101,7 +101,7 @@
   (lambda (samples:|128,double*|* samples_length:|128,i64|* samples_offsets:|128,i64|* index offset:i64)
     (let ((idx_freq (midi2frq (i64tod index)))
 	  (phase (+ offset (i64tod (pref samples_offsets index))))) ;; phase unit is audio frames
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
 	(let ((rate (/ freq idx_freq))
 	      (pos (if (< chan 1.0) ;; only increment once per frame
 		       (set! phase (+ phase rate))
@@ -121,7 +121,7 @@
 ;;   (lambda (samples:|128,double*|* samples_length:|128,i64|* samples_offsets:|128,i64|* index)
 ;;     (let ((idx_freq (midi2frq (i64tod index)))
 ;; 	  (phase (i64tod (pref samples_offsets index)))) ;; phase unit is audio frames
-;;       (lambda (time:double chan:double freq:double amp:double)
+;;       (lambda (time:double chan:double amp:double freq:double)
 ;; 	(let ((rate (/ freq idx_freq))
 ;; 	      (pos (if (< chan 1.0) ;; only increment once per frame
 ;; 		       (set! phase (+ phase rate))
@@ -147,7 +147,7 @@
     (let ((idx_freq (midi2frq (i64tod index)))
 	  (channels (pref samples_channels index))
 	  (phase (+ offset (i64tod (pref samples_offsets index))))) ;; phase unit is audio frames
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
 	(let ((rate (/ freq idx_freq))
 	      (pos (if (< chan 1.0) ;; only increment once per frame
 		       (set! phase (+ phase rate))
@@ -213,7 +213,7 @@
            (kk:i64 0) (ii:i64 0)
            ;;(active:i64 0)
            (note_starts:double* (zalloc poly))
-           (new_note (lambda (start freq dur amp nargs:i64 dargs:double*)
+           (new_note (lambda (start amp freq dur nargs:i64 dargs:double*)
                        (let ((free_note:i64 -1)
                              (idx (dtoi64 (floor (frq2midi freq))))
                              (closest 1000000)
@@ -231,7 +231,7 @@
                                                    (set! closest v) 0))))
                                     (let ((note_zone (push_zone (* 1024 10))))
                                       (pset! notes free_note
-                                             (note_c start freq amp dur
+                                             (note_c start amp freq dur
                                                         attack decay release sustain
                                                         note_starts free_note
                                                         (if (> nargs 0)

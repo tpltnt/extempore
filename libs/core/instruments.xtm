@@ -20,8 +20,8 @@
 ;; relative time USING adsr_accum + local mzone
 (bind-func note_c
   (lambda (start_time:double
-      freq:double
       amp:double
+      freq:double
       dur:double
       attack:double
       decay:double
@@ -38,7 +38,7 @@
 	  (ff (lambda (sample:double time:double channel:double)
 		(if (< channel 1.0) (set! t (+ t 1.0)))
 		(if (< t (+ dur release))
-		    (kernel t channel freq (* (env t channel) amp))
+		    (kernel t channel (* (env t channel) amp) freq)
 		    (begin (pset! nstarts idx 9999999999999.0)
 			   (llvm_zone_destroy notezone)
 			   0.0)))))
@@ -52,10 +52,10 @@
 ;; however making it longer means using more memory
 ;; it's a trade off!
 (bind-func _play_note
-  (lambda (time inst:[double,double,double,double,double*]* freq amp dur nargs:i64 dargs)
+  (lambda (time inst:[double,double,double,double,double*]* amp freq dur nargs:i64 dargs)
     (if (> freq 20.0)
         (let ((f (inst.new_note:[i64,double,double,double,double,i64,double*]*)))
-          (f time freq dur amp nargs dargs)
+          (f time amp freq dur nargs dargs)
           ;; so that we only copy an integer from memzone
           1)
         1)))
@@ -102,7 +102,7 @@
 	    (gain 2.0)
 	    (ii 0)
 	    (note_starts:double* (zalloc poly))
-	    (new_note (lambda (start freq dur amp nargs:i64 dargs)
+	    (new_note (lambda (start amp freq dur nargs:i64 dargs)
 			(let ((free_note:i64 -1)
 			      (iii 0)
 			      (i 0))
@@ -112,7 +112,7 @@
 			  (if (> free_note -1) ;; if we found a free poly spot assign a note
 			      (let ((note_zone (push_zone (* 1024 10))))
 				(pset! notes free_note
-				       (note_c start freq amp dur
+				       (note_c start amp freq dur
                                                attack decay release sustain
                                                note_starts free_note
                                                (,note_kernel nargs dargs)
@@ -136,7 +136,7 @@
   (lambda (nargs:i64 dargs:double*)
     (let ((sawl (saw_c 0.0))
 	  (sawr (saw_c 0.0)))
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
 	(if (< chan 0.5)
 	    (* amp (/ 200.0 freq) (sawl amp freq))
 	    (* amp (/ 200.0 freq) (sawr amp freq)))))))
@@ -168,7 +168,7 @@
 	    (lpf2 (lpf_c))
 	    (oscr3 (osc_c 0.25))
 	    (oscr2 (osc_c 0.25)))
-	(lambda (time:double chan:double freq:double amp:double)
+	(lambda (time:double chan:double amp:double freq:double)
 	  (if (<> res res_)
 	      (begin (lpf2.res res)
 		     (lpf1.res res)
@@ -230,7 +230,7 @@
 	    (ramp 0.0)
 	    (a (+ 1.0 (* 0.02 (random))))
 	    (b (+ 1.0 (* 0.02 (random)))))
-	(lambda (time:double chan:double freq:double amp:double)
+	(lambda (time:double chan:double amp:double freq:double)
 	  (if (< chan 0.5)
 	      (* amp (vcfl (+ (oscl 0.3 freq nval)
                               (oscl2 0.3 (+ freq a) nval))
@@ -290,7 +290,7 @@
           (pset! tonewheel (* i 2) (osc_c 0.0)) ; left
           (pset! tonewheel (+ (* i 2) 1) (osc_c 0.0)) ; right
           (pset! freq_smudge i (* 3.0 (random))))
-        (lambda (time:double chan:double freq:double amp:double)
+        (lambda (time:double chan:double amp:double freq:double)
           (if (< chan 2.0)
               (let ((sum 0.0))
                 (dotimes (i num_drawbars)
@@ -340,7 +340,7 @@
           (lpfr (lpf_c))
           (ringl (ringmod_c))
           (ringr (ringmod_c)))
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
         (cond ((= chan 0.0)
                (lpfl (ringl (+ (sawl1 amp (* freq smudge1))
                                (sawl2 amp (* freq smudge2)))
@@ -377,7 +377,7 @@
           (lfor (osc_c 0.0))
           (lpfl (lpf_c))
           (lpfr (lpf_c)))
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
         (cond ((= chan 0.0)
                (lpfl (rectl amp freq (+ 0.5 (lfol 0.3 0.9))) (* 8.0 freq) 0.5))
               ((= chan 1.0)
@@ -413,7 +413,7 @@
           (I (if (> nargs 0) (pref dargs 0) 0.1)) ;; modulation index (generally 0.0-1.0)
           (H (if (> nargs 1) (pref dargs 1) 10.0)) ;; harmonicity ratio (whole numbers 1.0 - 20.0)
           (out 0.0))
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
         (if (< chan 0.5)
             (set! out (o1 (* (/ 5.0 (log freq)) amp)
                           (+ freq
@@ -475,7 +475,7 @@
           (I (if (> nargs 0) (pref dargs 0) 0.2)) ;; modulation index (generally 0.0-1.0)
           (H (if (> nargs 1) (pref dargs 1) 2.0)) ;; harmonicity ratio (whole numbers 1.0 - 20.0)
           (res 0.0))
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
         (if (< chan 0.5)
             (set! res (o1 (* (/ 5.0 (log freq)) amp)
                           (+ freq
@@ -524,7 +524,7 @@
 (bind-func sawbass_note_c
   (lambda (nargs:i64 dargs:double*)
     (let ((osc (saw_mc_c 0.0)))
-      (lambda (time:double chan:double freq:double amp:double)
+      (lambda (time:double chan:double amp:double freq:double)
         (* amp (osc chan amp freq))))))
 
 
