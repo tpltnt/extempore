@@ -1497,26 +1497,3 @@
 (bind-func frq2midi
   (lambda (freq)
     (+ (* 12.0 (log2 (/ freq 440.0))) 69.0)))
-
-;; Design decisions
-
-;; should there be a consistent signature (arity & types) for the main
-;; 'classes' of dsp closure (ugen/source, filter, fx, sink)
-
-;; related: how about moving the n parameter into a let for square_c/saw_c
-
-;; if so, what are the types? (this is also a general file
-;; organisation question)
-
-;; what are all the _* extensions (_c, _mc, _t)
-
-;; what should we do with the _old ones (why are they still there)
-
-;; should the 'bind-mc' stuff be in a macro?
-
-;; how do we make the ugen closures returned by _c functions play nice
-;; with eldoc?
-
-;; what should go in the docstrings?
-
-;; should buffer sizes be in seconds or samples?  i64s or doubles?
