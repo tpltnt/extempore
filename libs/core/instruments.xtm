@@ -145,7 +145,7 @@
   (lambda (in:double time:double chan:double dat:double*)
     in))
 
-(define-instrument definst default_note_c default_fx)
+(define-instrument default_inst default_note_c default_fx)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
