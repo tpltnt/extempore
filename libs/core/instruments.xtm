@@ -523,21 +523,20 @@
 ;;
 (bind-func sawbass_note_c
   (lambda (nargs:i64 dargs:double*)
-    (let ((osc (saw_mc_c 0.0)))
+    (let ((osc (saw_c 0.0)))
       (lambda (time:double chan:double amp:double freq:double)
-        (* amp (osc chan amp freq))))))
+        (* amp (osc amp freq))))))
 
 
 (bind-func sawbass_fx 500000
-  (let ((cl (chorus_mc_c 2 0.0))
-        (vcf (vcf_mc_c 1 2))
-        (del (delay_t_st_c
-              (* SR (/ 1.0 2.1)) (* SR (/ 1. 2.)) 0.0))
-        (h (hann_t_mc_c 0.0)))
+  (let ((cl (chorus_c 0.0))
+        (vcf (vcf_c 2))
+        (del (delay_t_c (* SR (/ 1. 2.)) 0.0))
+        (h (hann_t_c 0.0)))
     (lambda (in:double time:double chan:double dat:double*)
-      (del chan (* 1.0
-                   (vcf chan (cl chan in 1.0 0.6)
-                         (+ 350.0 (* 3000.0 (h chan time (* SR 8.))))
+      (del (* 1.0
+                   (vcf (cl in 1.0 0.6)
+                         (+ 350.0 (* 3000.0 (h time (* SR 8.))))
                          0.75))
            time 0.8 0.5))))
 
