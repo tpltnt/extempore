@@ -191,10 +191,10 @@
 
 ;; rect wave oscillator - useful for pulse width modulation
 (bind-func rect_c
-  "returns a rect wave ugen closure"
-  (let ((duty 0.5))
+  "returns a rect wave ugen closure (duty [0.0,1.0])"
+  (let ()
     (lambda (phase)
-      (lambda (amp freq)
+      (lambda (amp freq duty)
         (let ((inc (/ freq SAMPLERATE)))
           (set! phase (+ phase inc))
           (if (> phase 1.0) (set! phase (- phase 1.0)))
