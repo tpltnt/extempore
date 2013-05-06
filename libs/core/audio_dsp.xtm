@@ -1518,3 +1518,5 @@
 ;; with eldoc?
 
 ;; what should go in the docstrings?
+
+;; should buffer sizes be in seconds or samples?  i64s or doubles?
