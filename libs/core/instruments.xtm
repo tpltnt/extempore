@@ -52,7 +52,8 @@
 ;; however making it longer means using more memory
 ;; it's a trade off!
 (bind-func _play_note
-  (lambda (time inst:[double,double,double,double,double*]* amp freq dur nargs:i64 dargs)
+  (lambda (time inst:[double,double,double,double,double*]* freq amp dur nargs:i64 dargs)
+    ;; (printf "amp = %4.2f freq = %4.2f\n" amp freq)
     (if (> freq 20.0)
         (let ((f (inst.new_note:[i64,double,double,double,double,i64,double*]*)))
           (f time amp freq dur nargs dargs)
