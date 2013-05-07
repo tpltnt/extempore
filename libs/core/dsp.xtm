@@ -1,0 +1,246 @@
+;;; dsp.xtm -- digital signal processing library
+
+;; Author: Andrew Sorensen, Ben Swift
+;; Keywords: extempore
+;; Required dylibs:
+
+;;; Commentary:
+
+;; A library for signal processing in Extmpore.
+
+;;; Code:
+
+;; set *build-multi-chan* to #t to compile multichannel extensions
+(if (not (defined? '*build-multi-chan*))
+    (define *build-multi-chan* #t))
+
+;;;;;;;;;;;;;;;;;;;
+;; DSP utilities ;;
+;;;;;;;;;;;;;;;;;;;
+
+;; bind some global audio values
+(if (not (llvm:get-globalvar "SAMPLERATE"))
+    (begin (bind-val SAMPLERATE double (integer->real *au:samplerate*))
+           (bind-val SR double (integer->real *au:samplerate*))))
+(if (not (llvm:get-globalvar "CHANNELS"))
+    (bind-val CHANNELS i64 *au:channels*))
+(if (not (llvm:get-globalvar "IN_CHANNELS"))
+    (bind-val IN_CHANNELS i64 *au:in-channels*))
+(if (not (llvm:get-globalvar "FRAMES"))
+    (bind-val FRAMES i64 *au:block-size*))
+
+(bind-alias DSP [double,double,double,double,double*]*)
+
+(bind-func print_audio_state
+  (lambda ()
+    (printf "    FRAMES: %lld\n" FRAMES)
+    (printf " OUT CHANS: %lld\n" CHANNELS)
+    (printf "  IN CHANS: %lld\n" IN_CHANNELS)
+    (printf "SAMPLERATE: %f\n" SAMPLERATE)))
+
+(print_audio_state)
+
+;; default (silent) audio callback
+(bind-func dsp:DSP
+  (lambda (in time chan dat)
+    0.0))
+
+;; gaussian random number X ~ N(0,1)
+;; algorithm by Marsaglia http://c-faq.com/lib/gaussian.html
+
+(bind-func dsp_randn
+  (let ((phase 0))
+    (lambda ()
+      (let ((u1 (random))
+	    (u2 (random))
+	    (v1 (- (* 2.0 u1) 1.0))
+	    (v2 (- (* 2.0 u2) 1.0))
+	    (s (+ (* v1 v1) (* v2 v2))))
+	(if (= phase 0)
+	    (if (or (> s 1.0) (= s 0.0) (= s 1.0))
+		(dsp_randn)
+		(* v1 (sqrt (/ (* -2.0 (log s)) s))))
+	    (begin (set! phase (- 1 phase))
+		   (* v2 (sqrt (/ (* -2.0 (log s)) s)))))))))
+
+(bind-func hard_limit
+  (lambda (in:double up_lim low_lim)
+    (if (< in low_lim) low_lim
+	(if (> in up_lim) up_lim
+	    in))))
+
+(bind-func limiter_c
+  (lambda (up_lim low_lim)
+    (lambda (in)
+      (hard_limit in up_lim low_lim))))
+
+;; computationally efficient sin function
+;; x values must fall within the range -PI ... PI
+(bind-func _sin
+  "efficient sin function (arg must be in range [-pi,pi])"
+  (let ((p 0.225) ; :_abuf* (alloc))
+	(b (/ 4.0 PI))
+	(c (/ -4.0 (* PI PI))))
+    (lambda (x)
+      (let ((y (+ (* b x) (* c x (fabs x)))))
+	(+ (* p (- (* y (fabs y)) y)) y)))))
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Extempore Ugens ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; In idiomatic Extempore DSP, closures are used as the basic building
+;; blocks of the signal chain, or unit generators (ugens). These ugen
+;; closures are stateful, and are called repeatedly (usually at the
+;; audio samplerate) to yield successive values which form their
+;; output.
+;;
+;; Any function which returns a closure should have the suffix _c
+;;
+;; The most basic ugen is a sin oscillator, which is created using the
+;; function osc_c. osc_c takes one argument (the starting phase of the
+;; returned closure) and returns a closure which takes two arguments
+;; (the frequency and amplitude of the oscillator). There are also
+;; other oscillators, including square waves, triangle waves, and
+;; white and pink noise.
+
+;; noise oscillators
+
+(bind-func white_c
+  "returns a gaussian white noise ugen closure"
+  (lambda ()
+    (lambda ()
+      (* 0.33 (dsp_randn)))))
+
+;; uses Paul Kellet's economy method
+;; http://www.firstpr.com.au/dsp/pink-noise/
+(bind-func pink_c
+  "returns a pink noise ugen closure"
+  (lambda ()
+    (let ((b0 0.0) (b1 0.0) (b2 0.0))
+      (lambda ()
+        (set! b0 (+ (* b0 0.99765) (* (dsp_randn) 0.0555179)))
+        (set! b1 (+ (* b1 0.96300) (* (dsp_randn) 0.2965164)))
+        (set! b2 (+ (* b2 0.57000) (* (dsp_randn) 1.0526913)))
+        (* 0.33 (+ b0 b1 b2 (* (dsp_randn) 0.1848)))))))
+
+;; uses _sin for efficiency
+(bind-func osc_c
+  "returns a sin oscillator"
+  (lambda (phase)
+    (lambda (amp freq)
+      (let ((inc (* TWOPI (/ freq SAMPLERATE))))
+	(set! phase (+ phase inc))
+	(if (> phase PI) (set! phase (- phase TWOPI)))
+	(* amp (_sin phase))))))
+
+(if *build-multi-chan*
+    (bind-func osc_mc_c
+      (lambda (phase)
+	(let ((val 0.0)
+	      (osc (osc_c phase)))
+	  (lambda (chan amp freq)
+	    (if (< chan 1.0) (set! val (osc amp freq)))
+	    val)))))
+
+;; square oscillator
+;; where 'n' is how squared off the wave is
+;; an n of 1.0 is very rounded
+;; an n of 30.0 is very sharp
+(bind-func square_c
+  "returns a square wave ugen closure"
+  (lambda (phase)
+    (let ((osc (osc_c phase)))
+      (lambda (amp freq n)
+        (* amp (tanh (* n (osc 1.0 freq))))))))
+
+;; square oscillator multichannel
+(if *build-multi-chan*
+    (bind-func square_mc_c
+      (lambda (phase)
+	(let ((sqr (square_c phase))
+	      (val 0.0))
+	  (lambda (chan amp freq n)
+	    (if (< chan 1.0) (set! val (sqr amp freq n)))
+	    val)))))
+
+;; triangle oscillator
+;; by using leak integrator over square
+;; see square wave for 'n'
+(bind-func triangle_c
+  "returns a triangle wave ugen closure"
+  (lambda (phase)
+    (let ((osc (osc_c phase))
+          (old 0.0)
+          (new 0.0)
+          (leak 0.9))
+      (lambda (amp freq n)
+        (set! old (+ (* leak old)
+                     (* amp (tanh (* n (osc 1.0 freq))))))
+        (* 0.125 old)))))
+
+(if *build-multi-chan*
+    (bind-func triangle_mc_c
+      (lambda (phase)
+	(let ((val 0.0)
+	      (tri (triangle_c phase)))
+	  (lambda (chan amp freq n)
+	    (if (< chan 1.0) (set! val (tri amp freq n)))
+	    val)))))
+
+;; rect wave oscillator - useful for pulse width modulation
+(bind-func rect_c
+  "returns a rect wave ugen closure (duty [0.0,1.0])"
+  (let ()
+    (lambda (phase)
+      (lambda (amp freq duty)
+        (let ((inc (/ freq SAMPLERATE)))
+          (set! phase (+ phase inc))
+          (if (> phase 1.0) (set! phase (- phase 1.0)))
+          (if (< phase duty) amp (* -1.0 amp)))))))
+
+(if *build-multi-chan*
+    (bind-func rect_mc_c
+      (let ()
+        (lambda (phase)
+          (let ((val 0.0)
+                (rect (rect_c phase)))
+            (lambda (chan amp freq duty)
+              (if (< chan 1.0) (set! val (rect amp freq duty)))
+              val))))))
+
+;; TODO need mc version
+
+;; saw oscillator
+(bind-func saw_c
+  "returns a saw ugen closure"
+  (lambda (phase)
+    (let ((dp 1.0)
+	  (x 0.0)
+	  (leak 0.995)
+	  (saw 0.0))
+      (lambda (amp freq)
+	(let* ((qmax (* 0.5 (/ SAMPLERATE freq)))
+	       (dc (/ -0.498 qmax)))
+	  (set! phase (+ phase dp))
+	  (if (< phase 0.0)
+	      (begin (set! phase (- 0.0 phase))
+		     (set! dp (- 0.0 dp)))
+	      (if (> phase qmax)
+		  (begin (set! phase (+ qmax (- qmax phase)))
+			 (set! dp (- 0.0 dp)))))
+	  (set! x (* PI phase))
+	  (if (< x 0.000001) (set! x 0.00001))
+	  (set! saw (* leak (+ saw (+ dc (/ (sin x) x)))))
+	  (* amp saw))))))
+
+
+;; saw oscillator
+(if *build-multi-chan*
+    (bind-func saw_mc_c
+      (lambda (phase)
+	(let ((val 0.0)
+	      (saw (saw_c phase)))
+	  (lambda (chan amp freq)
+	    (if (< chan 1.0) (set! val (saw amp freq)))
+	    val)))))
