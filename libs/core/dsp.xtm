@@ -10,6 +10,8 @@
 
 ;;; Code:
 
+
+
 ;; set *build-multi-chan* to #t to compile multichannel extensions
 (if (not (defined? '*build-multi-chan*))
     (define *build-multi-chan* #t))
@@ -36,14 +38,22 @@
     (printf "    FRAMES: %lld\n" FRAMES)
     (printf " OUT CHANS: %lld\n" CHANNELS)
     (printf "  IN CHANS: %lld\n" IN_CHANNELS)
-    (printf "SAMPLERATE: %f\n" SAMPLERATE)))
+    (printf "SAMPLERATE: %f\n" SR)))
 
 (print_audio_state)
+
+;;  metronome setup stuff
+
+;; TODO need to set this up
 
 ;; default (silent) audio callback
 (bind-func dsp:DSP
   (lambda (in time chan dat)
     0.0))
+
+;;;;;;;;;;;;;;;
+;; Utilities ;;
+;;;;;;;;;;;;;;;
 
 ;; gaussian random number X ~ N(0,1)
 ;; algorithm by Marsaglia http://c-faq.com/lib/gaussian.html
@@ -85,9 +95,9 @@
       (let ((y (+ (* b x) (* c x (fabs x)))))
 	(+ (* p (- (* y (fabs y)) y)) y)))))
 
-;;;;;;;;;;;;;;;;;;;;;
-;; Extempore Ugens ;;
-;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;
+;;  UGens ;;
+;;;;;;;;;;;;
 
 ;; In idiomatic Extempore DSP, closures are used as the basic building
 ;; blocks of the signal chain, or unit generators (ugens). These ugen
@@ -175,7 +185,7 @@
   "returns a sin oscillator"
   (lambda (phase)
     (lambda (amp freq)
-      (let ((inc (* TWOPI (/ freq SAMPLERATE))))
+      (let ((inc (* TWOPI (/ freq SR))))
 	(set! phase (+ phase inc))
 	(if (> phase PI) (set! phase (- phase TWOPI)))
 	(* amp (_sin phase))))))
@@ -240,7 +250,7 @@
   (let ()
     (lambda (phase)
       (lambda (amp freq duty)
-        (let ((inc (/ freq SAMPLERATE)))
+        (let ((inc (/ freq SR)))
           (set! phase (+ phase inc))
           (if (> phase 1.0) (set! phase (- phase 1.0)))
           (if (< phase duty) amp (* -1.0 amp)))))))
@@ -264,7 +274,7 @@
 	  (leak 0.995)
 	  (saw 0.0))
       (lambda (amp freq)
-	(let* ((qmax (* 0.5 (/ SAMPLERATE freq)))
+	(let* ((qmax (* 0.5 (/ SR freq)))
 	       (dc (/ -0.498 qmax)))
 	  (set! phase (+ phase dp))
 	  (if (< phase 0.0)
@@ -288,10 +298,6 @@
 	    (if (< chan 1.0) (set! val (saw amp freq)))
 	    val)))))
 
-;;;;;;;;;;;;
-;; delays ;;
-;;;;;;;;;;;;
-
 (bind-func delayline_c
   (lambda (size)
     (let ((buffer:double* (zalloc (* 2 size)))
@@ -302,22 +308,515 @@
           (set! buf_pos (modulo (+ buf_pos 1) size))
           out)))))
 
+(if *build-multi-chan*
+    (bind-func delayline_mc_c
+      (lambda (size num_chan)
+        (let ((val 0.0)
+	      (delaylines:[double,double]* (zalloc num_chan))
+              (i 0))
+          (dotimes (i num_chan)
+            (pset! delaylines i (delayline_c size)))
+	  (lambda (chan in)
+	    ((pref delaylines (dtoi64 chan)) in))))))
+
+;;;;;;;;;;;;;
+;; filters ;;
+;;;;;;;;;;;;;
+
+;; bi-quad IIR filters these filters are all computationally cheap,
+;; but there may be stability issues as the resonance parameter is
+;; pushed near it's limits
+
+(bind-func allpass_c
+  (lambda (delay)
+    (let ((_delay (dtoi64 delay))
+          (inline:double* (zalloc _delay))
+	  (outline:double* (zalloc _delay))
+	  (time 0))
+      (lambda (in feedback)
+	(let* ((n (modulo time _delay))
+	       (dy (pref outline n))
+	       (dx (pref inline n))
+	       (out (+ (* -1.0 feedback in)
+                       dx
+                       (* feedback dy))))
+	  (pset! inline n in)
+	  (pset! outline n out)
+	  (set! time (+ time 1))
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func allpass_mc_c
+      (lambda (channels:i64 delay)
+	(let ((lines:[double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (allpass_c delay)))
+	  (lambda (chan in wet)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in wet)))))))
+
+;; biquad low-pass filter
+(bind-func lpf_c
+  (lambda ()
+    (let* ((y1 0.0)
+	   (y2 0.0)
+	   (x1 0.0)
+	   (x2 0.0)
+	   (b0 0.0)
+	   (b1 0.0)
+	   (b2 0.0)
+	   (a0 0.0)
+	   (a1 0.0)
+	   (a2 0.0)
+	   (_cutoff 0.0)
+	   (_resonance 0.0))
+      (lambda (in cutoff resonance)
+	;; if frequency changes
+	;; recalculate coefficients
+	(if (or (<> cutoff _cutoff)
+		(<> resonance _resonance))
+	    (let* ((omega (* TWOPI (/ cutoff SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (/ sino (* 2.0 resonance))))
+	      (set! _cutoff cutoff)
+	      (set! _resonance resonance)
+	      (set! b0 (/ (- 1.0 coso) 2.0))
+	      (set! b1 (- 1.0 coso))
+	      (set! b2 b0)
+	      (set! a0 (+ 1.0 alpha))
+	      (set! a1 (* -2.0 coso))
+	      (set! a2 (- 1.0 alpha))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func lpf_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (lpf_c)))
+	  (lambda (chan in cutoff resonance)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in cutoff resonance)))))))
+
+;; biquad high-pass filter
+(bind-func hpf_c
+  (lambda ()
+    (let* ((y1 0.0)
+	   (y2 0.0)
+	   (x1 0.0)
+	   (x2 0.0)
+	   (b0 0.0)
+	   (b1 0.0)
+	   (b2 0.0)
+	   (a0 0.0)
+	   (a1 0.0)
+	   (a2 0.0)
+	   (_resonance 0.0)
+	   (_cutoff 0.0))
+      (lambda (in cutoff resonance)
+	;; if frequency changes
+	;; recalculate coefficients
+	(if (or (<> cutoff _cutoff)
+		(<> resonance _resonance))
+	    (let* ((omega (* TWOPI (/ cutoff SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (/ sino (* 2.0 resonance))))
+	      (set! _cutoff cutoff)
+	      (set! _resonance resonance)
+	      (set! b0 (/ (+ 1.0 coso) 2.0))
+	      (set! b1 (* -1.0 (+ 1.0 coso)))
+	      (set! b2 b0)
+	      (set! a0 (+ 1.0 alpha))
+	      (set! a1 (* -2.0 coso))
+	      (set! a2 (- 1.0 alpha))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func hpf_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (hpf_c)))
+	  (lambda (chan in cutoff resonance)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in cutoff resonance)))))))
+
+;; biquad band-pass filter
+(bind-func bpf_c
+  (lambda ()
+    (let* ((y1 0.0)
+	   (y2 0.0)
+	   (x1 0.0)
+	   (x2 0.0)
+	   (b0 0.0)
+	   (b1 0.0)
+	   (b2 0.0)
+	   (a0 0.0)
+	   (a1 0.0)
+	   (a2 0.0)
+	   (_cutoff 0.0)
+	   (_bandwidth 0.0))
+      ;; bandwidth in octaves
+      (lambda (in cutoff bandwidth)
+	;; if frequency or bandwidth change
+	;; recalculate coefficients
+	(if (or (<> cutoff _cutoff)
+		(<> bandwidth _bandwidth))
+	    (let* ((omega (* 1.0 TWOPI (/ cutoff SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (* sino (sinh (* (/ (log2 2.0) 2.0)
+					   bandwidth
+					   (/ omega sino))))))
+	      (set! _cutoff cutoff)
+	      (set! _bandwidth bandwidth)
+	      (set! b0 alpha)
+	      (set! b1 0.0)
+	      (set! b2 (* -1.0 b0))
+	      (set! a0 (+ 1.0 alpha))
+	      (set! a1 (* -2.0 coso))
+	      (set! a2 (- 1.0 alpha))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func bpf_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (bpf_c)))
+	  (lambda (chan in cutoff bandwidth)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in cutoff bandwidth)))))))
+
+(bind-func notch_c
+  (lambda ()
+    (let* ((y1 0.0)
+	   (y2 0.0)
+	   (x1 0.0)
+	   (x2 0.0)
+	   (b0 0.0)
+	   (b1 0.0)
+	   (b2 0.0)
+	   (a0 0.0)
+	   (a1 0.0)
+	   (a2 0.0)
+	   (_freq 0.0)
+	   (_bandwidth 0.0))
+      ;; bandwidth in octaves
+      (lambda (in freq bandwidth)
+	;; if frequency or bandwidth change
+	;; recalculate coefficients
+	(if (or (<> freq _freq)
+		(<> bandwidth _bandwidth))
+	    (let* ((omega (* TWOPI (/ freq SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (* sino (sinh (* (/ (log2 2.0) 2.0)
+					   bandwidth
+					   (/ omega sino))))))
+	      (set! _freq freq)
+	      (set! _bandwidth bandwidth)
+	      (set! b0 1.0)
+	      (set! b1 (* -2.0 coso))
+	      (set! b2 b0)
+	      (set! a0 (+ 1.0 alpha))
+	      (set! a1 b1)
+	      (set! a2 (- 1.0 alpha))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func notch_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (notch_c)))
+	  (lambda (chan in freq bandwidth)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in freq bandwidth)))))))
+
+;; biquad peaking band EQ filter
+(bind-func peak_c
+  (lambda ()
+    (let* ((x1 0.0) (x2 0.0)
+           (y1 0.0) (y2 0.0)
+           (b0 0.0) (b1 0.0) (b2 0.0)
+           (a0 0.0) (a1 0.0) (a2 0.0)
+	   (_db_gain 0.0)
+	   (_freq 0.0)
+	   (_bandwidth 0.0))
+      (lambda (in db_gain freq bandwidth)
+	;; if frequency changes
+	;; recalculate coefficients
+	(if (or (<> db_gain _db_gain)
+                (<> freq _freq)
+		(<> bandwidth _bandwidth))
+	    (let* ((A (pow 10.0 (/ db_gain 40.0)))
+                   (omega (* TWOPI (/ freq SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (* sino (sinh (/ (* (/ LN2 2.0) bandwidth omega) sino)))))
+	      (set! _db_gain db_gain)
+	      (set! _freq freq)
+	      (set! _bandwidth bandwidth)
+	      (set! b0 (+ 1.0 (* alpha A)))
+	      (set! b1 (* -2.0 coso))
+	      (set! b2 (- 1.0 (* alpha A)))
+	      (set! a0 (+ 1.0 (/ alpha A)))
+	      (set! a1 (* -2.0 coso))
+	      (set! a2 (- 1.0 (/ alpha A)))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func peak_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (peak_c)))
+	  (lambda (chan in gain_db freq bandwidth)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in gain_db freq bandwidth)))))))
+
+
+;; biquad low-shelf filter
+(bind-func lsf_c
+  (lambda ()
+    (let* ((x1 0.0) (x2 0.0)
+           (y1 0.0) (y2 0.0)
+           (b0 0.0) (b1 0.0) (b2 0.0)
+           (a0 0.0) (a1 0.0) (a2 0.0)
+           (_db_gain 0.0)
+           (_freq 0.0)
+	   (_bandwidth 0.0))
+      (lambda (in db_gain freq bandwidth)
+	;; if args change, re-calculate coefficients
+	(if (or (<> db_gain _db_gain)
+                (<> freq _freq)
+		(<> bandwidth _bandwidth))
+	    (let* ((A (pow 10.0 (/ db_gain 40.0)))
+                   (omega (* TWOPI (/ freq SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (* sino (sinh (/ (* (/ LN2 2.0) bandwidth omega) sino))))
+                   (beta (sqrt (+ A A))))
+	      (set! _db_gain db_gain)
+	      (set! _freq freq)
+	      (set! _bandwidth bandwidth)
+	      (set! b0 (* A (+ (- (+ A 1.0)
+                                  (* (- A 1.0) coso))
+                               (* beta sino))))
+	      (set! b1 (* 2.0 A (- (- A 1.0) (* (+ A 1.0) coso))))
+	      (set! b2 (* A (- (- (+ A 1.0)
+                                  (* (- A 1.0) coso))
+                               (* beta sino))))
+	      (set! a0 (+ (+ A 1.0)
+                          (* (- A 1.0) coso)
+                          (* beta sino)))
+	      (set! a1 (* -2.0 (+ (- A 1.0) (* (+ A 1.0) coso))))
+	      (set! a2 (- (+ (+ A 1.0)
+                             (* (- A 1.0) coso))
+                          (* beta sino)))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func lsf_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (lsf_c)))
+	  (lambda (chan in gain_db freq bandwidth)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in gain_db freq bandwidth)))))))
+
+
+;; biquad high-shelf filter
+(bind-func hsf_c
+  (lambda ()
+    (let* ((x1 0.0) (x2 0.0)
+           (y1 0.0) (y2 0.0)
+           (b0 0.0) (b1 0.0) (b2 0.0)
+           (a0 0.0) (a1 0.0) (a2 0.0)
+           (_db_gain 0.0)
+           (_freq 0.0)
+	   (_bandwidth 0.0))
+      (lambda (in db_gain freq bandwidth)
+	;; if args change, re-calculate coefficients
+	(if (or (<> db_gain _db_gain)
+                (<> freq _freq)
+		(<> bandwidth _bandwidth))
+	    (let* ((A (pow 10.0 (/ db_gain 40.0)))
+                   (omega (* TWOPI (/ freq SR)))
+		   (sino (sin omega))
+		   (coso (cos omega))
+		   (alpha (* sino (sinh (/ (* (/ LN2 2.0) bandwidth omega) sino))))
+                   (beta (sqrt (+ A A))))
+	      (set! _db_gain db_gain)
+	      (set! _freq freq)
+	      (set! _bandwidth bandwidth)
+	      (set! b0 (* A (+ (+ (+ A 1.0)
+                                  (* (- A 1.0) coso))
+                               (* beta sino))))
+	      (set! b1 (* -2.0 A (- (- A 1.0) (* (+ A 1.0) coso))))
+	      (set! b2 (* A (- (+ (+ A 1.0)
+                                  (* (- A 1.0) coso))
+                               (* beta sino))))
+	      (set! a0 (+ (- (+ A 1.0)
+                             (* (- A 1.0) coso))
+                          (* beta sino)))
+	      (set! a1 (* 2.0 (- (- A 1.0) (* (+ A 1.0) coso))))
+	      (set! a2 (- (- (+ A 1.0)
+                             (* (- A 1.0) coso))
+                          (* beta sino)))))
+	(let ((out (- (+ (* (/ b0 a0) in)
+                         (* (/ b1 a0) x1)
+                         (* (/ b2 a0) x2))
+                      (* (/ a1 a0) y1)
+                      (* (/ a2 a0) y2))))
+	  (set! y2 y1)
+	  (set! y1 out)
+	  (set! x2 x1)
+	  (set! x1 in)
+	  out)))))
+
+(if *build-multi-chan*
+    (bind-func hsf_mc_c
+      (lambda (channels:i64)
+	(let ((lines:[double,double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (hsf_c)))
+	  (lambda (chan in gain_db freq bandwidth)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f in gain_db freq bandwidth)))))))
+
+;; a moog-style voltage-controlled filter
+
+(bind-func vcf_c
+  "moog VCF: type is 1 (lpf), 2 (hpf) or 3 (bpf)"
+  (lambda (type)
+    (let ((x 0.0)
+          (y1 0.0)
+          (y2 0.0)
+          (y3 0.0)
+          (y4 0.0)
+	  (_x 0.0)
+          (_y1 0.0)
+          (_y2 0.0)
+          (_y3 0.0))
+      (lambda (in cutoff resonance)
+	(let ((f (* 1.75 (/ cutoff SR)))
+              ;;(k (- (* 2.0 (sin (* f (/ PI 2.0)))) 1.0))
+	      (k (- (- (* 3.6 f) (* 1.6 (* f f))) 1.0))
+	      (p (* 0.5 (+ k 1.0)))
+	      (scale (exp (* (- 1.0 p) 1.386249)))
+	      (r (* resonance scale)))
+	  (set! x (- in (* r y4)))
+	  (set! y1 (+ (* x  p) (* _x  p) (* -1.0 k y1)))
+	  (set! y2 (+ (* y1 p) (* _y1 p) (* -1.0 k y2)))
+	  (set! y3 (+ (* y2 p) (* _y2 p) (* -1.0 k y3)))
+	  (set! y4 (+ (* y3 p) (* _y3 p) (* -1.0 k y4)))
+	  (set! _x x) (set! _y1 y1) (set! _y2 y2) (set! _y3 y3)
+	  ;; y4 is output
+	  (set! y4 (- y4 (* y4 y4 y4 0.1666667))) ;; clipping
+	  ;;(set! y4 (- y4 (/ (pow y4 3.0) 6.0))) ;; clipping
+	  (if (= 2 type) (- x y4)
+              (if (= 3 type) (* 3.0 (- y3 y4))
+                  y4)))))))
+
+(if *build-multi-chan*
+    (bind-func vcf_mc_c
+      (lambda (type:i64 channels:i64)
+	(let ((lines:[double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (vcf_c type)))
+	  (lambda (chan x freq resonance)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f x freq resonance)))))))
+
+;; FIR filters
+
+
+
+;;;;;;;;;;;;
+;; delays ;;
+;;;;;;;;;;;;
+
+;; These delays are meant to be 'user-facing', in particular they are
+;; metronome-aware. All delay arguments are doubles and represent a
+;; delay time in beats (at the current tempo)
+
+
+
 ;; more efficient than comb if you
 ;; don't need variable length
 (bind-func delay_c
-  "IIR comb without interpolation"
+  "IIR comb without interpolation (all delays in beats)"
   (lambda (max_delay)
-    (let ((delay (dtoi64 max_delay))
-          (line:double* (zalloc delay))
+    (let ((delay max_delay)
+          (line:double* (zalloc (dtoi64 max_delay)))
 	  (time 0)
           (n 0)
-          (y 0.0))
-      (lambda (x:double wet feedback)
+          (out 0.0))
+      (lambda (in:double wet feedback)
         (set! n (modulo time delay))
-        (set! y (pref line n))
+        (set! out (pref line n))
         (set! time (+ time 1))
-        (pset! line n (* feedback (+ x y)))
-        (+ x (* y wet))))))
+        (pset! line n (* feedback (+ in out)))
+        (+ in (* out wet))))))
 
 (bind-func tap_delay_c
   (lambda (max_delay num_of_taps)
@@ -335,4 +834,3 @@
 	    (set! y (+ y (* gain (pref line (modulo (+ (pref taps i) n) delay))))))
 	  (set! time (+ time 1))
 	  y)))))
-
