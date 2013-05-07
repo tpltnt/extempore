@@ -150,14 +150,6 @@
         (set! sum (+ sum in))
         sum))))
 
-(bind-func leaky_integrator_c
-  "a 'leaky' integrator"
-  (let ((old 0.0)
-        (leak 0.99))
-    (lambda (x)
-      (set! old (+ (* leak old) x))
-      old)))
-
 ;; noise oscillators
 
 (bind-func white_c
