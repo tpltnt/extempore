@@ -1,0 +1,98 @@
+
+;;; spectral_analyzer.xtm -- spectral metering example
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libCairo, kiss_fft, libsndfile, libSOIL
+
+;;; Commentary:
+
+;; An openGL-based spectral analyzer in xtlang.
+
+;; Re-define the fill_td_signal_buff xtlang function to change the
+;; audio input. This function takes a cpxd* buffer pointer and a
+;; length, and is required to `fill' the buffer with a (complex) time
+;; domain signal.
+
+;;; Code:
+
+(define ctx (gl:make-ctx ":0.0" #f 0.0 0.0 1080.0 720.0))
+
+;; load the libraries we need
+(load "libs/core/dsp.xtm")
+;; (load "libs/external/sndfile.xtm")
+(load "libs/external/fft.xtm")
+(load "libs/external/opengl.xtm")
+
+;; currently, just return 0.0 (silence)
+(bind-func fill_td_signal_buff
+  (let ((i 0))
+    (lambda (buf:cpxd* len)
+      (dotimes (i len)
+        (cpx-set-real (pref-ptr buf i) 0.0))
+      buf)))
+
+(bind-func draw_spectrogram
+  (let ((i 0))
+    (lambda (ptr:cpxd* len:i64)
+      (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
+      (glLoadIdentity)
+      (glTranslated -1.0 -1.0 0.0)
+      (glBegin GL_LINE_STRIP)
+      ;; main drawing loop
+      (dotimes (i len)
+        (let ((val (* 0.2 (log (magnitude_squared_cpx (pref-ptr ptr i))))))
+          (glColor3d (* 0.5 val) (* 0.9 (- 1.4 val)) 0.2)
+          (glVertex2d (* 2.0 (/ (i64tod i) (i64tod len))) val)))
+      (glEnd))))
+
+;; the draw loop -- remember this is in scheme, not xtlang
+(define spectrogram-drawloop
+  (lambda (time fps)
+    (draw_spectrogram (dsp.fd_buffer) (/ (dsp.buflen) 2))
+    (gl:swap-buffers ctx)
+    (callback (+ time (* 0.5 (/ *samplerate* fps)))
+              'spectrogram-drawloop
+              (+ time (/ *samplerate* fps))
+              fps)))
+
+(bind-func dsp:DSP 100000000 ; make sure we allocate enough memory
+  (let ((buflen 1024)
+        ;; time domain (complex) signal
+        (td_buffer:cpxd* (zalloc buflen))
+        ;; frequency domain (magnitude) spectrum
+        (fd_buffer:cpxd* (zalloc buflen))
+        (playhead 0)
+        (out 0.0))  ;; output value (mono only at present)
+    (lambda (in time chan dat)
+      (if (and (= (modulo (dtoi64 time) buflen) 0)
+               (< chan 0.5))
+          (begin (fill_td_signal_buff td_buffer buflen)
+                 (fft_cpxd td_buffer fd_buffer buflen)))
+      (if (< chan 0.5)
+          (begin (set! out (cpx-get-real (pref td_buffer playhead)))
+                 (set! playhead (modulo (+ playhead 1) buflen))))
+      out)))
+
+(dsp:set! dsp)
+
+;; start the spectrum analyzer
+(spectrogram-drawloop (now) 30)
+
+;; let's redefine fill_td_signal_buff to something more interesting!
+
+(bind-func fill_td_signal_buff
+  (let ((i 0)
+        (white (white_c))
+        (lpf (lpf_c))
+        (notch (notch_c))
+        (lfo1 (osc_c 0.0))
+        (lfo2 (osc_c 0.0))
+        (lfo3 (osc_c 0.0)))
+    (lambda (buf:cpxd* len)
+      (let ((res (+ 1.0 (* 100.0 (random)))))
+        (dotimes (i len)
+          (cpx-set-real (pref-ptr buf i)
+                        (+ (* 0.1 (lpf (white) (+ 6000.0 (lfo1 5000.0 (+ 15.0 (lfo3 15.0 3.0)))) res))
+                           (* 5.0 (notch (white) (+ 0.34 (lfo2 0.3 5.0)) 30.0))))))
+      buf)))
