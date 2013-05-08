@@ -700,6 +700,17 @@
 (bind-type cpxd <double,double>)
 (bind-type cpxf <float,float>)
 
+;; accessor macros
+
+(define-macro (cpx-get-real cpx-value)
+  `(tref ,cpx-value 0))
+(define-macro (cpx-get-im cpx-value)
+  `(tref ,cpx-value 1))
+(define-macro (cpx-set-real cpx-value real-value)
+  `(tset! ,cpx-value 0 ,real-value))
+(define-macro (cpx-set-im cpx-value im-value)
+  `(tset! ,im-value 0 ,cpx-value))
+
 ;; conversion functions
 
 (bind-func conjugate_cpxf
