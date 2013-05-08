@@ -310,12 +310,11 @@
 
 (if *build-multi-chan*
     (bind-func delayline_mc_c
-      (lambda (size num_chan)
+      (lambda (channels:i64 size)
         (let ((val 0.0)
-	      (delaylines:[double,double]* (zalloc num_chan))
+	      (delaylines:[double,double]** (zalloc channels))
               (i 0))
-          (dotimes (i num_chan)
-            (pset! delaylines i (delayline_c size)))
+	  (dotimes (i channels) (pset! delaylines i (delayline_c size)))
 	  (lambda (chan in)
 	    ((pref delaylines (dtoi64 chan)) in))))))
 
