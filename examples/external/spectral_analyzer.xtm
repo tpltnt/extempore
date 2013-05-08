@@ -93,6 +93,7 @@
       (let ((res (+ 1.0 (* 100.0 (random)))))
         (dotimes (i len)
           (cpx-set-real (pref-ptr buf i)
+                        ;; try tweaking some of these parameters
                         (+ (* 0.1 (lpf (white) (+ 6000.0 (lfo1 5000.0 (+ 15.0 (lfo3 15.0 3.0)))) res))
                            (* 5.0 (notch (white) (+ 0.34 (lfo2 0.3 5.0)) 30.0))))))
       buf)))
