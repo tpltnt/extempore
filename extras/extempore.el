@@ -1126,6 +1126,21 @@ You shouldn't have to modify this list directly, use
       (extempore-stop-tr-animation)
     (extempore-start-tr-animation)))
 
+;; interactive repeated evaluation of defun under point
+
+(defvar extempore-repeated-eval-timer nil)
+
+(defun extempore-start-repeated-eval (time-interval)
+  "takes a time interval (in seconds)"
+  (interactive "nTime interval (sec):")
+  (setq extempore-repeated-eval-timer
+	(run-with-timer 0 time-interval 'extempore-send-defn-at-point)))
+
+(defun extempore-stop-repeated-eval ()
+  (interactive)
+  (cancel-timer extempore-repeated-eval-timer)
+  (setq extempore-repeated-eval-timer nil))
+
 (provide 'extempore)
 
 ;;; extempore.el ends here
