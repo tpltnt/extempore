@@ -623,7 +623,7 @@ determined by whether there is an *extempore* buffer."
                       (if (string= device-number "")
                           (number-to-string extempore-default-device-number)
                         device-number))
-                    "\n")))))
+                    "\n"))))
   (display-buffer "*extempore*"))
 
 (defun extempore-crlf-process-filter (proc str)
