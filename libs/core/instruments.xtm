@@ -13,7 +13,7 @@
 
 ;;; Code:
 
-(load "libs/core/audio_dsp.xtm")
+(load "libs/core/dsp.xtm")
 
 ;; making and playing notes
 
@@ -188,10 +188,8 @@
 
 
 (bind-func synth_fx 262144
-  (let ((dleft (* 0.125 SAMPLERATE))
-        (dlyl (delay_c dleft))
-        (dright (* 0.33333333 SAMPLERATE))
-        (dlyr (delay_c dright))
+  (let ((delayl (delay_c 0.125))
+        (delayr (delay_c 0.33333333))
         (pan .5)
         (pan_old pan)
         (wet 1.0)
@@ -201,9 +199,9 @@
           (set! pan_old (+ pan_old .001))
           (set! pan_old (- pan_old .001)))
       (cond ((< chan 1.0) 
-             (dlyl (* 2.0 pan_old in) wet fb))
+             (delayl (* 2.0 pan_old in) wet fb))
             ((< chan 2.0)
-             (dlyr (* 2.0 (- 1.0 pan_old) in) wet fb))
+             (delayr (* 2.0 (- 1.0 pan_old) in) wet fb))
             (else 0.0)))))
 
 (define-instrument synth synth_note_c synth_fx)
@@ -225,8 +223,8 @@
 	    (o1 (osc_c 0.0))
 	    (oscl2 (square_c (random)))
             (nval (if (> nargs 0) (pref dargs 0) 50.0))
-	    (vcfl (vcf1_c))
-	    (vcfr (vcf1_c))	  
+	    (vcfl (vcf_c 1))
+	    (vcfr (vcf_c 1))	  
 	    (oscr2 (square_c (random)))
 	    (ramp 0.0)
 	    (a (+ 1.0 (* 0.02 (random))))
@@ -243,7 +241,7 @@
                            res))))))))
 
 
-(bind-func epad_fx 2000000
+(bind-func epad_fx 10000000
   (let ((pan .5)
 	(c1 (chorus_c 0.0))
 	(c2 (chorus_c 0.1))
@@ -372,22 +370,22 @@
 
 (bind-func shimmer_pad_note_c
   (lambda (nargs:i64 dargs:double*)
-    (let ((rectl (rect_c 0.0))
-          (rectr (rect_c 0.0))
+    (let ((pulsel (pulse_c 0.0))
+          (pulser (pulse_c 0.0))
           (lfol (osc_c 0.0))
           (lfor (osc_c 0.0))
           (lpfl (lpf_c))
           (lpfr (lpf_c)))
       (lambda (time:double chan:double amp:double freq:double)
         (cond ((= chan 0.0)
-               (lpfl (rectl amp freq (+ 0.5 (lfol 0.3 0.9))) (* 8.0 freq) 0.5))
+               (lpfl (pulsel amp freq (+ 0.5 (lfol 0.3 0.9))) (* 8.0 freq) 0.5))
               ((= chan 1.0)
-               (lpfr (rectl amp freq (+ 0.5 (lfor 0.3 1.0))) (* 8.0 freq) 0.5))
+               (lpfr (pulsel amp freq (+ 0.5 (lfor 0.3 1.0))) (* 8.0 freq) 0.5))
               (else 0.0))))))
 
-(bind-func shimmer_pad_fx
-  (let ((dl (delay_c 10.0))
-        (dr (delay_c 11.0))
+(bind-func shimmer_pad_fx 2000000
+  (let ((dl (delay_c 2.0))
+        (dr (delay_c 2.0))
         (wet 0.5)
         (fb 0.5))
     (lambda (in:double time:double chan:double dat:double*)
@@ -423,7 +421,7 @@
         (* 1.0 out)))))
 
 
-(bind-func simplefm_fx 700000
+(bind-func simplefm_fx 1000000
   (let ((o1 (osc_c 0.0))
         (o2 (osc_c (* 0.5 PI))) 
         (cl (chorus_c 0.0))
@@ -532,14 +530,13 @@
 (bind-func sawbass_fx 500000
   (let ((cl (chorus_c 0.0))
         (vcf (vcf_c 2))
-        (del (delay_t_c (* SR (/ 1. 2.)) 0.0))
-        (h (hann_t_c 0.0)))
+        (del (delay_c 0.5))
+        (lfo (osc_c 0.0)))
     (lambda (in:double time:double chan:double dat:double*)
-      (del (* 1.0
-                   (vcf (cl in 1.0 0.6)
-                         (+ 350.0 (* 3000.0 (h time (* SR 8.))))
-                         0.75))
-           time 0.8 0.5))))
+      (del (vcf (cl in 1.0 0.6)
+                (+ 1750.0 (lfo 1500.0 0.8))
+                0.75)
+           0.8 0.5))))
 
 (define-instrument sawbass sawbass_note_c sawbass_fx)
 (sawbass.attack 100.0)

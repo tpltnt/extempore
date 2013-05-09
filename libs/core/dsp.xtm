@@ -95,6 +95,28 @@
       (let ((y (+ (* b x) (* c x (fabs x)))))
 	(+ (* p (- (* y (fabs y)) y)) y)))))
 
+;; buffers
+
+(bind-func circular_buffer_c
+  (lambda (size)
+    (let ((buffer:double* (zalloc size))
+          (buf_pos 0))
+      (lambda (in)
+        (let ((out (pref buffer buf_pos)))
+          (pset! buffer buf_pos in)
+          (set! buf_pos (modulo (+ buf_pos 1) size))
+          out)))))
+
+(if *build-multi-chan*
+    (bind-func circular_buffer_mc_c
+      (lambda (channels:i64 size)
+        (let ((val 0.0)
+	      (buffers:[double,double]** (zalloc channels))
+              (i 0))
+	  (dotimes (i channels) (pset! buffers i (circular_buffer_c size)))
+	  (lambda (chan in)
+	    ((pref buffers (dtoi64 chan)) in))))))
+
 ;;;;;;;;;;;;
 ;;  UGens ;;
 ;;;;;;;;;;;;
@@ -218,6 +240,13 @@
 	    (if (< chan 1.0) (set! val (osc amp freq)))
 	    val)))))
 
+;; a hann window of length N
+(bind-func hann
+  (lambda (n N)
+    (let ((val (_sin (/ (* PI n)
+                        (- N 1.0)))))
+      (* val val))))
+
 ;; square oscillator
 ;; where 'n' is how squared off the wave is
 ;; an n of 1.0 is very rounded
@@ -338,69 +367,6 @@
               (if (< chan 0.5)
                   (set! time (+ time inc)))
               (+ (* m time) c)))))))
-
-;;;;;;;;
-;; FX ;;
-;;;;;;;;
-
-;; Basically, this means anything which takes an input as well as an
-;; output.
-
-(bind-func hard_clip
-  (lambda (in:double up_lim low_lim)
-    (if (< in low_lim) low_lim
-	(if (> in up_lim) up_lim
-	    in))))
-
-(bind-func hard_limiter_c
-  "returns a hard limiter closure"
-  (lambda (up_lim low_lim)
-    (lambda (in)
-      (hard_clip in up_lim low_lim))))
-
-(bind-func soft_limiter_c
-  "softly limit input value into range [-1,1]"
-  (lambda (in)
-    (tanh in)))
-
-(bind-func waveshape
-  (lambda (in distortion)
-    (* in
-       (/ (+ distortion (fabs in))
-          (+ (* in in)
-             (* (- distortion 1.0) (fabs in))
-             1.0)))))
-
-;; distortion
-;; can cascade several of these for more overdrive
-(bind-func distortion
-  (lambda (in gain)
-    (tanh (* in gain)))) 
-
-(bind-func circular_buffer_c
-  (lambda (size)
-    (let ((buffer:double* (zalloc size))
-          (buf_pos 0))
-      (lambda (in)
-        (let ((out (pref buffer buf_pos)))
-          (pset! buffer buf_pos in)
-          (set! buf_pos (modulo (+ buf_pos 1) size))
-          out)))))
-
-(if *build-multi-chan*
-    (bind-func circular_buffer_mc_c
-      (lambda (channels:i64 size)
-        (let ((val 0.0)
-	      (buffers:[double,double]** (zalloc channels))
-              (i 0))
-	  (dotimes (i channels) (pset! buffers i (circular_buffer_c size)))
-	  (lambda (chan in)
-	    ((pref buffers (dtoi64 chan)) in))))))
-
-
-;; simple 'lookahead' compressor
-;; introduces a delay of N samples
-
 
 ;;;;;;;;;;;;;
 ;; filters ;;
@@ -870,17 +836,115 @@
 	    (let ((f (pref lines (dtoi32 chan))))
 	      (f x freq resonance)))))))
 
-;; FIR filters
+;;;;;;;;
+;; FX ;;
+;;;;;;;;
 
+;; Basically, this means anything which takes an input as well as an
+;; output.
 
+(bind-func hard_clip
+  (lambda (in:double up_lim low_lim)
+    (if (< in low_lim) low_lim
+	(if (> in up_lim) up_lim
+	    in))))
 
-;;;;;;;;;;;;
-;; delays ;;
-;;;;;;;;;;;;
+(bind-func soft_clip
+  "softly clip input value into range [-1,1]"
+  (lambda (in)
+    (tanh in)))
 
-;; These delays are meant to be 'user-facing', in particular they are
-;; metronome-aware. All delay arguments are doubles and represent a
-;; delay time in beats (at the current tempo)
+;; distortion
+;; can cascade several of these for more overdrive
+(bind-func waveshape
+  (lambda (in distortion)
+    (* in
+       (/ (+ distortion (fabs in))
+          (+ (* in in)
+             (* (- distortion 1.0) (fabs in))
+             1.0)))))
+
+(bind-func distortion
+  (lambda (in gain)
+    (tanh (* in gain)))) 
+
+(bind-func bitcrush
+  (lambda (in bits)
+    (/ (floor (* in (pow 2. bits)))
+       (pow 2. bits))))
+
+(bind-func overdrive_c
+  "Drive range:[1.0,3.0]"
+  (lambda ()
+    (let ((drive_ 1.0)
+          (drive_minus_1 (- drive_ 1.0)))
+      (lambda (in drive)
+        (if (<> drive drive_)
+            (begin (set! drive drive_)
+                   (set! drive_minus_1 (- drive 1.0))))
+        (let ((absval (fabs in)))
+          (/ (* in (+ absval drive))
+             (+ (* in in)
+                (* drive_minus_1 absval)
+                1.0)))))))
+
+(if *build-multi-chan*
+    (bind-func overdrive_mc_c
+      (lambda (nchan:i64)
+        (let ((overdrive_buf:[double,double,double]** (zalloc nchan))
+	      (i:i64 0))
+          (dotimes (i nchan) (pset! overdrive_buf i (overdrive_c)))
+	  (lambda (chan in drive)
+	    ((pref overdrive_buf (dtoi64 chan)) in drive))))))
+
+;; based on Steve Harris's Valve Saturation lv2 plugin
+;; http://plugin.org.uk/
+
+(bind-func saturation_c
+  "level:[0.0,1.0] character:[0.0,1.0]"
+  (lambda ()
+    (let ((itm1 0.0)
+          (otm1 0.0))
+      (lambda (in drive character)
+        (let ((q (- drive 0.999))
+              (dist (+ (* character 40.0) 0.1))
+              (fx (if (= in q)
+                      (/ (/ 1.0 (+ dist q))
+                         (- 1.0 (exp (* dist q))))
+                      (/ (/ (- in q)
+                            (+ (- 1.0 (exp (* -1.0 dist (- in q)))) q))
+                         (- 1.0 (exp (* dist q)))))))
+          (set! otm1 (- (+ (* 0.999 otm1) fx) itm1))
+          (set! itm1 fx)
+          otm1)))))
+
+(if *build-multi-chan*
+    (bind-func saturation_mc_c
+      (lambda (nchan:i64)
+        (let ((saturation_buf:[double,double,double,double]** (zalloc nchan))
+	      (i:i64 0))
+          (dotimes (i nchan) (pset! saturation_buf i (saturation_c)))
+	  (lambda (chan in drive character)
+	    ((pref saturation_buf (dtoi64 chan)) in drive character))))))
+
+(bind-func ringmod_c
+  "freq feedback:[0.0,1.0]"
+  (lambda ()
+    (let ((osc (osc_c 0.0)))
+      (lambda (in freq feedback)
+        (+ (* (- 1.0 feedback) in)
+           (* feedback (* in (osc freq 1.0))))))))
+
+(if *build-multi-chan*
+    (bind-func ringmod_mc_c
+      (lambda (nchan:i64)
+        (let ((ringmod_buf:[double,double,double,double]** (zalloc nchan))
+	      (i:i64 0))
+          (dotimes (i nchan) (pset! ringmod_buf i (ringmod_c)))
+	  (lambda (chan in freq feedback)
+	    ((pref ringmod_buf (dtoi64 chan)) in freq feedback))))))
+
+;; delays
 
 (bind-func del_c
   "simple, efficient delay (no resizing, no bounds checks)"
@@ -902,6 +966,10 @@
           (dotimes (i nchan) (pset! dlines i (del_c delay)))
           (lambda (chan in wet feedback)
             ((pref dlines (dtoi64 chan)) in wet feedback))))))
+
+;; This delay is less efficient, but safer and also 'metronome-aware'.
+;; Arguments are doubles and represent a delay time in beats (at the
+;; current tempo)
 
 ;; more efficient than comb if you
 ;; don't need variable length
@@ -931,7 +999,7 @@
 (if *build-multi-chan*
     (bind-func delay_mc_c
       (lambda (nchan:i64 max_delay)
-        (let ((dlines:[double,double,double,double]** (alloc nchan))
+        (let ((dlines:[double,double,double,double]** (zalloc nchan))
 	      (i:i64 0))
           (dotimes (i nchan) (pset! dlines i (delay_c max_delay)))
           (lambda (chan in wet feedback)
@@ -1017,7 +1085,6 @@
         (set! out_head (+ oh 1))
         (+ in (* delayed wet))))))
 
-
 (if *build-multi-chan*
     (bind-func comb_mc_c
       (lambda (channels:i64 max_delay)
@@ -1027,7 +1094,6 @@
 	  (lambda (chan in delay wet feedback)
 	    (let ((f (pref dlines (dtoi32 chan))))
 	      (f in delay wet feedback)))))))
-
 
 ;; flanger
 (bind-func flanger_c
@@ -1083,6 +1149,116 @@
 	    (let ((f (pref dlines (dtoi32 chan))))
 	      (f in wet fb)))))))
 
+;; reverb
+(bind-func reverb_c
+  (lambda (size) ; size in ms
+    (let ((ms (/ SAMPLERATE 1000.0))
+	  (dly1 (delay_c (* ms (* .192 size))))
+	  (dly2 (delay_c (* ms (* .373 size))))
+	  (dly3 (delay_c (* ms (* .671 size))))
+	  (dly4 (delay_c (* ms (* .712 size))))
+	  (ap1 (allpass_c (* ms size)))
+	  (ap3 (allpass_c (* ms (* .929 size))))
+	  (ap2 (allpass_c (* ms (* .329 size)))))
+      (lambda (in wet fb)
+        (let ((wetin (* in wet)))
+          (+ (* in (- 1.0 wet))
+             (ap1 (ap2 (ap3 (* .3 (+ (dly1 wetin 1.0 fb)
+                                     (dly2 wetin 1.0 fb)
+                                     (dly3 wetin 1.0 fb)
+                                     (dly4 wetin 1.0 fb)))
+                            .8)
+                       .7)
+                  .6)))))))
+
+(if *build-multi-chan*
+    (bind-func reverb_mc_c
+      (lambda (channels:i64 size)
+	(let ((lines:[double,double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (reverb_c size)))
+	  (lambda (chan x wet fb)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f x wet fb)))))))
+
+
+;; another (lighter-weight) reverb
+(bind-func reverb2_c
+  (lambda (size) ; size in ms
+    (let ((ms (/ SAMPLERATE 1000.0))
+	  (ap1 (allpass_c (* ms size)))
+	  (ap3 (allpass_c (* ms (* .929 size))))
+	  (ap2 (allpass_c (* ms (* .329 size)))))
+      (lambda (in wet)
+        (let ((wetin (* in wet)))
+          (+ (* in (- 1.0 wet))
+             (ap1 (ap2 (ap3 wetin .8) .7) .6)))))))
+
+
+(if *build-multi-chan*
+    (bind-func reverb2_mc_c
+      (lambda (channels:i64 size)
+	(let ((lines:[double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! lines i (reverb2_c size)))
+	  (lambda (chan x wet)
+	    (let ((f (pref lines (dtoi32 chan))))
+	      (f x wet)))))))
+
+;; if h is greater than 0.0
+;; the continue to play last
+;; held sample
+(bind-func hold_c
+  (lambda ()
+    (let ((mem 0.0))
+      (lambda (in h:double)
+        (if (> h 0.0)
+            mem
+            (begin (set! mem in)
+                   in))))))
+
+(if *build-multi-chan*
+    (bind-func hold_mc_c
+      (lambda (channels:i64)
+	(let ((holds:[double,double,double]** (alloc channels))
+	      (i:i64 0))
+	  (dotimes (i channels) (pset! holds i (hold_c)))
+	  (lambda (chan x h)
+	    (let ((f (pref holds (dtoi32 chan))))
+	      (f x h)))))))
+
+
+;;;;;;;;;;;;
+;; mixing ;;
+;;;;;;;;;;;;
+
+;; simple stereo weights
+(bind-func mix2
+  (lambda (x:double chan left right)
+    (cond ((< chan 0.5) (* x left))
+          ((< chan 1.5) (* x right))
+          (else 0.0))))
+
+;; simple quad weights
+(bind-func mix4
+  (lambda (x:double chan c1 c2 c3 c4)
+    (cond ((< chan 0.5) (* x c1))
+	  ((< chan 1.5) (* x c2))
+	  ((< chan 2.5) (* x c3))
+	  ((< chan 3.5) (* x c4))
+	  (else 0.0))))
+
+;; a four channel mixer
+;; cdat is an array of doubles values
+;; each array element is a channels mix (between 0.0 and 1.0)
+(bind-func mixer_c
+  (lambda (channels:i64)
+    (let ((ch (i64tod channels)))
+      (lambda (cdat:double* chan:double in:double)
+	(if (< chan channels)
+	    (* in (pref cdat (dtoi32 chan)))
+	    0.0)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; instrument utilities ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1094,14 +1270,14 @@
     (let* ((m (if (= 0.0 (- x2 x1))
 		  0.0
 		  (/ (- y2 y1) (- x2 x1))))
-	   (c (- y2 (* m x2))))
-      (lambda (time) (+ (* m time) c)))))
+	   (b (- y2 (* m x2))))
+      (lambda (x) (+ (* m x) b)))))
 
 (bind-func envelope_segments
-  (lambda (points:double* num_of_points:i64)
-    (let ((lines:[double,double]** (zalloc num_of_points))
+  (lambda (points:double* npoints:i64)
+    (let ((lines:[double,double]** (zalloc npoints))
 	  (k 0))
-      (dotimes (k num_of_points)
+      (dotimes (k npoints)
 	(let* ((idx (* k 2))
 	       (x1 (pref points (+ idx 0)))
 	       (y1 (pref points (+ idx 1)))
@@ -1111,13 +1287,13 @@
       lines)))
 
 (bind-func envelope_c
-  (lambda (points:double* num_of_points)
-    (let ((klines:[double,double]** (envelope_segments points num_of_points))
-	  (line_length num_of_points))
+  (lambda (points:double* npoints)
+    (let ((klines:[double,double]** (envelope_segments points npoints))
+	  (line_length npoints))
       (lambda (time)
 	(let ((res -1.0)
 	      (k:i64 0))
-	  (dotimes (k num_of_points)
+	  (dotimes (k npoints)
 	    (let ((line (pref klines k))
 		  (time_point (pref points (* k 2))))
 	      (if (or (= time time_point)
@@ -1127,20 +1303,20 @@
 
 ;; make a convenience wrapper for asr
 (bind-func adsr_c
-  (lambda (start_time atk_dur dky_dur sus_dur rel_dur peak_amp sus_amp)
+  (lambda (start_time adur ddur sdur rdur peak_amp sus_amp)
     (let* ((points 6)
 	   (data:double* (zalloc (* points 2))))
       (pset! data 0 start_time)
       (pset! data 1 0.0)
-      (pset! data 2 (+ start_time atk_dur)) ;; point data
+      (pset! data 2 (+ start_time adur)) ;; point data
       (pset! data 3 peak_amp)
-      (pset! data 4 (+ start_time atk_dur dky_dur))
+      (pset! data 4 (+ start_time adur ddur))
       (pset! data 5 sus_amp)
-      (pset! data 6 (+ start_time atk_dur dky_dur sus_dur))
+      (pset! data 6 (+ start_time adur ddur sdur))
       (pset! data 7 sus_amp)
-      (pset! data 8 (+ start_time atk_dur dky_dur sus_dur rel_dur))
+      (pset! data 8 (+ start_time adur ddur sdur rdur))
       (pset! data 9 0.0)
-      (pset! data 10 (+ start_time atk_dur dky_dur sus_dur rel_dur 1.0)) ;; this to flatten out at 0.0
+      (pset! data 10 (+ start_time adur ddur sdur rdur 1.0)) ;; this to flatten out at 0.0
       (pset! data 11 0.0)
       (let ((f (envelope_c data points)))
 	(lambda (time:double)
@@ -1149,15 +1325,15 @@
 
 ;; an accumulative adsr (random access not allowed! time must be linear).
 (bind-func adsr_accum_c
-  (lambda (start_time:double atk_dur dky_dur sus_dur rel_dur peak_amp sus_amp)
-    (let ((val (if (> (+ atk_dur dky_dur) 1.0) 0.0 peak_amp))
-	  (t1 atk_dur)
-	  (t2 (+ atk_dur dky_dur))
-	  (t3 (+ atk_dur dky_dur sus_dur))
-	  (t4 (+ atk_dur dky_dur sus_dur rel_dur))
-	  (inc1 (/ peak_amp atk_dur))
-	  (inc2 (* -1.0 (/ (- peak_amp sus_amp) dky_dur)))
-	  (inc3 (* -1.0 (/ sus_amp rel_dur))))
+  (lambda (start_time:double adur ddur sdur rdur peak_amp sus_amp)
+    (let ((val (if (> (+ adur ddur) 1.0) 0.0 peak_amp))
+	  (t1 adur)
+	  (t2 (+ adur ddur))
+	  (t3 (+ adur ddur sdur))
+	  (t4 (+ adur ddur sdur rdur))
+	  (inc1 (/ peak_amp adur))
+	  (inc2 (* -1.0 (/ (- peak_amp sus_amp) ddur)))
+	  (inc3 (* -1.0 (/ sus_amp rdur))))
       (lambda (time:double chan)
 	(if (< chan 1.0)
 	    (cond ((> time t4) (set! val 0.0))
