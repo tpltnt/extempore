@@ -196,6 +196,11 @@ See `run-hooks'."
   :type 'hook
   :group 'extempore)
 
+(defcustom extempore-default-device-number nil
+  "Default device (passed as Extempore's --device option)."
+  :type 'integer
+  :group 'extempore)
+
 (defcustom extempore-default-host "localhost"
   "Default host where the extempore process is running."
   :type 'string
@@ -608,11 +613,17 @@ determined by whether there is an *extempore* buffer."
   (unless (get-buffer "*extempore*")
     (progn (shell "*extempore*")
            (sit-for 1)
-           (process-send-string "*extempore*"
-                                (concat "cd " extempore-path "\n"
-                                        (if (string-equal system-type "windows-nt") "" "./")
-                                        "extempore --device "
-                                        (read-from-minibuffer "Device number: ") "\n"))))
+           (process-send-string
+            "*extempore*"
+            (concat "cd " extempore-path "\n"
+                    (if (string-equal system-type "windows-nt") "" "./")
+                    "extempore --device "
+                    (let ((device-number (read-from-minibuffer
+                                          (format "Device number (default %d): " extempore-default-device-number))))
+                      (if (string= device-number "")
+                          (number-to-string extempore-default-device-number)
+                        device-number))
+                    "\n")))))
   (display-buffer "*extempore*"))
 
 (defun extempore-crlf-process-filter (proc str)
