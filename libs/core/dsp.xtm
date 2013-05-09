@@ -37,10 +37,6 @@
 
 (print_audio_state)
 
-;;  metronome setup stuff
-
-;; TODO need to set this up
-
 ;; default (silent) audio callback
 (bind-func dsp:DSP
   (lambda (in time chan dat)
@@ -49,6 +45,26 @@
 ;;;;;;;;;;;;;;;
 ;; Utilities ;;
 ;;;;;;;;;;;;;;;
+
+;;  metronome setup stuff
+
+(bind-val METRO-TEMPO double 120.0)
+
+(bind-func secs2beats
+  (lambda (seconds)
+    (/ (* METRO-TEMPO seconds) 60.0)))
+
+(bind-func beats2secs
+  (lambda (beats)
+    (* (/ beats METRO-TEMPO) 60.0)))
+
+(bind-func midi2frq
+  (lambda (pitch)
+    (* 440.0 (pow 2.0 (/ (- pitch 69.0) 12.0)))))
+
+(bind-func frq2midi
+  (lambda (freq)
+    (+ (* 12.0 (log2 (/ freq 440.0))) 69.0)))
 
 ;; gaussian random number X ~ N(0,1)
 ;; algorithm by Marsaglia http://c-faq.com/lib/gaussian.html
@@ -100,7 +116,7 @@
 
 ;; basic impulse (dirac delta) function
 
-(bind-func impulse_c
+(bind-func dirac_c
   "returns an impulse response closure (offset in samples)"
   (lambda (offset)
     (let ((n 0))
@@ -110,10 +126,10 @@
             (begin (set! n (+ n 1)) 0.0))))))
 
 (if *build-multi-chan*
-    (bind-func impulse_mc_c
+    (bind-func dirac_mc_c
       (lambda (offset)
         (let ((val 0.0)
-	      (impulse (impulse_c offset)))
+	      (impulse (dirac_c offset)))
 	  (lambda (chan)
 	    (if (< chan 1.0) (set! val (impulse)))
 	    val)))))
@@ -163,6 +179,25 @@
         (set! b1 (+ (* b1 0.96300) (* (dsp_randn) 0.2965164)))
         (set! b2 (+ (* b2 0.57000) (* (dsp_randn) 1.0526913)))
         (* 0.33 (+ b0 b1 b2 (* (dsp_randn) 0.1848)))))))
+
+;; must be called at audio sample rate
+;; apex (in samples) is after how many samples we hit 1.0 before decaying
+(bind-func impulse_c
+  (lambda ()
+    (let ((samp 0.0))
+      (lambda (apex:double)
+        (let ((h (* samp apex)))
+          (set! samp (+ samp 1.0))
+          (* h (exp (- 1.0 h))))))))
+
+(if *build-multi-chan*
+    (bind-func impulse_mc_c
+      (lambda ()
+        (let ((val 0.0)
+	      (impulse (impulse_c)))
+	  (lambda (chan apex)
+	    (if (< chan 1.0) (set! val (impulse apex)))
+	    val)))))
 
 ;; uses _sin for efficiency
 (bind-func osc_c
@@ -282,6 +317,28 @@
 	    (if (< chan 1.0) (set! val (saw amp freq)))
 	    val)))))
 
+;; ugens for returning straight lines
+;; useful for controlling other paramaters
+(bind-func linear_c
+  (let ((time 0.0))
+    (lambda (start:double end:double dur:double)
+      (let* ((m (/ (- end start) dur))
+             (c (- end (* m dur))))
+        (lambda (inc)
+          (set! time (+ time inc))
+          (+ (* m time) c))))))
+
+(if *build-multi-chan*
+    (bind-func linear_mc_c
+      (let ((time 0.0))
+        (lambda (start:double end:double dur:double)
+          (let* ((m (/ (- end start) dur))
+                 (c (- end (* m dur))))
+            (lambda (chan inc)
+              (if (< chan 0.5)
+                  (set! time (+ time inc)))
+              (+ (* m time) c)))))))
+
 ;;;;;;;;
 ;; FX ;;
 ;;;;;;;;
@@ -301,12 +358,10 @@
     (lambda (in)
       (hard_clip in up_lim low_lim))))
 
-
 (bind-func soft_limiter_c
   "softly limit input value into range [-1,1]"
-  (lambda (samples)
+  (lambda (in)
     (tanh in)))
-
 
 (bind-func waveshape
   (lambda (in distortion)
@@ -827,16 +882,6 @@
 ;; metronome-aware. All delay arguments are doubles and represent a
 ;; delay time in beats (at the current tempo)
 
-(bind-val METRO-TEMPO double 120.0)
-
-(bind-func secs2beats
-  (lambda (seconds)
-    (/ (* METRO-TEMPO seconds) 60.0)))
-
-(bind-func beats2secs
-  (lambda (beats)
-    (* (/ beats METRO-TEMPO) 60.0)))
-
 (bind-func del_c
   "simple, efficient delay (no resizing, no bounds checks)"
   (lambda (delay)
@@ -1037,3 +1082,116 @@
 	  (lambda (chan in wet fb)
 	    (let ((f (pref dlines (dtoi32 chan))))
 	      (f in wet fb)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; instrument utilities ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; used in libs/core/instruments.xtm
+
+(bind-func line_c
+  (lambda (x1:double y1:double x2 y2)
+    (let* ((m (if (= 0.0 (- x2 x1))
+		  0.0
+		  (/ (- y2 y1) (- x2 x1))))
+	   (c (- y2 (* m x2))))
+      (lambda (time) (+ (* m time) c)))))
+
+(bind-func envelope_segments
+  (lambda (points:double* num_of_points:i64)
+    (let ((lines:[double,double]** (zalloc num_of_points))
+	  (k 0))
+      (dotimes (k num_of_points)
+	(let* ((idx (* k 2))
+	       (x1 (pref points (+ idx 0)))
+	       (y1 (pref points (+ idx 1)))
+	       (x2 (pref points (+ idx 2)))
+	       (y2 (pref points (+ idx 3))))
+	  (pset! lines k (line_c x1 y1 x2 y2))))
+      lines)))
+
+(bind-func envelope_c
+  (lambda (points:double* num_of_points)
+    (let ((klines:[double,double]** (envelope_segments points num_of_points))
+	  (line_length num_of_points))
+      (lambda (time)
+	(let ((res -1.0)
+	      (k:i64 0))
+	  (dotimes (k num_of_points)
+	    (let ((line (pref klines k))
+		  (time_point (pref points (* k 2))))
+	      (if (or (= time time_point)
+		      (< time_point time))
+		  (set! res (line time)))))
+	  res)))))
+
+;; make a convenience wrapper for asr
+(bind-func adsr_c
+  (lambda (start_time atk_dur dky_dur sus_dur rel_dur peak_amp sus_amp)
+    (let* ((points 6)
+	   (data:double* (zalloc (* points 2))))
+      (pset! data 0 start_time)
+      (pset! data 1 0.0)
+      (pset! data 2 (+ start_time atk_dur)) ;; point data
+      (pset! data 3 peak_amp)
+      (pset! data 4 (+ start_time atk_dur dky_dur))
+      (pset! data 5 sus_amp)
+      (pset! data 6 (+ start_time atk_dur dky_dur sus_dur))
+      (pset! data 7 sus_amp)
+      (pset! data 8 (+ start_time atk_dur dky_dur sus_dur rel_dur))
+      (pset! data 9 0.0)
+      (pset! data 10 (+ start_time atk_dur dky_dur sus_dur rel_dur 1.0)) ;; this to flatten out at 0.0
+      (pset! data 11 0.0)
+      (let ((f (envelope_c data points)))
+	(lambda (time:double)
+	  (f time))))))
+
+
+;; an accumulative adsr (random access not allowed! time must be linear).
+(bind-func adsr_accum_c
+  (lambda (start_time:double atk_dur dky_dur sus_dur rel_dur peak_amp sus_amp)
+    (let ((val (if (> (+ atk_dur dky_dur) 1.0) 0.0 peak_amp))
+	  (t1 atk_dur)
+	  (t2 (+ atk_dur dky_dur))
+	  (t3 (+ atk_dur dky_dur sus_dur))
+	  (t4 (+ atk_dur dky_dur sus_dur rel_dur))
+	  (inc1 (/ peak_amp atk_dur))
+	  (inc2 (* -1.0 (/ (- peak_amp sus_amp) dky_dur)))
+	  (inc3 (* -1.0 (/ sus_amp rel_dur))))
+      (lambda (time:double chan)
+	(if (< chan 1.0)
+	    (cond ((> time t4) (set! val 0.0))
+		  ((> time t3) (set! val (+ val inc3)))
+		  ((> time t2) val) ;; sustain (don't do anything with val)
+		  ((> time t1) (set! val (+ val inc2)))
+		  ((> time 0) (set! val (+ val inc1)))
+		  (else (set! val 0.0))))
+	val))))
+
+(bind-func hermite_interp
+  (lambda (fractional y1:double x0 x1 x2)
+    (let ((c (* 0.5 (- x1 y1)))
+	  (v (- x0 x1))
+	  (w (+ c v))
+	  (a (+ w v (* (- x2 x0) 0.5)))
+	  (b (+ w a)))
+      (+ (* (+ (* (- (* a fractional) b) fractional) c) fractional) x0))))
+
+;; linear fade closure
+(bind-func fade_c
+  (lambda (phase)
+    (lambda (amp freq)
+      (let ((inc (/ freq SAMPLERATE)))
+	(if (> phase 1.0)
+            amp
+            (begin (set! phase (+ phase inc))
+                   (* phase amp)))))))
+
+(if *build-multi-chan*
+    (bind-func fade_mc_c
+      (lambda (phase)
+        (let ((val 0.0)
+	      (fade (fade_c phase)))
+	  (lambda (chan amp freq)
+	    (if (< chan 1.0) (set! val (fade amp freq)))
+	    val)))))
