@@ -1103,7 +1103,6 @@
       (lambda (in:double wet feedback)
 	(comb in (+ delay (mod mod_range mod_rate)) wet feedback)))))
 
-
 (if *build-multi-chan*
     (bind-func flanger_mc_c
       (lambda (channels:i64 delay mod_phase mod_range mod_rate)
@@ -1153,10 +1152,10 @@
 (bind-func reverb_c
   (lambda (size) ; size in ms
     (let ((ms (/ SAMPLERATE 1000.0))
-	  (dly1 (delay_c (* ms (* .192 size))))
-	  (dly2 (delay_c (* ms (* .373 size))))
-	  (dly3 (delay_c (* ms (* .671 size))))
-	  (dly4 (delay_c (* ms (* .712 size))))
+	  (dly1 (del_c (dtoi64 (* ms (* .192 size)))))
+	  (dly2 (del_c (dtoi64 (* ms (* .373 size)))))
+	  (dly3 (del_c (dtoi64 (* ms (* .671 size)))))
+	  (dly4 (del_c (dtoi64 (* ms (* .712 size)))))
 	  (ap1 (allpass_c (* ms size)))
 	  (ap3 (allpass_c (* ms (* .929 size))))
 	  (ap2 (allpass_c (* ms (* .329 size)))))
