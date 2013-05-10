@@ -981,7 +981,7 @@
           (line_length (dtoi64 (* (beats2secs max_delay) SR)))
           ;; allocate more memory, in case the tempo slows down
           (line_overallocation_factor 2)
-          (line:double* (zalloc (* 2 line_length)))
+	  (line:double* (zalloc (* line_overallocation_factor line_length)))
           (line_idx 0)
           (out 0.0))
       (lambda (in:double wet feedback)
