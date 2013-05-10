@@ -48,15 +48,32 @@
 
 ;;  metronome setup stuff
 
-(bind-val METRO-TEMPO double 120.0)
+(bind-val METRO_TEMPO double 120.0)
+
+(bind-func xtlang_tempo_sync
+  (lambda (tempo)
+    (if (> (fabs (- tempo METRO_TEMPO)) 0.0000001)
+        (begin (printf "Setting METRO_TEMPO = %f\n" tempo)
+               (set! METRO_TEMPO tempo))
+        0.0)))
+
+(define xtlang-tempo-sync-callback
+  (lambda (time period)
+    (xtlang_tempo_sync (*metro* 'get-tempo))
+    (callback (+ time (* 0.5 period))
+              'xtlang-tempo-sync-callback
+              (+ time period)
+              period)))
+
+(xtlang-tempo-sync-callback (now) 4410)
 
 (bind-func secs2beats
   (lambda (seconds)
-    (/ (* METRO-TEMPO seconds) 60.0)))
+    (/ (* METRO_TEMPO seconds) 60.0)))
 
 (bind-func beats2secs
   (lambda (beats)
-    (* (/ beats METRO-TEMPO) 60.0)))
+    (* (/ beats METRO_TEMPO) 60.0)))
 
 (bind-func midi2frq
   (lambda (pitch)
