@@ -391,6 +391,25 @@
                   (set! time (+ time inc)))
               (+ (* m time) c)))))))
 
+;; linear fade closure
+(bind-func fade_c
+  (lambda (phase)
+    (lambda (amp freq)
+      (let ((inc (/ freq SAMPLERATE)))
+	(if (> phase 1.0)
+            amp
+            (begin (set! phase (+ phase inc))
+                   (* phase amp)))))))
+
+(if *build-multi-chan*
+    (bind-func fade_mc_c
+      (lambda (phase)
+        (let ((val 0.0)
+	      (fade (fade_c phase)))
+	  (lambda (chan amp freq)
+	    (if (< chan 1.0) (set! val (fade amp freq)))
+	    val)))))
+
 ;;;;;;;;;;;;;
 ;; filters ;;
 ;;;;;;;;;;;;;
