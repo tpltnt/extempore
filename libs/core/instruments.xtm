@@ -545,6 +545,63 @@
 (sawbass.release 1000.0)
 
 
+
+(bind-func glitch_note_c
+  (lambda (nargs:i64 dargs:double*)
+    (let ((sawl1 (saw_c 0.0))
+	  (sawr1 (saw_c 0.0))
+	  (sawl2 (saw_c 0.0))
+	  (sawr2 (saw_c 0.0))
+	  (smudge1 (+ 1.0 (* 0.001 (dsp_randn))))
+	  (smudge2 (+ 1.0 (* 0.001 (dsp_randn))))
+	  (lpfl (lpf_c))
+	  (lpfr (lpf_c))
+	  (ringl (ringmod_c))
+	  (ringr (ringmod_c)))
+      (lambda (time:double chan:double amp:double freq:double)
+	(cond ((= chan 0.0)
+	       (lpfl (ringl (+ (sawl1 amp (* freq smudge1))
+			       (sawl2 amp (* freq smudge2)))
+			    (* 14.0 freq)
+			    0.9)
+		     (+ 3000.0 (* 900.0 (sqrt amp) freq))
+		     25.2))
+	      ((= chan 1.0)
+	       (lpfr (ringr (+ (sawr1 amp (* freq smudge1))
+			       (sawr2 amp (* freq smudge2)))
+			    (* 24.0 freq)
+			    0.6)
+		     (+ 2500.0 (* 1000.0 (sqrt amp) freq))
+		     16.5))
+	      (else 0.0))))))
+
+;; (bind-func glitch_fx 10000000
+;;   (let ((tapdl (tap_delay_c 2.0 3))
+;;         (tapdr (tap_delay_c 2.0 3))
+;;         (tapsl:double* null)
+;;         (tapsr:double* null))
+;;     (set! tapsl (tapdl.taps:double*))
+;;     (set! tapsl (tapdr.taps:double*))
+;;     ;; (pfill! tapsl 0.0 0.125 0.5)
+;;     ;; (pfill! tapsr 0.0 0.5 0.625)
+;;     (lambda (in:double time:double chan:double dat:double*)
+;;       (cond ((< chan 0.5)
+;;              (tapdl in))
+;;             ((< chan 1.5)
+;;              (tapdr in))
+;;             (else 0.0)))))
+
+(bind-func glitch_fx 10000000
+  (lambda (in:double time:double chan:double dat:double*)
+    in))
+
+(define-instrument glitch glitch_note_c glitch_fx)
+(glitch.attack 20.0)
+(glitch.decay 20.0)
+(glitch.release 10.0)
+(glitch.sustain 0.8)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; An ipc helper for audio
