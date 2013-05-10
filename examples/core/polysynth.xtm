@@ -68,8 +68,8 @@
 ;; NOTE: then 100000 is extra memory for our
 ;; delays
 (bind-func dsp:[double,double,double,double,double*]* 1000000
-  (let ((delayl (delay_c (* 0.25 SAMPLERATE)))
-	(delayr (delay_c (* 0.33333333 SAMPLERATE))))
+  (let ((delayl (delay_c 0.25))
+	(delayr (delay_c 0.33333333)))
     (lambda (in:double time:double chan:double dat:double*)
       (cond ((< chan 1.0)
 	     (delayl (+ (* 1.0 (synth in time chan dat))
