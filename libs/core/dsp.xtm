@@ -416,7 +416,7 @@
 
 ;; bi-quad IIR filters these filters are all computationally cheap,
 ;; but there may be stability issues as the resonance parameter is
-;; pushed near it's limits
+;; pushed near its limits
 
 (bind-func allpass_c
   (lambda (delay)
@@ -1174,7 +1174,8 @@
 
 ;; reverb
 (bind-func reverb_c
-  (lambda (size) ; size in ms
+  "reverb closure (size in milliseconds)"
+  (lambda (size)
     (let ((ms (/ SAMPLERATE 1000.0))
 	  (dly1 (del_c (dtoi64 (* ms (* .192 size)))))
 	  (dly2 (del_c (dtoi64 (* ms (* .373 size)))))
