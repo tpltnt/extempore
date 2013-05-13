@@ -1012,9 +1012,6 @@
 ;; This delay is less efficient, but safer and also 'metronome-aware'.
 ;; Arguments are doubles and represent a delay time in beats (at the
 ;; current tempo)
-
-;; more efficient than comb if you
-;; don't need variable length
 (bind-func delay_c
   "a delay effect (all delays in beats)"
   (lambda (max_delay)
