@@ -62,7 +62,7 @@
         1)))
 
 ;; playnote wrapper
-(define-macro (play-note time inst pitch vol dur . args)  
+(define-macro (play-note time inst pitch vol dur . args)
   (let ((nargs (length args)))
     `(let ((duration (* 1.0 ,dur))
            (dargs (sys:make-cptr ,(* 8 nargs))) ;; doubles
@@ -107,7 +107,7 @@
 			(let ((free_note:i64 -1)
 			      (iii 0)
 			      (i 0))
-			  (dotimes (i poly) ;; check for free poly spot           
+			  (dotimes (i poly) ;; check for free poly spot
 			    (if (> (pref note_starts i) 9999999999998.0)
 				(set! free_note i)))
 			  (if (> free_note -1) ;; if we found a free poly spot assign a note
@@ -127,7 +127,7 @@
        (lambda (in:double time:double chan:double dat:double*)
 	 (let ((out:double 0.0)
 	       (k 0))
-	   (dotimes (k poly) ;; sum all active notes          
+	   (dotimes (k poly) ;; sum all active notes
 	     (if (< (pref note_starts k) time)
 		 (set! out (+ out (* 0.3 ((pref notes k) in time chan))))))
 	   (* gain (,effect_kernel out time chan dat)))))))
@@ -148,11 +148,7 @@
 
 (define-instrument default_inst default_note_c default_fx)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Default synth stuff
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; default synth stuff
 
 (bind-func synth_note_c
   (let ((res 1.0)
@@ -180,7 +176,7 @@
 		    (lpf1 (saw1 fxamp freq) (* 5.0 freq) res)
 		    (oscl 0.8 (+ freq (oscl3 (* 2.01 freq)
 					     (* freq 1.01))))))
-	      (* amp (/ 5.0 (log freq)) ;; frequency scale amplitude	       
+	      (* amp (/ 5.0 (log freq)) ;; frequency scale amplitude
 		 (+ (oscr2 1.0 (+ freq (* 5.0 (random))))
 		    (lpf2 (saw2 fxamp freq) (* 3.0 freq) res)
 		    (oscr 0.8 (+ freq (oscr3 (* 0.99 freq)
@@ -198,7 +194,7 @@
       (if (< pan_old pan) ;; interpolate pan
           (set! pan_old (+ pan_old .001))
           (set! pan_old (- pan_old .001)))
-      (cond ((< chan 1.0) 
+      (cond ((< chan 1.0)
              (delayl (* 2.0 pan_old in) wet fb))
             ((< chan 2.0)
              (delayr (* 2.0 (- 1.0 pan_old) in) wet fb))
@@ -211,20 +207,18 @@
 (synth.release 7000.0)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; extempore_pad 
-;;
+;; extempore pad
+
 (bind-func epad_note_c
   (let ((res 0.1))
     (lambda (nargs:i64 dargs:double*)
-      (let ((oscl (square_c 0.0)) 
+      (let ((oscl (square_c 0.0))
 	    (oscr (square_c 0.1))
 	    (o1 (osc_c 0.0))
 	    (oscl2 (square_c (random)))
             (nval (if (> nargs 0) (pref dargs 0) 50.0))
 	    (vcfl (vcf_c 1))
-	    (vcfr (vcf_c 1))	  
+	    (vcfr (vcf_c 1))
 	    (oscr2 (square_c (random)))
 	    (ramp 0.0)
 	    (a (+ 1.0 (* 0.02 (random))))
@@ -246,14 +240,14 @@
 	(c1 (chorus_c 0.0))
 	(c2 (chorus_c 0.1))
 	(rev1 (reverb_c 200.0))
-	(rev2 (reverb_c 120.0))	
+	(rev2 (reverb_c 120.0))
 	(ipan pan)
         (cwet 0.5)
         (cfb 0.5)
         (wet 0.2)
         (fb 0.5)
 	(opan (osc_c 0.0)))
-    (lambda (in:double time:double chan:double dat:double*)      
+    (lambda (in:double time:double chan:double dat:double*)
       (set! pan (+ 0.5 (opan 0.2 3.0)))
       (cond ((< chan 1.0)
 	     (rev1 (c1 (* 2.0 pan in) cwet cfb)
@@ -269,11 +263,8 @@
 (epad.sustain 0.9)
 (epad.release 7000.0)
 
-;;;;;;;;;;;;;;;;;;;;;
-;; extempore organ ;;
-;;;;;;;;;;;;;;;;;;;;;
-
-;; change drawbar_pos and recompile to change the organ tone
+;; extempore organ
+;; change drawbar_pos to change the organ tone
 
 (bind-func organ_note_c
   (let ((num_drawbars 9)
@@ -333,8 +324,8 @@
           (sawr1 (saw_c 0.0))
           (sawl2 (saw_c 0.0))
           (sawr2 (saw_c 0.0))
-          (smudge1 (+ 1.0 (* 0.001 (dsp_randn))))
-          (smudge2 (+ 1.0 (* 0.001 (dsp_randn))))
+          (smudge1 (+ 1.0 (* 0.004 (dsp_randn))))
+          (smudge2 (+ 1.0 (* 0.004 (dsp_randn))))
           (lpfl (lpf_c))
           (lpfr (lpf_c))
           (ringl (ringmod_c))
@@ -345,20 +336,28 @@
                                (sawl2 amp (* freq smudge2)))
                             (* 4.0 freq)
                             0.3)
-                     (* 8.0 freq)
+                     (* 2.9 freq)
                      0.5))
               ((= chan 1.0)
                (lpfr (ringr (+ (sawr1 amp (* freq smudge1))
                           (sawr2 amp (* freq smudge2)))
                        (* 4.0 freq)
                        0.3)
-                     (* 8.0 freq)
-                     0.5))
+                     (* 2.5 freq)
+                     1.5))
               (else 0.0))))))
 
 (bind-func fuzz_bass_fx 10000000
-  (lambda (in:double time:double chan:double dat:double*)
-    in))
+  (let ((vcfl (vcf_c 1))
+        (vcfr (vcf_c 1))
+        (cof 1000.0)
+        (res 0.5))
+    (lambda (in:double time:double chan:double dat:double*)
+      (cond ((< chan 0.5)
+             (vcfl in cof res))
+            ((< chan 1.5)
+             (vcfr in cof res))
+            (else 0.0)))))
 
 (define-instrument fuzz_bass fuzz_bass_note_c fuzz_bass_fx)
 (fuzz_bass.attack 200.0)
@@ -423,14 +422,14 @@
 
 (bind-func simplefm_fx 1000000
   (let ((o1 (osc_c 0.0))
-        (o2 (osc_c (* 0.5 PI))) 
+        (o2 (osc_c (* 0.5 PI)))
         (cl (chorus_c 0.0))
         (cr (chorus_c 0.314))
         (del1 (delay_c 0.5))
         (del2 (delay_c 0.333333333333333))
         (vcfl (vcf_c 1))
         (vcfr (vcf_c 1))
-        (res 0.4)        
+        (res 0.4)
         (revl (reverb_c 70.0))
         (revr (reverb_c 60.0))
         (cwet 0.5)
@@ -485,14 +484,14 @@
 
 (bind-func fmpad_fx 400000
   (let ((o1 (osc_c 0.0))
-        (o2 (osc_c (* 0.5 PI))) 
+        (o2 (osc_c (* 0.5 PI)))
         (cl (chorus_c 0.0))
         (cr (chorus_c 0.314))
         (cwet 0.5)
         (cfb 0.5)
         (vcfl (vcf_c 1))
         (vcfr (vcf_c 1))
-        (res 0.4)        
+        (res 0.4)
         (revl (reverb_c 70.0))
         (revr (reverb_c 60.0))
         (wet 0.3)
@@ -516,10 +515,8 @@
 (fmpad.sustain 1.0)
 (fmpad.release 5000.0)
 
-
-;; 
 ;; simple saw
-;;
+
 (bind-func sawbass_note_c
   (lambda (nargs:i64 dargs:double*)
     (let ((osc (saw_c 0.0)))
@@ -544,7 +541,7 @@
 (sawbass.sustain 1.0)
 (sawbass.release 1000.0)
 
-
+;; a 'glitch' instrument
 
 (bind-func glitch_note_c
   (lambda (nargs:i64 dargs:double*)
@@ -600,15 +597,13 @@
 (glitch.sustain 0.8)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; An ipc helper for audio
-;;
+;; a helper function for setting up (scheme) instrument infrastructure
+;; on another process
 
 (define ipc:audio-setup
   (lambda (proc)
     (ipc:eval-string proc
-                     "(define-macro (play-note time inst pitch vol dur . args)  
+                     "(define-macro (play-note time inst pitch vol dur . args)
                        (let ((nargs (length args)))
                          `(let ((duration (* 1.0 ,dur))
                                 (dargs (sys:make-cptr ,(* 8 nargs))) ;; doubles
@@ -640,10 +635,10 @@
                                   (if (null? result)
                                       (begin (println 'Error: 'cannot 'parse 'filename: fname)
                                              #f)
-                                      (list fname                          
-                                            (string->number (cadr result)) 
-                                            0                              
-                                            0))))                          
+                                      (list fname
+                                            (string->number (cadr result))
+                                            0
+                                            0))))
                               file-list)))
                      ;; must be stereo samples of type wav aif or ogg
                      (define-macro (load-sampler sampler path . args)
