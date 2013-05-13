@@ -374,11 +374,11 @@
 (bind-func linear_c
   (let ((time 0.0))
     (lambda (start:double end:double dur:double)
-      (let* ((m (/ (- end start) dur))
-             (c (- end (* m dur))))
+      (let ((m (/ (- end start) dur))
+	     (b (- end (* m dur))))
         (lambda (inc)
           (set! time (+ time inc))
-          (+ (* m time) c))))))
+	  (+ (* m time) b))))))
 
 (if *build-multi-chan*
     (bind-func linear_mc_c
