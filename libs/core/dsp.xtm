@@ -391,23 +391,27 @@
                   (set! time (+ time inc)))
               (+ (* m time) c)))))))
 
-;; linear fade closure
+;; 'fade' closure
+;; differs from linear by being tempo-based
+;; output: 'initial' for t < 0, 'final' for time > duration
 (bind-func fade_c
   (lambda (phase)
-    (lambda (amp freq)
-      (let ((inc (/ freq SAMPLERATE)))
-	(if (> phase 1.0)
-            amp
-            (begin (set! phase (+ phase inc))
-                   (* phase amp)))))))
+    (lambda (initial:double final dur)
+      (let ((inc (/ 1.0 (* (beats2secs dur) SR))))
+        (set! phase (+ phase inc))
+        (if (< phase 0.0)
+            initial
+            (if (> phase 1.0)
+                final
+            (* phase (- final initial))))))))
 
 (if *build-multi-chan*
     (bind-func fade_mc_c
       (lambda (phase)
         (let ((val 0.0)
 	      (fade (fade_c phase)))
-	  (lambda (chan amp freq)
-	    (if (< chan 1.0) (set! val (fade amp freq)))
+	  (lambda (chan initial final dur)
+	    (if (< chan 1.0) (set! val (fade initial final dur)))
 	    val)))))
 
 ;;;;;;;;;;;;;
