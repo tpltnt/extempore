@@ -986,7 +986,7 @@ You shouldn't have to modify this list directly, use
   (vector (extempore-make-tr-flash-overlay name bounds)
 	  (extempore-make-tr-clock-overlay name bounds)
 	  delta-t    ; total time
-	  (- delta-t 0.2)))                   ; time-to-live
+	  delta-t))                   ; time-to-live
 
 (defun extempore-add-new-anim-to-name (name delta-t)
   (let ((bounds (extempore-find-defn-bounds name))
@@ -1008,9 +1008,10 @@ You shouldn't have to modify this list directly, use
 (defun extempore-get-dormant-tr-anims (anim-list)
   (remove-if (lambda (x) (aref x 3)) anim-list))
 
+;; the 'offset' value is hacky---need a better solution
 (defun extempore-reactivate-tr-anim (anim delta-t)
   (aset anim 2 delta-t)
-  (aset anim 3 delta-t))
+  (aset anim 3 (- delta-t 0.1)))
 
 (defun extempore-trigger-tr-anim (name delta-t)
   (interactive "sfn name: \nndelta-t: ")
