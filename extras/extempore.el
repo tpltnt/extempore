@@ -971,7 +971,7 @@ be running in another (shell-like) buffer."
 Each element is a list, with a name as the first element, and then a list
 of vectors as the cdr:
 
-  (fn-name [flash-overlay clock-overlay delta-t time-to-live] ...)
+  (fn-name [flash-overlay clock-overlay delta-t time-to-live flash-frames-to-live] ...)
 
 You shouldn't have to modify this list directly, use
 `extempore-add-new-anim-to-name' and
@@ -985,7 +985,8 @@ You shouldn't have to modify this list directly, use
   (vector (extempore-make-tr-flash-overlay name bounds)
 	  (extempore-make-tr-clock-overlay name bounds)
 	  delta-t    ; total time
-	  delta-t))                   ; time-to-live
+	  delta-t    ; time-to-live
+          0))        ; flash-frames to live
 
 (defun extempore-add-new-anim-to-name (name delta-t)
   (let ((bounds (extempore-find-defn-bounds name))
@@ -1029,30 +1030,35 @@ You shouldn't have to modify this list directly, use
 (defun extempore-tr-update-anims ()
   (dolist (anim (apply #'append (mapcar #'cdr extempore-tr-anim-alist)))
     (let ((ttl (aref anim 3))
+          (ftl (aref anim 4))
 	  (flash-overlay (aref anim 0)))
-      (if (not ttl)
-	  ;; finish 'flash', set up new clock
-	  (progn (extempore-update-tr-flash-overlay flash-overlay nil)
-                 (extempore-update-tr-clock-overlay (aref anim 1)
-	        				 0.0
-	        				 (overlay-start flash-overlay)
-	        				 (overlay-end flash-overlay)))
-	(if (<= ttl 0)
-	    ;; trigger 'flash'
-	    (progn
-              (extempore-update-tr-flash-overlay flash-overlay t)
-	      (aset anim 3 nil))
-	  (progn
-	    ;; decrement the ttl value
-	    (aset anim 3
-		  (- ttl extempore-tr-animation-update-period))
-	    ;; update the 'clock' overlay
-	    (extempore-update-tr-clock-overlay (aref anim 1)
-					       (/ (- (aref anim 2)
-						     (aref anim 3))
-						  (aref anim 2))
-					       (overlay-start flash-overlay)
-					       (overlay-end flash-overlay))))))))
+      ;; update ttl value
+      (if (numberp ttl)
+          (aset anim 3 (- ttl extempore-tr-animation-update-period)))
+      ;; finish 'flash' animation
+      (if (> ftl 0)
+          (progn (if (= ftl 1)
+                     (progn (extempore-update-tr-flash-overlay flash-overlay nil)
+                            (extempore-update-tr-clock-overlay (aref anim 1)
+                                                 0.0
+                                                 (overlay-start flash-overlay)
+                                                 (overlay-end flash-overlay))))
+                 (aset anim 4 (- ftl 1)))
+	(if (numberp ttl)
+            ;; trigger 'flash' animation
+            (if (<= ttl 0)
+                (progn              
+                  ;; num of frames the flash overlay lives for
+                  (aset anim 4 2)
+                  (extempore-update-tr-flash-overlay flash-overlay t)
+                  (aset anim 3 nil))
+              ;; update the 'clock' overlay
+              (extempore-update-tr-clock-overlay (aref anim 1)
+                                                 (/ (- (aref anim 2)
+                                                       (aref anim 3))
+                                                    (aref anim 2))
+                                                 (overlay-start flash-overlay)
+                                                 (overlay-end flash-overlay))))))))
 
 ;; managing the animation timer
 
