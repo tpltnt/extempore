@@ -948,8 +948,7 @@ be running in another (shell-like) buffer."
 (defun extempore-update-tr-flash-overlay (overlay flag)
   (if flag
       (overlay-put overlay 'face '(:inverse-video t))
-    (if (equal (overlay-get overlay 'face) '(:inverse-video t))
-        (overlay-put overlay 'face '(:inverse-video nil)))))
+    (overlay-put overlay 'face '(:inverse-video nil))))
 
 (defun extempore-make-tr-clock-overlay (name bounds)
   (if bounds
