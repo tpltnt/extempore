@@ -963,7 +963,7 @@ be running in another (shell-like) buffer."
 (defun extempore-update-tr-clock-overlay (overlay val beg end)
   (move-overlay overlay
                 beg
-		(min end (max (1+ beg) (round (+ beg (* val (- end beg))))))))
+                (min end (max (1+ beg) (round (+ beg (* val (- end beg))))))))
 
 (defvar extempore-tr-anim-alist nil
   "List of TR animations.
@@ -1033,7 +1033,7 @@ You shouldn't have to modify this list directly, use
 	  (flash-overlay (aref anim 1)))
       ;; update ttl value
       (if (numberp ttl)
-          (aset anim 3 (- ttl extempore-tr-animation-update-period)))
+          (setq ttl (aset anim 3 (- ttl extempore-tr-animation-update-period))))
       ;; finish 'flash' animation
       (if (> ftl 0)
           (progn (if (= ftl 1)
@@ -1041,16 +1041,16 @@ You shouldn't have to modify this list directly, use
                             (extempore-update-tr-clock-overlay (aref anim 0)
                                                  0.0
                                                  (overlay-start flash-overlay)
-                                                 (overlay-end flash-overlay))))
+                                                 (overlay-end flash-overlay))
+                            (aset anim 3 nil)))
                  (aset anim 4 (- ftl 1)))
 	(if (numberp ttl)
             ;; trigger 'flash' animation
             (if (<= ttl 0)
-                (progn              
+                (progn
                   ;; num of frames the flash overlay lives for
                   (aset anim 4 2)
-                  (extempore-update-tr-flash-overlay flash-overlay t)
-                  (aset anim 3 nil))
+                  (extempore-update-tr-flash-overlay flash-overlay t))
               ;; update the 'clock' overlay
               (extempore-update-tr-clock-overlay (aref anim 0)
                                                  (/ (- (aref anim 2)
