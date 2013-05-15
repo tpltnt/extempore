@@ -946,9 +946,10 @@ be running in another (shell-like) buffer."
         overlay)))
 
 (defun extempore-update-tr-flash-overlay (overlay flag)
-  (if flag
-      (overlay-put overlay 'face '(:inverse-video t))
-    (overlay-put overlay 'face '(:inverse-video nil))))
+  ;; (if flag
+  ;;     (overlay-put overlay 'face '(:inverse-video t))
+  ;;   (overlay-put overlay 'face '(:inverse-video nil)))
+  nil)
 
 (defun extempore-make-tr-clock-overlay (name bounds)
   (if bounds
@@ -1057,7 +1058,8 @@ You shouldn't have to modify this list directly, use
                                                        (aref anim 3))
                                                     (aref anim 2))
                                                  (overlay-start flash-overlay)
-                                                 (overlay-end flash-overlay))))))))
+                                                 (overlay-end flash-overlay))
+              ))))))
 
 ;; managing the animation timer
 
