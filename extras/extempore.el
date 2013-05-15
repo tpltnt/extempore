@@ -1008,10 +1008,9 @@ You shouldn't have to modify this list directly, use
 (defun extempore-get-dormant-tr-anims (anim-list)
   (remove-if (lambda (x) (aref x 3)) anim-list))
 
-;; the 'offset' value is hacky---need a better solution
 (defun extempore-reactivate-tr-anim (anim delta-t)
   (aset anim 2 delta-t)
-  (aset anim 3 (- delta-t 0.1)))
+  (aset anim 3 delta-t))
 
 (defun extempore-trigger-tr-anim (name delta-t)
   (interactive "sfn name: \nndelta-t: ")

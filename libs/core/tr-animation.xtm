@@ -30,8 +30,8 @@
 (define *tr-anim-osc-server-port* 7097)
 
 (define ta-send-anim-trigger
-  (lambda (func-name delta-t)
-    (io:osc:send (now)
+  (lambda (time func-name delta-t)
+    (io:osc:send time
                  (cons "localhost" *tr-anim-osc-server-port*)
                  "/anim"
                  (string-append
@@ -46,5 +46,5 @@
     (call-cpp-at-time time 2 *callback* payload (current-environment))
     ;; send animation trigger
     (if (and (symbol? func) *tr-anim-osc-server-port*)
-        (ta-send-anim-trigger (symbol->string func) (/ (- time (now)) *au:samplerate*)))))
+        (ta-send-anim-trigger time (symbol->string func) (/ (- time (now)) *au:samplerate*)))))
 
