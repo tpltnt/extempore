@@ -963,7 +963,7 @@ be running in another (shell-like) buffer."
 (defun extempore-update-tr-clock-overlay (overlay val beg end)
   (move-overlay overlay
                 beg
-                (min end (max (1+ beg) (floor (+ beg (* val (- end beg))))))))
+		(min end (max (1+ beg) (round (+ beg (* val (- end beg))))))))
 
 (defvar extempore-tr-anim-alist nil
   "List of TR animations.
