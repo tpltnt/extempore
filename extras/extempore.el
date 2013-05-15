@@ -982,8 +982,8 @@ You shouldn't have to modify this list directly, use
                 extempore-tr-anim-alist))
 
 (defun extempore-create-anim-vector (delta-t)
-  (vector (extempore-make-tr-flash-overlay name bounds)
-	  (extempore-make-tr-clock-overlay name bounds)
+  (vector (extempore-make-tr-clock-overlay name bounds)
+	  (extempore-make-tr-flash-overlay name bounds)
 	  delta-t    ; total time
 	  delta-t    ; time-to-live
           0))        ; flash-frames to live
@@ -1031,7 +1031,7 @@ You shouldn't have to modify this list directly, use
   (dolist (anim (apply #'append (mapcar #'cdr extempore-tr-anim-alist)))
     (let ((ttl (aref anim 3))
           (ftl (aref anim 4))
-	  (flash-overlay (aref anim 0)))
+	  (flash-overlay (aref anim 1)))
       ;; update ttl value
       (if (numberp ttl)
           (aset anim 3 (- ttl extempore-tr-animation-update-period)))
@@ -1039,7 +1039,7 @@ You shouldn't have to modify this list directly, use
       (if (> ftl 0)
           (progn (if (= ftl 1)
                      (progn (extempore-update-tr-flash-overlay flash-overlay nil)
-                            (extempore-update-tr-clock-overlay (aref anim 1)
+                            (extempore-update-tr-clock-overlay (aref anim 0)
                                                  0.0
                                                  (overlay-start flash-overlay)
                                                  (overlay-end flash-overlay))))
@@ -1053,7 +1053,7 @@ You shouldn't have to modify this list directly, use
                   (extempore-update-tr-flash-overlay flash-overlay t)
                   (aset anim 3 nil))
               ;; update the 'clock' overlay
-              (extempore-update-tr-clock-overlay (aref anim 1)
+              (extempore-update-tr-clock-overlay (aref anim 0)
                                                  (/ (- (aref anim 2)
                                                        (aref anim 3))
                                                     (aref anim 2))
