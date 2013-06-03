@@ -839,6 +839,8 @@ be running in another (shell-like) buffer."
 	  nil
 	(current-word)))))
 
+;; " (to stop ST2's string highlighting stuffing up)
+
 ;; eldoc
 
 (defcustom extempore-eldoc-active t
