@@ -336,7 +336,7 @@
                                         (* u1 (pref d0 (index_xyz i1i j1i k1i dim))))))))))))
       (fc_set_boundary b d dim))))
 
-(bind-func fc_step_cube
+(bind-func fc_advance_timestep
   (lambda ()
     (let ((dim (tref FLUIDCUBE 0))
           (dt (tref FLUIDCUBE 1))	  
@@ -462,7 +462,7 @@
       (glLoadIdentity)
       (glTranslated -10.0 -10.0 -50.0)
 
-      (fc_step_cube)
+      (fc_advance_timestep)
       (let ((densities (tref FLUIDCUBE 5))
             (i 0) (j 0) (k 0)	    
       	    (Vx (tref FLUIDCUBE 6))
