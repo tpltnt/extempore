@@ -35,7 +35,7 @@
 (bind-val height float 1080.0)
 (define fullscreen #t)
 
-(define *gl-ctx* (gl:make-ctx ":0.0" #f 0.0 0.0 width height))
+(define *gl-ctx* (gl:make-ctx ":0.0" fullscreen 0.0 0.0 width height))
 
 ;; try xtm.xtm first
 (sys:load "libs/xtm.xtm")
@@ -310,21 +310,18 @@
             (if (> z (+ dimf 0.5)) (set! z (+ dimf 0.5)))
             (set! k0 (floor z))
             (set! k1 (+ k0 1.0))
-
             (set! s1 (- x i0))
             (set! s0 (- 1.0 s1))
             (set! t1 (- y j0))
             (set! t0 (- 1.0 t1))
             (set! u1 (- z k0))
             (set! u0 (- 1.0 u1))
-
             (set! i0i (convert i0))
             (set! i1i (convert i1))	      
             (set! j0i (convert j0))
             (set! j1i (convert j1))	      
             (set! k0i (convert k0))
             (set! k1i (convert k1))
-
             (pset! d (index_xyz (+ i 1) (+ j 1) (+ k 1) dim)
                    (+ (* s0 (+ (* t0 (+ (* u0 (pref d0 (index_xyz i0i j0i k0i dim)))
                                         (* u1 (pref d0 (index_xyz i0i j0i k1i dim)))))
@@ -382,7 +379,7 @@
 
 (gl_set_view width height 200.0)
 
-(bind-func some_gl_init
+(bind-func fc_gl_setup
   (lambda ()
     (glEnable GL_BLEND)
     (glBlendFunc GL_SRC_ALPHA (+ GL_SRC_ALPHA 1))            
@@ -399,7 +396,6 @@
     (glLoadIdentity)
     (gluLookAt eyex eyey eyez centre_x centre_y centre_z up_x up_y up_z)))
 
-
 (bind-func glCube
   (let ((dlist -1))
     (lambda ()
@@ -410,68 +406,69 @@
             (glNewList dlist (+ GL_COMPILE 1))
             (glBegin GL_QUADS)
             ;; Front face
-            (glNormal3d 0.0 0.0 1.0)
-            (glVertex3d 0.0 0.0  1.0)
-            (glVertex3d 1.0 0.0  1.0)
-            (glVertex3d 1.0  1.0  1.0)
-            (glVertex3d 0.0  1.0  1.0)
+            (glNormal3f 0. 0. 1.)
+            (glVertex3f 0. 0. 1.)
+            (glVertex3f 1. 0. 1.)
+            (glVertex3f 1. 1. 1.)
+            (glVertex3f 0. 1. 1.)
             ;; Back face
-            (glNormal3d 0.0 0.0 -1.0)
-            (glVertex3d 0.0 0.0 0.0)
-            (glVertex3d 0.0  1.0 0.0)
-            (glVertex3d 1.0  1.0 0.0)
-            (glVertex3d 1.0 0.0 0.0)
+            (glNormal3f 0. 0. -1.)
+            (glVertex3f 0. 0. 0.)
+            (glVertex3f 0. 1. 0.)
+            (glVertex3f 1. 1. 0.)
+            (glVertex3f 1. 0. 0.)
             ;; Top face
-            (glNormal3d 0.0 1.0 0.0)
-            (glVertex3d 0.0  1.0 0.0)
-            (glVertex3d 0.0  1.0  1.0)
-            (glVertex3d 1.0  1.0  1.0)
-            (glVertex3d 1.0  1.0 0.0)
+            (glNormal3f 0. 1. 0.)
+            (glVertex3f 0. 1. 0.)
+            (glVertex3f 0. 1. 1.)
+            (glVertex3f 1. 1. 1.)
+            (glVertex3f 1. 1. 0.)
             ;; Bottom face
-            (glNormal3d 0.0 -1.0 0.0)
-            (glVertex3d 0.0 0.0 0.0)
-            (glVertex3d 1.0 0.0 0.0)
-            (glVertex3d 1.0 0.0  1.0)
-            (glVertex3d 0.0 0.0  1.0)
+            (glNormal3f 0. -1. 0.)
+            (glVertex3f 0. 0. 0.)
+            (glVertex3f 1. 0. 0.)
+            (glVertex3f 1. 0. 1.)
+            (glVertex3f 0. 0. 1.)
             ;; Right face
-            (glNormal3d 1.0 0.0 0.0)
-            (glVertex3d 1.0 0.0 0.0)
-            (glVertex3d 1.0  1.0 0.0)
-            (glVertex3d 1.0  1.0  1.0)
-            (glVertex3d 1.0 0.0  1.0)
+            (glNormal3f 1. 0. 0.)
+            (glVertex3f 1. 0. 0.)
+            (glVertex3f 1. 1. 0.)
+            (glVertex3f 1. 1. 1.)
+            (glVertex3f 1. 0. 1.)
             ;; Left face
-            (glNormal3d -1.0 0.0 0.0)
-            (glVertex3d 0.0 0.0 0.0)
-            (glVertex3d 0.0 0.0  1.0)
-            (glVertex3d 0.0  1.0  1.0)
-            (glVertex3d 0.0  1.0 0.0)
+            (glNormal3f -1. 0. 0.)
+            (glVertex3f 0. 0. 0.)
+            (glVertex3f 0. 0. 1.)
+            (glVertex3f 0. 1. 1.)
+            (glVertex3f 0. 1. 0.)
             (glEnd)
             (glEndList)
             void)))))
-
 
 ;; a trivial opengl draw loop
 (bind-func gl_loop
   (lambda (degree:float)
     ;; (glClearColor 1.0 0.5 0.0 1.0)
-    (glClearColor 0.0 0.0 0.0 1.0)      
-    (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
-    (glColor4f 0.0 0.0 0.0 1.0)
-    (glLineWidth 1.0)
-    (glLoadIdentity)
-    (glTranslatef 0.0 0.0 -100.0)
-
     (fc_advance_timestep)
     (let ((i 0) (j 0) (k 0)
           (dim (tref FLUIDCUBE 0))
+          (dimf:float (convert dim))
           (densities (tref FLUIDCUBE 5))	    
           (Vx (tref FLUIDCUBE 6))
           (Vy (tref FLUIDCUBE 7))
           (Vz (tref FLUIDCUBE 8)))
-      
-      (glTranslatef 10.0 11.0 11.0)
-      (glRotated (* 300.0 degree) 0.0 1.0 0.0)
-      (glTranslatef -10.0 -11.0 -11.0)
+      (glClearColor 0.0 0.0 0.0 1.0)      
+      (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
+      (glColor4f 0.0 0.0 0.0 1.0)
+      (glLineWidth 1.0)
+      (glLoadIdentity)
+      (glTranslatef -1. -1. -10.)
+      ;; (glScalef (* 2. (/ 1. dimf)) (* 2. (/ 1. dimf)) (* 2. (/ 1. dimf)))
+      (glScalef .1 .1 .1)
+      (glTranslatef 10. 11. 11.)
+      (glRotatef (* 300.0 degree) 0.0 1.0 0.0)
+      (glTranslatef -10. -11. -11.)
+      ;; (glTranslatef (* -1. dimf) (* -1. dimf) (* -1. dimf))
       
       (dotimes (i 0 dim)
         (dotimes (j 0 dim)
@@ -490,10 +487,10 @@
               ;; could start by commenting out the next 4 lines
               ;; i.e. stop drawing the red velocity arrows
               (glBegin GL_LINES)
-              (glVertex3f 0.5 0.5 0.5)
-              (glVertex3f (+ 0.5 (* 0.5 (/ (pref Vx idx) norm)))
-                          (+ 0.5 (* 0.5 (/ (pref Vy idx) norm)))
-                          (+ 0.5 (* 0.5 (/ (pref Vz idx) norm))))
+              (glVertex3f .5 .5 .5)
+              (glVertex3f (+ .5 (* .5 (/ (pref Vx idx) norm)))
+                          (+ .5 (* .5 (/ (pref Vy idx) norm)))
+                          (+ .5 (* .5 (/ (pref Vz idx) norm))))
               (glEnd)
               (glPopMatrix))))))
     void))
@@ -534,7 +531,7 @@
 
 
 (gl-loop (now) 1 0.0)
-(some_gl_init)
+(fc_gl_setup)
 (smoke-signal (now))
 
 ;; eval this again if you want to clean the cube at some point!
