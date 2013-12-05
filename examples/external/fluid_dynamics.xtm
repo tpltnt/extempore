@@ -452,55 +452,51 @@
 
 ;; a trivial opengl draw loop
 (bind-func gl_loop
-  (let ((degree 0.0))
-    (lambda ()
-      ;; (glClearColor 1.0 0.5 0.0 1.0)
-      (glClearColor 0.0 0.0 0.0 1.0)      
-      (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
-      (glColor4d 0.0 0.0 0.0 1.0)
-      (glLineWidth 1.0)
-      (glLoadIdentity)
-      (glTranslated -10.0 -10.0 -50.0)
+  (lambda (degree:float)
+    ;; (glClearColor 1.0 0.5 0.0 1.0)
+    (glClearColor 0.0 0.0 0.0 1.0)      
+    (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
+    (glColor4f 0.0 0.0 0.0 1.0)
+    (glLineWidth 1.0)
+    (glLoadIdentity)
+    (glTranslatef 0.0 0.0 -100.0)
 
-      (fc_advance_timestep)
-      (let ((densities (tref FLUIDCUBE 5))
-            (i 0) (j 0) (k 0)	    
-      	    (Vx (tref FLUIDCUBE 6))
-      	    (Vy (tref FLUIDCUBE 7))
-      	    (Vz (tref FLUIDCUBE 8))	    
-      	    (dim (tref FLUIDCUBE 0)))
-        
-        (glTranslated 10.0 11.0 11.0)
-        (glRotated (* 300.0 degree) 0.0 1.0 0.0)
-        (glTranslated -10.0 -11.0 -11.0)
-        
-      	(dotimes (i 0 dim)
-      	  (dotimes (j 0 dim)
-      	    (dotimes (k 0 dim)
-              (let ((idx (index_xyz i j k dim))
-                    (norm (convert
-                           (sqrt (+ (* (pref Vx idx) (pref Vx idx))
-                                    (* (pref Vy idx) (pref Vy idx))
-                                    (* (pref Vz idx) (pref Vz idx)))))))
-                (glPushMatrix)
-                (glTranslated (convert i) (convert j) (convert k))
-                (glColor4d 0.8 1.0 0.4 (convert (pref densities idx)))
-                (glCube)
-                ;; turn 0.2 to 0.0 to stop drawing vertex arrows
-                (glColor4d 1. 0. 0. 1.)
-                ;; if you're having performance problems you
-                ;; could start by commenting out the next 4 lines
-                ;; i.e. stop drawing the red velocity arrows
-                (glBegin GL_LINES)
-                (glVertex3d 0.5 0.5 0.5)
-                (glVertex3d (+ 0.5 (* 0.5 (/ (convert (pref Vx idx)) norm)))
-                            (+ 0.5 (* 0.5 (/ (convert (pref Vy idx)) norm)))
-                            (+ 0.5 (* 0.5 (/ (convert (pref Vz idx)) norm))))
-                (glEnd)
-                (glPopMatrix))))))
+    (fc_advance_timestep)
+    (let ((i 0) (j 0) (k 0)
+          (dim (tref FLUIDCUBE 0))
+          (densities (tref FLUIDCUBE 5))	    
+          (Vx (tref FLUIDCUBE 6))
+          (Vy (tref FLUIDCUBE 7))
+          (Vz (tref FLUIDCUBE 8)))
       
-      (set! degree (+ degree .001))
-      void)))
+      (glTranslatef 10.0 11.0 11.0)
+      (glRotated (* 300.0 degree) 0.0 1.0 0.0)
+      (glTranslatef -10.0 -11.0 -11.0)
+      
+      (dotimes (i 0 dim)
+        (dotimes (j 0 dim)
+          (dotimes (k 0 dim)
+            (let ((idx (index_xyz i j k dim))
+                  (norm (sqrt (+ (* (pref Vx idx) (pref Vx idx))
+                                 (* (pref Vy idx) (pref Vy idx))
+                                 (* (pref Vz idx) (pref Vz idx))))))
+              (glPushMatrix)
+              (glTranslatef (convert i) (convert j) (convert k))
+              (glColor4f 0.8 1.0 0.4 (pref densities idx))
+              (glCube)
+              ;; turn 0.2 to 0.0 to stop drawing vertex arrows
+              (glColor4f 1. 0. 0. 1.)
+              ;; if you're having performance problems you
+              ;; could start by commenting out the next 4 lines
+              ;; i.e. stop drawing the red velocity arrows
+              (glBegin GL_LINES)
+              (glVertex3f 0.5 0.5 0.5)
+              (glVertex3f (+ 0.5 (* 0.5 (/ (pref Vx idx) norm)))
+                          (+ 0.5 (* 0.5 (/ (pref Vy idx) norm)))
+                          (+ 0.5 (* 0.5 (/ (pref Vz idx) norm))))
+              (glEnd)
+              (glPopMatrix))))))
+    void))
 
 ;; create the fluidcube
 
@@ -516,8 +512,8 @@
 ;; temporal recursion down if your machine
 ;; doesn't cope.  (i.e. 3000 to 5000 or more
 (define gl-loop
-  (lambda (time degree)
-    (gl_loop)
+  (lambda (time fps degree)
+    (gl_loop degree)
     ;; 1000.0 is wind speed from bottom to top
     (fc_add_velocity 11 1 11 0.0 1000.0 0.0)
     ;; 600.0 is wind speed from left to right
@@ -525,7 +521,7 @@
     ;; everynow and then remove smoke from cube
     (if (< (modulo degree 1.0) 0.005) (fc_clean))
     (gl:swap-buffers *gl-ctx*)
-    (callback time 'gl-loop (+ time 3000) (+ degree 0.001))))
+    (callback time 'gl-loop (+ time (/ *second* fps)) fps (+ degree 0.01))))
 
 ;; Smoke signal injects smoke into the system
 ;; at semi-regular intervals (* 40000 (random 4 9))
@@ -537,7 +533,7 @@
     (callback (+ time 4410) 'smoke-signal (+ time (* *second* (random 4 9))))))
 
 
-(gl-loop (now) 0.0)
+(gl-loop (now) 1 0.0)
 (some_gl_init)
 (smoke-signal (now))
 
