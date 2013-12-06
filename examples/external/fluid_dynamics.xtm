@@ -29,11 +29,11 @@
 ;; code here largely pilfered from from
 ;; Jos Stam and Mike Ash
 
-(define width 1920.0)
-(define height 1080.0)
-(bind-val width float 1920.0)
-(bind-val height float 1080.0)
-(define fullscreen #t)
+(define width 800.0)
+(define height 600.0)
+(bind-val width float 800.0)
+(bind-val height float 600.0)
+(define fullscreen #f)
 
 (define *gl-ctx* (gl:make-ctx ":0.0" fullscreen 0.0 0.0 width height))
 
@@ -164,7 +164,6 @@
                  (if (= b 1)	       
                      (- 0.0 (pref x (index_xyz dim-2 i-1 j-1 dim)))
                      (pref x (index_xyz dim-2 i-1 j-1 dim))))))
-
       (pset! x (index_xyz 0 0 0 dim)
              (* 0.33333 (+ (pref x (index_xyz 1 0 0 dim))
                            (pref x (index_xyz 0 1 0 dim))
@@ -270,7 +269,6 @@
       (fc_set_boundary 3 Vz dim)
       void)))
 
-
 (bind-func fc_advect
   (lambda (b:i64 d:float* d0:float* velocx:float* velocy:float* velocz:float* dt:float dim:i64)
     (let ((dtx (* dt (convert (- dim 2)))) (dty dtx) (dtz dty)
@@ -348,27 +346,15 @@
           (Vx0 (tref FLUIDCUBE 9))
           (Vy0 (tref FLUIDCUBE 10))
           (Vz0 (tref FLUIDCUBE 11)))
-      
       (fc_diffuse 1 Vx0 Vx visc dt 4 dim)
       (fc_diffuse 2 Vy0 Vy visc dt 4 dim)
       (fc_diffuse 3 Vz0 Vz visc dt 4 dim)
-
-      (dotimes (i (* dim dim dim))
-      	(pset! Vx i 0.0)
-      	(pset! Vy i 0.0)
-      	(pset! Vz i 0.0))
-      
+      (dotimes (i (* dim dim dim)) (pset! Vx i 0.0) (pset! Vy i 0.0) (pset! Vz i 0.0))      
       (fc_project Vx0 Vy0 Vz0 Vx Vy 4 dim)
-
       (fc_advect 1 Vx Vx0 Vx0 Vy0 Vz0 dt dim)
       (fc_advect 2 Vy Vy0 Vx0 Vy0 Vz0 dt dim)
       (fc_advect 3 Vz Vz0 Vx0 Vy0 Vz0 dt dim)
-
-      (dotimes (i (* dim dim dim))
-      	(pset! Vx0 i 0.0)
-      	(pset! Vy0 i 0.0)
-      	(pset! Vz0 i 0.0))
-      
+      (dotimes (i (* dim dim dim)) (pset! Vx0 i 0.0) (pset! Vy0 i 0.0) (pset! Vz0 i 0.0))
       (fc_project Vx Vy Vz Vx0 Vy0 4 dim)
       (fc_diffuse 0 s density diff dt 4 dim)
       (fc_advect 0 density s Vx Vy Vz dt dim))
@@ -463,13 +449,10 @@
       (glLineWidth 1.0)
       (glLoadIdentity)
       (glTranslatef -1. -1. -10.)
-      ;; (glScalef (* 2. (/ 1. dimf)) (* 2. (/ 1. dimf)) (* 2. (/ 1. dimf)))
-      (glScalef .1 .1 .1)
-      (glTranslatef 10. 11. 11.)
+      (glScalef (* 2. (/ 1. dimf)) (* 2. (/ 1. dimf)) (* 2. (/ 1. dimf)))
+      ;; (glTranslatef dimf dimf dimf)
       (glRotatef (* 300.0 degree) 0.0 1.0 0.0)
-      (glTranslatef -10. -11. -11.)
-      ;; (glTranslatef (* -1. dimf) (* -1. dimf) (* -1. dimf))
-      
+      ;; (glTranslatef (* -1. dimf) (* -1. dimf) (* -1. dimf))      
       (dotimes (i 0 dim)
         (dotimes (j 0 dim)
           (dotimes (k 0 dim)
@@ -497,7 +480,7 @@
 
 ;; create the fluidcube
 
-(fc_create 20 0.001 0.001 0.001)
+(fc_create 15 0.001 0.001 0.001)
 
 ;; gl-loop includes two sources
 ;; of constant wind speed
@@ -520,19 +503,19 @@
     (gl:swap-buffers *gl-ctx*)
     (callback time 'gl-loop (+ time (/ *second* fps)) fps (+ degree 0.01))))
 
+(fc_gl_setup)
+(gl-loop (now) 3 0.0)
+
 ;; Smoke signal injects smoke into the system
 ;; at semi-regular intervals (* 40000 (random 4 9))
 (define smoke-signal
   (lambda (time)
     ;; increase 300.0 to kick more smoke into the system 
-    (fc_add_density 2 5 11 (+ 1.0 (* (random) 200.0)))    
+    (fc_add_density 2 5 11 (+ 1.0 (* (random) 50.0)))    
     ;; decrease (random 4 9) to inject smoke more often
     (callback (+ time 4410) 'smoke-signal (+ time (* *second* (random 4 9))))))
 
-
-(gl-loop (now) 1 0.0)
-(fc_gl_setup)
 (smoke-signal (now))
 
 ;; eval this again if you want to clean the cube at some point!
-; (fc_clean)
+(fc_clean)
