@@ -474,8 +474,8 @@ See `run-hooks'."
                                        types))) t) "\\>")
         '(1 font-lock-type-face))))))
 
-(font-lock-add-keywords 'extempore-mode
-                        '(("(\\|)" . 'extempore-paren-face)))
+;; (font-lock-add-keywords 'extempore-mode
+;;                         '(("(\\|)" . 'extempore-paren-face)))
 
 (defvar extempore-font-lock-keywords
   (append extempore-font-lock-keywords-scheme
