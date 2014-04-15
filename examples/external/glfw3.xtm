@@ -1,0 +1,34 @@
+(sys:load "libs/external/glfw3.xtm")
+
+(glfw_init)
+
+(bind-func glfw_set_osx_hints
+  (lambda ()
+    (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
+    (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 2)
+    (glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT 1)
+    (glfwWindowHint GLFW_OPENGL_PROFILE GLFW_OPENGL_CORE_PROFILE)
+    void))
+
+(glfw_set_osx_hints)
+
+(glew_set_experimental 1)
+
+(bind-func main
+  (let ((window (glfwCreateWindow 640 480 "Hello World" null null)))
+    (lambda ()
+      (if (null? window)
+          (glfwTerminate)
+          (glfwMakeContextCurrent window))
+      (let ((w:i32* (salloc))
+            (h:i32* (salloc)))
+        (glfwGetWindowSize window w h)
+        (printf "Window size %d %d\n" (pref w 0) (pref h 0)))
+      void)))
+
+(main)
+
+(glfw_print_version_string)
+(gl_print_driver_info)
+
+(glfw_terminate)
