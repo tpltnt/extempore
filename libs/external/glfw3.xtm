@@ -2,11 +2,11 @@
 
 ;; Author: Ben Swift
 ;; Keywords: extempore
-;; Required dylibs: libglfw
+;; Required dylibs: libglfw, libGLEW
 
 ;;; Commentary:
 
-;; libglfw3.dylib
+;; 
 
 ;;; Code:
 
@@ -17,7 +17,14 @@
           ((string=? platform "OSX") (sys:open-dylib "libglfw3.dylib"))
           (else (print "Unknown platform: " platform)))))
 
-;; (bind-alias GLFWglproc [void]*)
+(define libGLEW
+  (let ((platform (sys:platform)))
+    (cond ((string=? platform "Linux") (sys:open-dylib "libGLEW.so"))
+          ((string=? platform "Windows") (sys:open-dylib "libGLEW.dll"))
+          ((string=? platform "OSX") (sys:open-dylib "libGLEW.dylib"))
+          (else (print "Unknown platform: " platform)))))
+
+;; glfw3
 
 ;; some constants
 
@@ -284,6 +291,18 @@
 
 (bind-lib libglfw3 glfwDefaultWindowHints [void]*)
 (bind-lib libglfw3 glfwWindowHint [void,i32,i32]*)
+
+;; GLEW
+
+;; (bind-alias GLEWContext i8)
+
+(bind-lib libGLEW glewInit [i32])
+
+(bind-lib-val libGLEW glewExperimental i8)
+
+(bind-func glew_set_experimental
+  (lambda (val)
+    (set! glewExperimental val)))
 
 (bind-func glfw_init
   (lambda ()
