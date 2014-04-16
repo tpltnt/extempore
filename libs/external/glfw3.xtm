@@ -268,11 +268,24 @@
 (bind-alias GLFWmonitor i8)
 (bind-alias GLFWwindow i8)
 
+;; width 0
+;; height 1
+;; redBits 2
+;; greenBits 3
+;; blueBits 4
+;; refreshRate 5
+(bind-alias GLFWvidmode <i32,i32,i32,i32,i32,i32>)
+
 (bind-alias GLFWerrorfun [void,i32,i8*]*)
 
 (bind-lib libglfw3 glfwInit [i32]*)
 (bind-lib libglfw3 glfwTerminate [void]*)
 (bind-lib libglfw3 glfwGetVersionString [i8*]*)
+
+(bind-lib libglfw3 glfwGetPrimaryMonitor [GLFWmonitor*]*)
+(bind-lib libglfw3 glfwGetVideoMode [GLFWvidmode*,GLFWmonitor*]*)
+
+
 
 (bind-lib libglfw3 glfwCreateWindow [GLFWwindow*,i32,i32,i8*,GLFWmonitor*,GLFWwindow*]*)
 (bind-lib libglfw3 glfwDestroyWindow [void,GLFWwindow*]*)
@@ -294,15 +307,19 @@
 
 ;; GLEW
 
-;; (bind-alias GLEWContext i8)
-
 (bind-lib libGLEW glewInit [i32])
-
+;; glewExperimental is really a GLboolean (unsigned char)
 (bind-lib-val libGLEW glewExperimental i8)
 
-(bind-func glew_set_experimental
-  (lambda (val)
-    (set! glewExperimental val)))
+;; xtlang helper functions
+
+(bind-func glew_init
+  (lambda (experimental_p:i8)
+    (set! glewExperimental experimental_p)
+    (let ((res (glewInit)))
+      (if (<> res 1)
+          (print "Error initialising GLEW.\n"))
+      res)))
 
 (bind-func glfw_init
   (lambda ()
@@ -319,6 +336,40 @@
   (lambda ()
     (printf "%s\n" (glfwGetVersionString))))
 
+(bind-func glfw_create_fullscreen_window
+  (lambda ()
+    (glfwCreateWindow 640 480
+                      "Extempore OpenGL Window"
+                      (glfwGetPrimaryMonitor)
+                      null)))
+
 (bind-func glfw_create_window
-  (lambda (width height title monitor share)
-    (glfwCreateWindow width height title monitor share)))
+  (lambda (width height)
+    (glfwCreateWindow width height
+                      "Extempore OpenGL Window"
+                      null
+                      null)))
+
+(bind-func glfw_destroy_window
+  (lambda (window:GLFWwindow*)
+    (if (not (null? window))
+        (glfwDestroyWindow window)
+        (println "Error: Window pointer is NULL."))
+    void))
+
+(bind-func glfw_print_video_mode_details
+  (lambda (vidmode:GLFWvidmode*)
+    (printf "      width: %i\n     height: %i\n    redBits: %i\n  greenBits: %i\n   blueBits: %i\nrefreshRate: %i\n"
+            (tref vidmode 0)
+            (tref vidmode 1)
+            (tref vidmode 2)
+            (tref vidmode 3)
+            (tref vidmode 4)
+            (tref vidmode 5))))
+
+(bind-func glfw_print_primary_monitor_details
+  (lambda ()
+    (let ((monitor (glfwGetPrimaryMonitor)))
+      (if (not (null? monitor))
+          (glfw_print_video_mode_details (glfwGetVideoMode monitor))
+          (printf "Error: Monitor pointer is NULL.\n")))))
