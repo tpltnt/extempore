@@ -307,7 +307,15 @@
 (bind-lib libglfw3 glfwDefaultWindowHints [void]*)
 (bind-lib libglfw3 glfwWindowHint [void,i32,i32]*)
 
+(bind-lib libglfw3 glfwPollEvents [void]*)
+
 ;; GLEW
+
+(bind-val GLEW_OK i32 0)
+(bind-val GLEW_NO_ERROR i32 0)
+(bind-val GLEW_ERROR_NO_GL_VERSION i32 1)        ; /* missing GL version */
+(bind-val GLEW_ERROR_GL_VERSION_10_ONLY i32 2)   ; /* Need at least OpenGL 1.1 */
+(bind-val GLEW_ERROR_GLX_VERSION_11_ONLY i32 3)  ; /* Need at least GLX 1.2 */
 
 (bind-lib libGLEW glewInit [i32])
 ;; glewExperimental is really a GLboolean (unsigned char)
@@ -319,15 +327,25 @@
   (lambda (experimental_p:i8)
     (set! glewExperimental experimental_p)
     (let ((res (glewInit)))
-      (if (<> res 1)
-          (print "Error initialising GLEW.\n"))
+      (if (= res GLEW_OK)
+          (printf "GLEW Initialised.\n")
+          (begin (printf "Error initialising GLEW: ")
+                 (cond ((= res GLEW_ERROR_NO_GL_VERSION)
+                        (printf "no GL version.\n"))
+                       ((= res GLEW_ERROR_GL_VERSION_10_ONLY)
+                        (printf "need at least OpenGL 1.1\n"))
+                       ((= res GLEW_ERROR_GLX_VERSION_11_ONLY)
+                        (printf "need at least GLX 1.2.\n"))
+                       (else
+                        (printf "unknown error.\n")))))
       res)))
 
 (bind-func glfw_init
   (lambda ()
     (let ((res (glfwInit)))
-      (if (<> res 1)
-          (print "Error initialising GLFW.\n"))
+      (if (= res 1)
+          (printf "GLFW Initialised.\n")
+          (printf "Error initialising GLFW.\n"))
       res)))
 
 (bind-func glfw_terminate
@@ -340,10 +358,14 @@
 
 (bind-func glfw_create_fullscreen_window
   (lambda ()
-    (glfwCreateWindow 640 480
-                      "Extempore OpenGL Window"
-                      (glfwGetPrimaryMonitor)
-                      null)))
+    (let ((monitor (glfwGetPrimaryMonitor))
+          (vidmode (glfwGetVideoMode monitor))
+          (width (tref vidmode 0))
+          (height (tref vidmode 1)))
+      (glfwCreateWindow width height
+                        "Extempore OpenGL Window"
+                        monitor
+                        null))))
 
 (bind-func glfw_create_window
   (lambda (width height)
@@ -352,12 +374,28 @@
                       null
                       null)))
 
+(bind-func glfw_window_should_close
+  (lambda (window)
+    (glfwWindowShouldClose window)))
+
+(bind-func glfw_make_context_current
+  (lambda (window)
+    (glfwMakeContextCurrent window)))
+
 (bind-func glfw_destroy_window
   (lambda (window:GLFWwindow*)
     (if (not (null? window))
         (glfwDestroyWindow window)
         (println "Error: Window pointer is NULL."))
     void))
+
+(bind-func glfw_swap_buffers
+  (lambda (window:GLFWwindow*)
+    (glfwSwapBuffers window)))
+
+(bind-func glfw_poll_events
+  (lambda ()
+    (glfwPollEvents)))
 
 (bind-func glfw_print_video_mode_details
   (lambda (vidmode:GLFWvidmode*)
