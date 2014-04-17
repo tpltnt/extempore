@@ -3,7 +3,13 @@
 (glfw_init)
 (glfw_set_osx_core_profile)
 
-(define *gl-window* (glfw_create_window 640 480))
+(define width 1920.0)
+(define height 1080.0)
+(bind-val width float 1920.0)
+(bind-val height float 1080.0)
+(define fullscreen #t)
+
+(define *gl-window* (glfw_create_window (real->integer width) (real->integer height)))
 
 (glfw_make_context_current *gl-window*)
 
@@ -14,7 +20,9 @@
 (bind-func gl_set_depth_test
   (lambda ()
     (glEnable GL_DEPTH_TEST)
-    (glDepthFunc GL_LESS)))
+    (glDepthFunc GL_LESS)
+    (glEnable GL_BLEND)
+    (glBlendFunc GL_SRC_ALPHA GL_ONE_MINUS_SRC_ALPHA)))
 
 (gl_set_depth_test)
 
@@ -100,24 +108,51 @@ out vec3 colour;
 
 void main () {
   colour = vertex_colour;
-  gl_Position = vec4 (vertex_position, 1.0);
+  gl_Position = vec4(vertex_position, 1.0);
 }")
 
 (define fragment-shader
   "#version 400
+uniform float audio_volume;
 in vec3 colour;
 out vec4 frag_colour;
 
 void main () {
-  frag_colour = vec4 (colour, 1.0);
+  frag_colour = vec4 (colour, audio_volume);
 }")
 
+;; you can do it this way
 (define shader-program (create_shader vertex-shader fragment-shader))
 
+;; or do it this way...
+(define shader-program (create_shader
+                        "#version 400
+layout(location = 0) in vec3 vertex_position;
+layout(location = 1) in vec3 vertex_colour;
+
+out vec3 colour;
+
+void main () {
+  colour = vertex_colour;
+  gl_Position = vec4(0.2, -0.2, 0., 0.) + vec4(vertex_position, 1.0);
+}"
+                        
+                        "#version 400
+uniform float audio_volume;
+in vec3 colour;
+out vec4 frag_colour;
+
+void main () {
+  frag_colour = vec4 (colour, audio_volume);
+}"
+                        ))
+
 (bind-func draw
-  (lambda (window program vao)
+  (lambda (window program vao vol)
     (glClear (bitwise-or GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))        
     (glUseProgram program)
+    (let ((loc (glGetUniformLocation program "audio_volume")))
+      (glUniform1f loc vol))
     (glBindVertexArray vao)
     (glDrawArrays GL_TRIANGLES 0 3)
     (glfwPollEvents)
@@ -125,8 +160,8 @@ void main () {
 
 (define gl-loop
   (lambda (time delta-t)
-    (draw *gl-window* shader-program vao)
-    (println 'time: time)
+    (draw *gl-window* shader-program vao (+ .5 (* .5 (cos (* .0001 time)))))
+    ;; (println 'time: time)
     (if (<> (glfw_window_should_close *gl-window*) 0)
         (begin (glfw_destroy_window *gl-window*)
                (print "Finishing gl-loop.\n"))
@@ -135,4 +170,4 @@ void main () {
                   (+ time (* *second* delta-t)) 
                   delta-t))))
 
-(gl-loop (now) 1)
+(gl-loop (now) 1/30)
