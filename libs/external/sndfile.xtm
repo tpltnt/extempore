@@ -183,7 +183,7 @@
   (lambda (abuf:AudioBuffer*)
     (tref abuf 0)))
 
-(bind-func samplerate
+(bind-func file_samplerate
   (lambda (abuf:AudioBuffer*)
     (tref abuf 1)))
 
@@ -199,7 +199,7 @@
   (lambda (abuf:AudioBuffer*)
     (tref abuf 4)))
 
-(bind-func sample_data
+(bind-func data_ptr
   (lambda (abuf:AudioBuffer*)
     (tref abuf 5)))
 
@@ -227,7 +227,7 @@
   (lambda (abuf:AudioBuffer* frame:i64 channel:i64)
     (if (and (< frame (+ (num_frames abuf) (frame_offset abuf)))
              (< channel (num_channels abuf)))
-        (pref-ptr (sample_data abuf) (* frame channel)))))
+        (pref-ptr (data_ptr abuf) (* frame channel)))))
 
 ;; do stuff with audio files
 
@@ -241,11 +241,11 @@
           (begin (printf "Bad audio file!\n")
                  void)
           (let ((nframes (sf_frames info))
-                (file_samplerate (sf_samplerate info))
-                (nseconds (/ nframes file_samplerate)))
+                (rate (sf_samplerate info))
+                (nseconds (/ nframes rate)))
             (printf "---------------\n")
             (printf "filename:    %s\n" fname)
-            (printf "samplerate:  %d\n" file_samplerate)
+            (printf "samplerate:  %d\n" rate)
             (printf "channels:    %d\n" (sf_channels info))
             (printf "format:      %#x\n" (sf_format info))
             (printf "frames:      %lld\n" nframes)
@@ -319,14 +319,14 @@
           (chans (num_channels abuf))
           (offset (frame_offset abuf))
           (subframes (num_subframes abuf))
-          (rate (samplerate abuf))
-          (data (sample_data abuf)))
+          (rate (file_samplerate abuf))
+          (data (data_ptr abuf)))
       (if (> (+ offset subframes) frames)
           (begin (printf "Attempting to write off end of AudioBuffer")
                  0)
           (write_audio_data_to_file fname
                                     format
-                                    (samplerate abuf)
+                                    (file_samplerate abuf)
                                     (num_subframes abuf)
                                     (num_channels abuf)
                                     (pref-ptr data offset))))))
@@ -398,7 +398,7 @@
                  null)
           ;; todo check if the i32/i64 types are all ok in here
           (let ((abuf (create_audio_buffer num channels))
-                (data (sample_data abuf))
+                (data (data_ptr abuf))
                 (num_to_read (* num channels))
                 (num_to_offset (* offset channels))
                 (cnt (sf_seek audiofile num_to_offset 0))
