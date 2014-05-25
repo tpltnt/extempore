@@ -83,7 +83,7 @@
 (bind-lib libsndfile sf_seek [i64,i8*,i64,i32]*)
 (bind-lib libsndfile sf_write_sync [void,i8*]*)
 ;; read file by frame
-(bind-lib libsndfile sf_readf_float [i64,i8*,double*,i64]*)
+(bind-lib libsndfile sf_readf_float [i64,i8*,float*,i64]*)
 (bind-lib libsndfile sf_writef_float [i64,i8*,float*,i64]*)
 (bind-lib libsndfile sf_readf_double [i64,i8*,double*,i64]*)
 (bind-lib libsndfile sf_writef_double [i64,i8*,double*,i64]*)
