@@ -275,7 +275,7 @@
 
 ;; offset in frames
 ;; this currently doesn't check that you aren't requesting more frames than are available
-(bind-func create_audiobuffer_from_file_with_offset
+(bind-func create_audiobuffer_from_file_with_frames_and_offset
   "read an audio file into an AudioBuffer
 
 Read `frames_to_read' frames (or full audio file if `frames_to_read' is 0),
@@ -323,7 +323,7 @@ starting at frame `read_offset'"
 (bind-func create_audiobuffer_from_file
   "read an audio file into an AudioBuffer"
   (lambda (fname)
-    (create_audiobuffer_from_file_with_offset fname 0 0)))
+    (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
 
 ;; also TODO this is where I'm up to
 
@@ -391,7 +391,7 @@ starting at frame `read_offset'"
 
 ;; AudioBuffer versions
 
-(bind-func create_audiobuffer_from_file_with_offset
+(bind-func create_audiobuffer_from_file_with_frames_and_offset
   (lambda (fname offset:i64)
     ))
 
@@ -480,7 +480,7 @@ starting at frame `read_offset'"
 
 ;; poly'd constructors
 (bind-poly AudioBuffer create_empty_audiobuffer)
-(bind-poly AudioBuffer create_audiobuffer_from_file_with_offset)
+(bind-poly AudioBuffer create_audiobuffer_from_file_with_frames_and_offset)
 (bind-poly AudioBuffer create_audiobuffer_from_file)
 
 
