@@ -176,27 +176,6 @@
 ;; 5 SAMPLE* (data)
 (bind-type AudioBuffer <i64,i64,i64,i64,i64,SAMPLE*>)
 
-;; create/destroy AudioBuffers
-
-(bind-func create_empty_audiobuffer
-  (lambda (frames:i64 channels:i64)
-    (let ((abuf:AudioBuffer* (halloc))
-          (buf:SAMPLE* (halloc (* channels frames))))
-      (tfill! abuf
-              frames
-              (convert SAMPLERATE)
-              channels
-              0
-              frames
-              buf)
-      abuf)))
-
-(bind-func destroy_audiobuffer
-  (lambda (abuf:AudioBuffer*)
-    (free (audio_data_ptr abuf))
-    (free abuf)
-    void))
-
 ;; AudioBuffer accessor functions
 
 (bind-func num_frames
@@ -258,6 +237,27 @@
 (bind-poly audio_data audio_data_ptr)
 (bind-poly audio_data audio_data_ptr_seek)
 
+;; create/destroy AudioBuffers
+
+(bind-func create_empty_audiobuffer
+  (lambda (frames:i64 channels:i64)
+    (let ((abuf:AudioBuffer* (halloc))
+          (buf:SAMPLE* (halloc (* channels frames))))
+      (tfill! abuf
+              frames
+              (convert SAMPLERATE)
+              channels
+              0
+              frames
+              buf)
+      abuf)))
+
+(bind-func destroy_audiobuffer
+  (lambda (abuf:AudioBuffer*)
+    (free (audio_data_ptr abuf))
+    (free abuf)
+    void))
+
 (bind-func num_samples
   "get the total number of samples (* frames channels) from an Audiobuffer"
   (lambda (abuf:AudioBuffer*)
@@ -272,64 +272,6 @@
     (printf "channels:      %d\n"   (num_channels abuf))
     ;; (printf "format:        %#x\n"  (format abuf))
     (printf "data ptr:      %p\n\n" (audio_data_ptr abuf))))
-
-;; offset in frames
-;; this currently doesn't check that you aren't requesting more frames than are available
-(bind-func create_audiobuffer_from_file_with_frames_and_offset
-  "read an audio file into an AudioBuffer
-
-Read `frames_to_read' frames (or full audio file if `frames_to_read' is 0),
-starting at frame `read_offset'"
-  (lambda (fname frames_to_read read_offset)
-    (let ((info:sf_info* (salloc))
-          (audiofile (sf_open fname SFM_READ info))
-          (abuf:AudioBuffer* null))
-      (if (null? audiofile)
-          (begin (println "soundfile error:" (sf_strerror audiofile))
-                 abuf)
-          ;; when sf_open has read the file without error
-          (let ((frames (sf_frames info))
-                (channels (sf_channels info))
-                (samplerate (sf_samplerate info))
-                (available_frames (- frames read_offset)))
-            (println "frames:" frames "channels:" channels "samplerate:" samplerate "available_frames:" available_frames)
-            (if (= frames_to_read 0)
-                (set! frames_to_read frames))
-            (if (<> samplerate (convert SR))
-                (println "Warning: file samplerate" samplerate "doesn't match the current audio samplerate" SR "- this could cause problems"))
-            (if (> frames_to_read available_frames)
-                (begin (println "Error: audio file too short - trying to read more frames than are available")
-                       (sf_close audiofile)
-                       abuf)
-                (let ((frames_read 0))
-                  ;; initialise and allocate memory for the AudioBuffer
-                  (set! abuf (create_empty_audiobuffer frames_to_read channels))
-                  ;; read the audio data from the file
-                  (pretty_print_audio_file_info abuf)
-                  (set! frames_read (sf_readf audiofile
-                                              (audio_data_ptr abuf)
-                                              (* frames_to_read channels)))
-                  (sf_close audiofile)
-                  ;; set the metadata into the new Audiobuffer object
-                  (set_num_frames abuf frames_read)
-                  (set_num_subframes abuf frames_read)
-                  (set_num_channels abuf channels)
-                  (set_file_samplerate abuf samplerate)
-                  (if (< frames_read frames_to_read)
-                      (begin (println "Error: tried to read" frames_to_read "frames, only read" frames_read "frames." (sf_strerror audiofile))
-                             abuf)
-                      abuf))))))))
-
-(bind-func create_audiobuffer_from_file
-  "read an audio file into an AudioBuffer"
-  (lambda (fname)
-    (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
-
-;; poly'd constructors
-(bind-poly AudioBuffer create_empty_audiobuffer)
-(bind-poly AudioBuffer create_audiobuffer_from_file_with_frames_and_offset)
-(bind-poly AudioBuffer create_audiobuffer_from_file)
-
 
 (bind-func print_audio_file_info
   "print info about an audio file"
@@ -367,81 +309,109 @@ starting at frame `read_offset'"
             (sf_close audiofile)
             void)))))
 
-;; write audio data to file
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; reading audio files ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(bind-func write_audiobuffer_to_file
-  "write audio data to file"
-  (lambda (fname format samplerate frames channels dat:SAMPLE*)
+(bind-func create_audiobuffer_from_file_with_frames_and_offset
+  "read an audio file into an AudioBuffer
+
+Read `frames_to_read' frames (or full audio file if `frames_to_read' is 0),
+starting at frame `read_offset'"
+  (lambda (fname frames_to_read read_offset)
+    (let ((info:sf_info* (salloc))
+          (audiofile (sf_open fname SFM_READ info))
+          (abuf:AudioBuffer* null))
+      (if (null? audiofile)
+          (begin (println "soundfile error:" (sf_strerror audiofile))
+                 abuf)
+          ;; when sf_open has read the file without error
+          (let ((frames (sf_frames info))
+                (channels (sf_channels info))
+                (samplerate (sf_samplerate info))
+                (available_frames (- frames read_offset)))
+            (if (= frames_to_read 0)
+                (set! frames_to_read frames))
+            (if (<> samplerate (convert SR))
+                (println "Warning: file samplerate" samplerate "doesn't match the current audio samplerate" SR "- this could cause problems"))
+            (if (> frames_to_read available_frames)
+                (begin (println "Error: audio file too short - trying to read more frames than are available")
+                       (sf_close audiofile)
+                       abuf)
+                (let ((frames_read 0))
+                  ;; initialise and allocate memory for the AudioBuffer
+                  (set! abuf (create_empty_audiobuffer frames_to_read channels))
+                  ;; read the audio data from the file
+                  (set! frames_read (sf_readf audiofile
+                                              (audio_data_ptr abuf)
+                                              (* frames_to_read channels)))
+                  (sf_close audiofile)
+                  ;; set the metadata into the new Audiobuffer object
+                  (set_num_frames abuf frames_read)
+                  (set_num_subframes abuf frames_read)
+                  (set_num_channels abuf channels)
+                  (set_file_samplerate abuf samplerate)
+                  (if (< frames_read frames_to_read)
+                      (begin (println "Error: tried to read" frames_to_read "frames, only read" frames_read "frames." (sf_strerror audiofile))
+                             abuf)
+                      abuf))))))))
+
+(bind-func create_audiobuffer_from_file
+  "read an audio file into an AudioBuffer"
+  (lambda (fname)
+    (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
+
+;; poly'd constructors
+(bind-poly AudioBuffer create_empty_audiobuffer)
+(bind-poly AudioBuffer create_audiobuffer_from_file_with_frames_and_offset)
+(bind-poly AudioBuffer create_audiobuffer_from_file)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; writing audio files ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(bind-func write_audiobuffer_to_file_with_format_frames_and_offset
+  "write an audiobuffer to a file.
+
+Write `frames_to_write' frames (or full buffer if `frames_to_write' is 0),
+starting at frame `write_offset'.
+
+Format flag is from libsndfile."
+  (lambda (abuf fname format frames_to_write write_offset)
     (let ((info:sf_info* (salloc)))
-      (sf_set_frames info frames)
-      (sf_set_samplerate info samplerate)
-      (sf_set_channels info channels)
+      (if (= frames_to_write 0)
+          (set! frames_to_write (num_frames abuf)))
+      (sf_set_frames info frames_to_write)
+      (sf_set_samplerate info (file_samplerate abuf))
+      (sf_set_channels info (num_channels abuf))
       (sf_set_format info format) 
       (let ((audiofile (sf_open fname SFM_WRITE info)))
         (if (null? audiofile)
-            (begin (printf "error writing file: %s\n" (sf_strerror audiofile))
-                   0)
-            (let ((samples_written (sf_write audiofile dat (* channels frames))))
+            (begin (println "Error writing audio file:" (sf_strerror audiofile)) 0)
+            (let ((frames_written (sf_writef audiofile
+                                             (audio_data_ptr_seek abuf write_offset 0)
+                                             frames_to_write)))
               ;; flush write to disk
               (sf_write_sync audiofile)
+              (if (< frames_written frames_to_write)
+                  (println "Error writing audio file: tried to write" frames_to_write "frames, only wrote" frames_written "frames."
+                           (sf_strerror audiofile)))
               (sf_close audiofile)
-              samples_written))))))
+              frames_written))))))
 
-;; write out an audio buffer
-;; uses current system samplerate
-(bind-func write_audio_data_to_file_default_sr
-  "write audio data to file (default SR)"
-  (lambda (fname format frames channels dat:SAMPLE*)
-    (write_audio_data_to_file fname
-                                format
-                                (convert SAMPLERATE)
-                                frames
-                                channels
-                                dat)))
+(bind-func write_audiobuffer_to_file_with_format
+  "write an audiobuffer to a file.
+
+Format flag is from libsndfile."
+  (lambda (abuf fname format)
+    (write_audiobuffer_to_file_with_format_frames_and_offset abuf fname format 0 0)))
 
 ;; uses systems samplerate
 ;; format: 16bit PCM AIFF
-(bind-func write_audio_data_to_file_16bitAIFF
-  "write audio data to file as 16bit PCM AIFF (default SR)"
-  (lambda (fname frames channels dat:SAMPLE*)
-    (write_audio_data_to_file fname
-			(+ SF_FORMAT_AIF SF_FORMAT_PCM_16)
-			(convert SAMPLERATE)
-			frames
-			channels dat)))
-
-;; now, the same audiofile writing for AudioBuffer tuples
-
-(bind-func write_audio_buffer_to_file_with_format
-  "write AudioBuffer tupe to audiofile file"
-  (lambda (abuf:AudioBuffer* fname format)
-    (let ((frames (num_frames abuf))
-          (chans (num_channels abuf))
-          (offset (frame_offset abuf))
-          (subframes (num_subframes abuf))
-          (rate (file_samplerate abuf))
-          (data (audio_data_ptr abuf)))
-      (if (> (+ offset subframes) frames)
-          (begin (printf "Attempting to write off end of AudioBuffer")
-                 0)
-          (write_audio_data_to_file fname
-                                    format
-                                    (file_samplerate abuf)
-                                    (num_subframes abuf)
-                                    (num_channels abuf)
-                                    (pref-ptr data offset))))))
-
-(bind-func write_audio_buffer_to_file
-  (lambda (abuf:AudioBuffer* fname)
-    (write_audio_buffer_to_file_with_format abuf fname (+ SF_FORMAT_AIF SF_FORMAT_PCM_16))))
-
-;; these write SAMPLE*
-(bind-poly write_audio_file write_audio_data_to_file)
-(bind-poly write_audio_file write_audio_data_to_file_default_sr)
-(bind-poly write_audio_file write_audio_data_to_file_16bitAIFF)
-;; these write AudioBuffer*
-(bind-poly write_audio_file write_audio_buffer_to_file_with_format)
-(bind-poly write_audio_file write_audio_buffer_to_file)
+(bind-func write_audiobuffer_to_file
+  "write audiobuffer to file as 16bit PCM AIFF with default samplerate"
+  (lambda (abuf fname)
+    (write_audiobuffer_to_file_with_format abuf fname (+ SF_FORMAT_AIF SF_FORMAT_PCM_16))))
 
 ;; questions for sorryballs
 
