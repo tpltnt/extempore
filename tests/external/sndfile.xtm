@@ -1,0 +1,25 @@
+(bind-func audiobuffer_test_1
+  (lambda ()
+    (let ((fname "/Users/ben/Music/sample-libs/drums/SPEAK N SPELL/Glitch Kit/SnS_Kit16.wav")
+          (abuf (create_audiobuffer_from_file fname)))
+      (pretty_print_audio_file_info abuf)
+      (destroy_audiobuffer abuf)
+      void)))
+
+(audiobuffer_test_1)
+
+(bind-func audiobuffer_test_2
+  (lambda ()
+    (let ((fname "/Users/ben/Music/sample-libs/drums/SPEAK N SPELL/Glitch Kit/SnS_Kit16.wav")
+          (abuf (create_audiobuffer_from_file fname)))
+      (pretty_print_audio_file_info abuf)
+      abuf)))
+
+(bind-func audiobuffer_test_3
+  (lambda ()
+    (let ((abuf (audiobuffer_test_2))
+          (res (write_audiobuffer_to_file abuf "/tmp/testfile4.aiff")))
+      (destroy_audiobuffer abuf)
+      res)))
+
+(audiobuffer_test_3)
