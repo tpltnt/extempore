@@ -176,14 +176,26 @@
 ;; 5 SAMPLE* (data)
 (bind-type AudioBuffer <i64,i64,i64,i64,i64,SAMPLE*>)
 
-;; create AudioBuffers
+;; create/destroy AudioBuffers
 
 (bind-func create_empty_audiobuffer
   (lambda (frames:i64 channels:i64)
     (let ((abuf:AudioBuffer* (halloc))
           (buf:SAMPLE* (halloc (* channels frames))))
-      (tfill! abuf frames (convert SAMPLERATE) channels 0 frames buf)
+      (tfill! abuf
+              frames
+              (convert SAMPLERATE)
+              channels
+              0
+              frames
+              buf)
       abuf)))
+
+(bind-func destroy_audiobuffer
+  (lambda (abuf:AudioBuffer*)
+    (free (audio_data_ptr abuf))
+    (free abuf)
+    void))
 
 ;; AudioBuffer accessor functions
 
@@ -191,21 +203,41 @@
   (lambda (abuf:AudioBuffer*)
     (tref abuf 0)))
 
+(bind-func set_num_frames
+  (lambda (abuf:AudioBuffer* frames)
+    (tset! abuf 0 frames)))
+
 (bind-func file_samplerate
   (lambda (abuf:AudioBuffer*)
     (tref abuf 1)))
+
+(bind-func set_file_samplerate
+  (lambda (abuf:AudioBuffer* samplerate)
+    (tset! abuf 1 samplerate)))
 
 (bind-func num_channels
   (lambda (abuf:AudioBuffer*)
     (tref abuf 2)))
 
+(bind-func set_num_channels
+  (lambda (abuf:AudioBuffer* channels)
+    (tset! abuf 2 channels)))
+
 (bind-func frame_offset
   (lambda (abuf:AudioBuffer*)
     (tref abuf 3)))
 
+(bind-func set_frame_offset
+  (lambda (abuf:AudioBuffer* offset)
+    (tset! abuf 3 offset)))
+
 (bind-func num_subframes
   (lambda (abuf:AudioBuffer*)
     (tref abuf 4)))
+
+(bind-func set_num_subframes
+  (lambda (abuf:AudioBuffer* subframes)
+    (tset! abuf 4 subframes)))
 
 (bind-func audio_data_ptr
   (lambda (abuf:AudioBuffer*)
@@ -232,32 +264,66 @@
     (* (num_channels abuf)
        (num_frames abuf))))
 
-;; TODOMONDAY
-
-questions for sorryballs
-
-- do we pretty much want to hide the SF interface away?
-- what's the point of the offset field? is it a playhead?
-(I can see the usefulness of an offset for reading the file in, but after that?)
-- what's with the subframes thing?
-- case/naming conventions for the accessors
+(bind-func pretty_print_audio_file_info
+  (lambda (abuf:AudioBuffer*)
+    ;; (printf "\nfile name:     %s\n"  fname)
+    (printf "samplerate:    %d\n"   (file_samplerate abuf))
+    (printf "frames:        %d\n"   (num_frames abuf))
+    (printf "channels:      %d\n"   (num_channels abuf))
+    ;; (printf "format:        %#x\n"  (format abuf))
+    (printf "data ptr:      %p\n\n" (audio_data_ptr abuf))))
 
 ;; offset in frames
 ;; this currently doesn't check that you aren't requesting more frames than are available
 (bind-func create_audiobuffer_from_file_with_offset
-  (lambda (fname offset)
+  "read an audio file into an AudioBuffer
+
+Read `frames_to_read' frames (or full audio file if `frames_to_read' is 0),
+starting at frame `read_offset'"
+  (lambda (fname frames_to_read read_offset)
     (let ((info:sf_info* (salloc))
-          (audiofile (sf_open fname SFM_READ info)))
+          (audiofile (sf_open fname SFM_READ info))
+          (abuf:AudioBuffer* null))
       (if (null? audiofile)
-          (begin (printf "soundfile error: %s\n" (sf_strerror audiofile))
-                 null)
+          (begin (println "soundfile error:" (sf_strerror audiofile))
+                 abuf)
+          ;; when sf_open has read the file without error
           (let ((frames (sf_frames info))
                 (channels (sf_channels info))
-                (abuf (create_empty_audiobuffer (- frames offset) channels)))
-            (sf_read audiofile
-                     (audio_data_ptr abuf)
-                     (* (- frames offset) channels))
-            abuf)))))
+                (samplerate (sf_samplerate info))
+                (available_frames (- frames read_offset)))
+            (println "frames:" frames "channels:" channels "samplerate:" samplerate "available_frames:" available_frames)
+            (if (= frames_to_read 0)
+                (set! frames_to_read frames))
+            (if (<> samplerate (convert SR))
+                (println "Warning: file samplerate" samplerate "doesn't match the current audio samplerate" SR "- this could cause problems"))
+            (if (> frames_to_read available_frames)
+                (begin (println "Error: audio file too short - trying to read more frames than are available")
+                       (sf_close audiofile)
+                       abuf)
+                (let ((frames_read 0))
+                  ;; initialise and allocate memory for the AudioBuffer
+                  (set! abuf (create_empty_audiobuffer frames_to_read channels))
+                  ;; read the audio data from the file
+                  (pretty_print_audio_file_info abuf)
+                  (set! frames_read (sf_readf audiofile
+                                              (audio_data_ptr abuf)
+                                              (* frames_to_read channels)))
+                  (sf_close audiofile)
+                  ;; set the metadata into the new Audiobuffer object
+                  (set_num_frames abuf frames_read)
+                  (set_num_subframes abuf frames_read)
+                  (set_num_channels abuf channels)
+                  (set_file_samplerate abuf samplerate)
+                  (if (< frames_read frames_to_read)
+                      (begin (println "Error: tried to read" frames_to_read "frames, only read" frames_read "frames." (sf_strerror audiofile))
+                             abuf)
+                      abuf))))))))
+
+(bind-func create_audiobuffer_from_file
+  "read an audio file into an AudioBuffer"
+  (lambda (fname)
+    (create_audiobuffer_from_file_with_offset fname 0 0)))
 
 ;; also TODO this is where I'm up to
 
@@ -304,13 +370,7 @@ questions for sorryballs
                  (* (sf_frames info)
                     (sf_channels info)))))))
 
-(bind-func pretty_print_audio_file_info
-  (lambda (fname:i8* samplerate:i64 channels:i64 format:i32 frames:i64)
-    (printf "\nfile name:     %s\n"  fname)
-    (printf "samplerate:    %d\n"  samplerate)
-    (printf "channels:      %d\n"  channels)
-    (printf "format:        %#x\n" format)
-    (printf "frames:        %d\n\n"  frames)))
+
 
 ;; read audio data from files
 
@@ -427,11 +487,6 @@ questions for sorryballs
 
 
 
-(bind-func delete_audiobuffer
-  (lambda (abuf:AudioBuffer*)
-    (free (audio_data_ptr abuf))
-    (free abuf)
-    void))
 
 (bind-func print_audio_file_info
   "print info about an audio file"
@@ -545,3 +600,10 @@ questions for sorryballs
 (bind-poly write_audio_file write_audio_buffer_to_file_with_format)
 (bind-poly write_audio_file write_audio_buffer_to_file)
 
+;; questions for sorryballs
+
+;; - do we pretty much want to hide the SF interface away?
+;; - what's the point of the offset field? is it a playhead?
+;; (I can see the usefulness of an offset for reading the file in, but after that?)
+;; - what's with the subframes thing?
+;; - case/naming conventions for the accessors
