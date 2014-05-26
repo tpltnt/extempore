@@ -32,33 +32,35 @@
 ;;
 ;; N should be 2's compliment
 (bind-func convolution_c
-  (lambda (path N:i64)
-    (let ((ir:double* (zalloc N))
-          (sum 0.0) (i 0) (n 0) (N1 (- N 1))
-          (input:double* (zalloc N)))
-      (read_audio_data path ir 0 N 0)
-      (lambda (in dry:double wet:double)
-        (pset! input n in)
+  (lambda (ir_filename ir_length)
+    (let ((ir_buf (AudioBuffer ir_filename 0 ir_length))
+          (ir_buf_ptr (audio_data ir_buf))
+          (sum 0.0) (i 0) (n 0) (length_minus_1 (- ir_length 1))
+          (in_buf (AudioBuffer ir_length 1))
+          (in_buf_ptr (audio_data in_buf)))
+      (lambda (in dry:SAMPLE wet:SAMPLE)
+        (pset! in_buf_ptr n in)
         (set! sum 0.0)
-        (dotimes (i N)
+        (dotimes (i ir_length)
           (set! sum
                 (+ sum
-                   (* (pref ir i)
-                      (pref input (& (- n i) N1))))))
-        (set! n (& (+ n 1) N1))
+                   (* (pref ir_buf_ptr i)
+                      (pref ir_buf_ptr (& (- n i) length_minus_1))))))
+        (set! n (& (+ n 1) length_minus_1))
         (+ (* dry in) (* wet sum))))))
 
 
 ;; make sure you put your stereo IR file in here!!
 (bind-func dsp:DSP 100000000
-  (let ((conv (convolution_c "assets/ir/minsterl.aif" (* 512 8)))
+  (let ((convl (convolution_c "assets/ir/minsterl.aif" (* 512 8)))
+        (convr (convolution_c "assets/ir/minsterl.aif" (* 512 8)))
         (out 0.0)
         (dry 1.0)
-        (wet 0.2)
+        (wet 0.2))
     (lambda (in time chan dat)
-      (cond ((< chan 0.5)
+      (cond ((= chan 0)
              (set! out (convl (sampler in time chan dat) dry wet)))
-            ((< chan 1.5)
+            ((= chan 1)
              (set! out (convr (sampler in time chan dat) dry wet))))
       out)))
 
@@ -83,3 +85,4 @@
 
 (test (*metro* 'get-beat 4) 16)
 
+(audio_file_total_samples "assets/ir/minsterl.aif")

@@ -163,25 +163,26 @@
 (bind-alias DSP [double,double,double,double,double*]*)
 ;; dsp function - this will play the sound file.  Remember to
 ;; change the file path to an audio file on your system
-(bind-func dsp:DSP 100000000 ; make sure we allocate enough memory
-  (let ((audio_length 60)
-        (audio:double* (zalloc (* 44100 2 audio_length)))
-	(samples_read (read_audio_data "/path/to/audiofile.wav"
-                                       audio
-                                       0
-                                       (* 44100 audio_length)))
+(bind-func dsp:DSP 100000000     ; make sure we allocate enough memory
+  (let ((abuf (AudioBuffer "assets/samples/glitch.wav"))
+        (nframes (num_frames abuf))
+        (audio_data:SAMPLE* null)
         (playhead 0)
         (fft_window_size 1024)
         (time_buffer:cpxd* (zalloc fft_window_size))
         (freq_buffer:cpxd* (zalloc fft_window_size))
         (i:i64 0))
+    (if (or (null? abuf)
+            (null? (audio_data_ptr abuf)))
+        (println "Error reading audio file.")
+        (set! audio_data (audio_data_ptr abuf)))
     (lambda (in time chan dat)
       (if (and (= (modulo playhead fft_window_size) 0)
-               (= chan 0.0))
-          (mag_spectrum (pref-ptr audio playhead) fft_window_size
+               (= chan 0))
+          (mag_spectrum (audio_data_ptr_seek abuf playhead 0) fft_window_size
                         time_buffer freq_buffer))
       ;; increment playhead once per (stereo) pair of samples
-      (if (= chan 1.0)
+      (if (= chan 0)
           (set! playhead (modulo (+ playhead 1)
                                  (* audio_length 44100))))
       ;; play audio
