@@ -230,10 +230,15 @@
 ;; seek into audio data
 (bind-func audio_data_ptr_seek
   (lambda (abuf:AudioBuffer* frame:i64 channel:i64)
+    (pref-ptr (audio_data_ptr abuf) (+ frame channel))))
+
+(bind-func audio_sample_seek
+  (lambda (abuf:AudioBuffer* frame:i64 channel:i64)
     (if (and (< frame (+ (num_frames abuf)
                          (frame_offset abuf)))
              (< channel (num_channels abuf)))
-        (pref-ptr (audio_data_ptr abuf) (+ frame channel)))))
+        (pref (audio_data_ptr abuf) (+ frame channel))
+        0.)))
 
 (bind-poly audio_data audio_data_ptr)
 (bind-poly audio_data audio_data_ptr_seek)
