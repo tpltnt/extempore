@@ -29,7 +29,7 @@
 
 (sys:load "libs/external/sndfile.xtm")
 
-(define *xtmlib-audio-inst-ext-loaded* #t)
+(define *xtmlib-audio-inst-ext-loaded* #f)
 
 ;; helper function for adding sample data to sampler
 ;; this assumes stereo files at the moment!!
@@ -41,48 +41,19 @@
 ;; ;; this reads 5000 frames starting 1000 frames into the file
 ;; (set-sampler-data sampler "/tmp/piano-C.aif" 60 1000 5000)
 (bind-func set_sample_data_
-  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* fname index:i64 frames_to_read read_offset bank:i32 printdata:i32)
-    (let ((abuf (AudioBuffer fname frames_to_read read_offset))
-          (channels (num_channels abuf))
-          (num (if (= 0 frames_to_read)
-                   (- (tref info 0) read_offset)
-                   frames_to_read)))
-      (if (not (null? audiofile))
-          (let ((samples:|20,|128,SAMPLE*||* (inst.samples))
-                (samples_channels:|20,|128,i64||* (inst.samples_channels))
-                (samples_length:|20,|128,i64||* (inst.samples_length))
-                (samples_read (read_audio_data fname adat (* read_offset channels) num printdata))
-                (olddat (if (<> 0 (pref (aref-ptr samples_length bank) index))
-                            (bitcast (pref (aref-ptr samples bank) index) i8*)
-                            null)))
-            ;;(printf "%lld samples read into: %lld\n" samples_read index)
-            (aset! (aref-ptr samples_length bank) index (/ samples_read channels)) ;num)
-            (aset! (aref-ptr samples_channels bank) index (convert channels))
-            (aset! (aref-ptr samples bank) index adat)
-            (sf_close audiofile)
-            (if (not (null? olddat)) (free olddat))            
-            1)
-          (begin
-            (sf_close audiofile)
-            (printf "%s\n" (sf_strerror audiofile))
-            0)))))
+  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* fname index:i64 frames_to_read read_offset bank:i32 print_info:i32)
+    (let ((samples:|20,|128,AudioBuffer*||* (inst.samples))
+          (abuf (AudioBuffer fname frames_to_read read_offset)))
+      (if (null? abuf)
+          0
+          (begin (aset! (aref-ptr samples bank) index abuf)
+                 1)))))
 
 (bind-func clear_sample_data_
   (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* index:i64 bank:i32)
-    (let ((samples:|20,|128,SAMPLE*||* (inst.samples))
-          (samples_channels:|20,|128,i64||* (inst.samples_channels))
-          (samples_length:|20,|128,i64||* (inst.samples_length))          
-          (olddat (if (<> 0 (pref (aref-ptr samples_length bank) index))
-                      (bitcast (pref (aref-ptr samples bank) index) i8*)
-                      null)))
-      (aset! (aref-ptr samples_length bank) index 0)
-      (aset! (aref-ptr samples_channels bank) index 0)
-      (aset! (aref-ptr samples bank) index null)
-      (if (null? olddat)
-          0
-          (begin (free olddat) 1)))))
+    (let ((samples:|20,|128,AudioBuffer*||* (inst.samples)))
+      (aset! (aref-ptr samples bank) index null))))
     
-
 ;; passing a length of 0 will read the whole file
 (define-macro (set-sampler-index inst fname index frames_to_read read_offset bank print?)
   `(let ((native (llvm:get-native-closure ,(symbol->string inst))))
@@ -96,26 +67,6 @@
                            (real->integer ,read_offset)
                            (real->integer ,bank)
                            ,(if (> print? 0) 1 0)))))
-
-
-
-;; helper functions for setting an individual samples offset
-;; i.e. set sample index 60 to start at 40000 samples into the audio buffer
-(bind-func set_sample_offset_
-  (lambda (sampler:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* index:i64 read_offset:i64)
-    (let ((offsets:|128,i64|* (sampler.samples_offsets)))
-      (pset! offsets index read_offset)
-      1)))
-
-
-;; (set-sample-offset sampler 60 50000)
-;; this would offset the sample at index 60 by 50000 samples
-(define-macro (set-sample-offset inst index offset)
-  `(let ((native (llvm:get-native-closure ,(symbol->string inst))))
-     (if (cptr? native)
-         (set_sample_offset_ native
-                             (real->integer ,index)
-                             (real->integer ,offset)))))
 
 ;; linear sampler
 ;;
@@ -228,9 +179,6 @@
   `(bind-func ,name 100000
      (let ((poly:i64 48)
            (samples:|20,|128,AudioBuffer*||* (zalloc)) ;; 128 samples * 20 'banks'
-           ;; (samples_length:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
-           ;; (samples_channels:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
-           ;; (samples_offsets:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
            (notes:[SAMPLE,SAMPLE,i64,i64]** (zalloc poly))
            (attack:i64 200)
            (decay:i64 200)
@@ -263,14 +211,11 @@
                                                      attack decay release sustain
                                                      note_starts free_note
                                                      (if (< nargs 2)
-                                                         (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
-                                                                       (aref-ptr samples_channels bank) new_idx 0.5 0.0)
+                                                         (,note_kernel (aref-ptr samples bank) new_idx 0.5 0.0)
                                                          (if (= nargs 2)
-                                                             (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
-                                                                           (aref-ptr samples_channels bank) new_idx (pref dargs 1) 0.0)
+                                                             (,note_kernel (aref-ptr samples bank) new_idx (pref dargs 1) 0.0)
                                                              ;; else (> nargs 2)
-                                                             (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
-                                                                           (aref-ptr samples_channels bank) new_idx (pref dargs 1) (pref dargs 2))))
+                                                             (,note_kernel (aref-ptr samples bank) new_idx (pref dargs 1) (pref dargs 2))))
                                                      note_zone))
                                       (pset! note_starts free_note start)
                                       (pop_zone))
@@ -278,8 +223,8 @@
                              0)))))
        (dotimes (kk 128)
          (dotimes (ii 10) ;banks
-           (aset! (aref-ptr samples_offsets ii) kk 0)
-           (aset! (aref-ptr samples_length ii) kk 0)))
+           (set_loop_start (aref (aref-ptr samples ii) kk) 0)
+           (set_loop_start (aref (aref-ptr samples ii) kk) 0)))
        (dotimes (ii poly) ;; sets all notes to inactive
          (pset! note_starts ii 9999999999999))
        (lambda (in:SAMPLE time:i64 chan:i64 dat:SAMPLE*)
@@ -613,3 +558,4 @@
 ;; (println 'Establish 'audio 'on 'utility 'process)
 ;; (ipc:audio-setup "utility")
 
+(define *xtmlib-audio-inst-ext-loaded* #t)

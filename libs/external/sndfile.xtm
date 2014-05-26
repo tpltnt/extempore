@@ -292,9 +292,12 @@
   (lambda (fname)
     (let ((info:sf_info* (salloc))
           (audiofile (sf_open fname SFM_READ info)))
-      (sf_close audiofile)
-      (* (sf_frames info)
-         (sf_channels info)))))
+      (if (null? audiofile)
+          0
+          (begin
+            (sf_close audiofile)
+            (* (sf_frames info)
+               (sf_channels info)))))))
 
 (bind-poly total_samples audiobuffer_total_samples)
 (bind-poly total_samples audio_file_total_samples)
