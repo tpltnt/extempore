@@ -171,8 +171,8 @@
 ;; 0 frames (total)
 ;; 1 samplerate
 ;; 2 channels
-;; 3 offset           
-;; 4 subframes (relates to offset)
+;; 3 loop_start
+;; 4 loop_frames
 ;; 5 SAMPLE* (data)
 ;; 6 filename
 (bind-type AudioBuffer <i64,i64,i64,i64,i64,SAMPLE*,String*>)
@@ -203,21 +203,21 @@
   (lambda (abuf:AudioBuffer* channels)
     (tset! abuf 2 channels)))
 
-(bind-func frame_offset
+(bind-func loop_start
   (lambda (abuf:AudioBuffer*)
     (tref abuf 3)))
 
-(bind-func set_frame_offset
+(bind-func set_loop_start
   (lambda (abuf:AudioBuffer* offset)
     (tset! abuf 3 offset)))
 
-(bind-func num_subframes
+(bind-func num_loop_frames
   (lambda (abuf:AudioBuffer*)
     (tref abuf 4)))
 
-(bind-func set_num_subframes
-  (lambda (abuf:AudioBuffer* subframes)
-    (tset! abuf 4 subframes)))
+(bind-func set_num_loop_frames
+  (lambda (abuf:AudioBuffer* loop_frames)
+    (tset! abuf 4 loop_frames)))
 
 (bind-func audio_data_ptr
   (lambda (abuf:AudioBuffer*)
@@ -254,23 +254,9 @@
 
 ;; create/destroy AudioBuffers
 
-(bind-func audiobuffer_halloc
+(bind-func create_audiobuffer_alloc
   (lambda (frames:i64 channels:i64)
-    (let ((abuf:AudioBuffer* (halloc))
-          (buf:SAMPLE* (halloc (* channels frames))))
-      (tfill! abuf
-              frames
-              (convert SAMPLERATE)
-              channels
-              0
-              frames
-              buf
-              (Str "Empty AudioBuffer."))
-      abuf)))
-
-(bind-func audiobuffer_zalloc
-  (lambda (frames:i64 channels:i64)
-    (let ((abuf:AudioBuffer* (halloc))
+    (let ((abuf:AudioBuffer* (zalloc))
           (buf:SAMPLE* (zalloc (* channels frames))))
       (tfill! abuf
               frames
@@ -282,11 +268,19 @@
               (Str "Empty AudioBuffer."))
       abuf)))
 
-(bind-func destroy_audiobuffer
-  (lambda (abuf:AudioBuffer*)
-    (free (audio_data_ptr abuf))
-    (free abuf)
-    void))
+(bind-func create_audiobuffer_no_alloc
+  "create an AudioBuffer with existing audio data"
+  (lambda (frames:i64 channels:i64 name:String* data:SAMPLE*)
+    (let ((abuf:AudioBuffer* (zalloc)))
+      (tfill! abuf
+              frames
+              (convert SAMPLERATE)
+              channels
+              0
+              frames
+              data
+              name)
+      abuf)))
 
 (bind-func num_samples
   "get the total number of samples (* frames channels) from an Audiobuffer"
@@ -370,7 +364,7 @@ starting at frame `read_offset'"
                        abuf)
                 (let ((frames_read 0))
                   ;; initialise and allocate memory for the AudioBuffer
-                  (set! abuf (audiobuffer_halloc frames_to_read channels))
+                  (set! abuf (create_audiobuffer_alloc frames_to_read channels))
                   (set_source_filename abuf (Str fname))
                   ;; read the audio data from the file
                   (set! frames_read (sf_readf audiofile
@@ -379,7 +373,7 @@ starting at frame `read_offset'"
                   (sf_close audiofile)
                   ;; set the metadata into the new Audiobuffer object
                   (set_num_frames abuf frames_read)
-                  (set_num_subframes abuf frames_read)
+                  (set_num_loop_frames abuf frames_read)
                   (set_num_channels abuf channels)
                   (set_file_samplerate abuf samplerate)
                   (if (< frames_read frames_to_read)
@@ -393,7 +387,8 @@ starting at frame `read_offset'"
     (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
 
 ;; poly'd constructors
-(bind-poly AudioBuffer audiobuffer_halloc)
+(bind-poly AudioBuffer create_audiobuffer_alloc)
+(bind-poly AudioBuffer create_audiobuffer_no_alloc)
 (bind-poly AudioBuffer create_audiobuffer_from_file_with_frames_and_offset)
 (bind-poly AudioBuffer create_audiobuffer_from_file)
 
@@ -449,5 +444,5 @@ Format flag is from libsndfile."
 ;; - do we pretty much want to hide the SF interface away?
 ;; - what's the point of the offset field? is it a playhead?
 ;; (I can see the usefulness of an offset for reading the file in, but after that?)
-;; - what's with the subframes thing?
+;; - what's with the loop_frames thing?
 ;; - case/naming conventions for the accessors
