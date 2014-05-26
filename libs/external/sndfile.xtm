@@ -253,10 +253,24 @@
 
 ;; create/destroy AudioBuffers
 
-(bind-func create_empty_audiobuffer
+(bind-func audiobuffer_halloc
   (lambda (frames:i64 channels:i64)
     (let ((abuf:AudioBuffer* (halloc))
           (buf:SAMPLE* (halloc (* channels frames))))
+      (tfill! abuf
+              frames
+              (convert SAMPLERATE)
+              channels
+              0
+              frames
+              buf
+              (Str "Empty AudioBuffer."))
+      abuf)))
+
+(bind-func audiobuffer_zalloc
+  (lambda (frames:i64 channels:i64)
+    (let ((abuf:AudioBuffer* (halloc))
+          (buf:SAMPLE* (zalloc (* channels frames))))
       (tfill! abuf
               frames
               (convert SAMPLERATE)
@@ -355,7 +369,7 @@ starting at frame `read_offset'"
                        abuf)
                 (let ((frames_read 0))
                   ;; initialise and allocate memory for the AudioBuffer
-                  (set! abuf (create_empty_audiobuffer frames_to_read channels))
+                  (set! abuf (audiobuffer_halloc frames_to_read channels))
                   (set_source_filename abuf (Str fname))
                   ;; read the audio data from the file
                   (set! frames_read (sf_readf audiofile
@@ -378,7 +392,7 @@ starting at frame `read_offset'"
     (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
 
 ;; poly'd constructors
-(bind-poly AudioBuffer create_empty_audiobuffer)
+(bind-poly AudioBuffer audiobuffer_halloc)
 (bind-poly AudioBuffer create_audiobuffer_from_file_with_frames_and_offset)
 (bind-poly AudioBuffer create_audiobuffer_from_file)
 
