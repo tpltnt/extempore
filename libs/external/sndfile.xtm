@@ -236,9 +236,8 @@
   (lambda (abuf:AudioBuffer* frame:i64 channel:i64)
     (let ((frames (num_frames abuf))
           (channels (num_channels abuf)))
-      (if (and (< frame frames)
-               (< channel channels))
-          (pref (audio_data_ptr abuf) (+ (* frame channels) channel))
+      (if (< frame frames)
+          (pref (audio_data_ptr abuf) (+ (* frame channels) (min channel channels)))
           0.))))
 
 (bind-poly audio_data audio_data_ptr)
