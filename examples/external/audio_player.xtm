@@ -15,7 +15,7 @@
 (sys:load "libs/external/sndfile.xtm")
 
 (bind-func dsp:DSP 20000000 ; make sure we allocate enough memory
-  (let ((abuf (AudioBuffer "assets/samples/glitch.wav"))
+  (let ((abuf (AudioBuffer "assets/samples/piano/60.wav"))
         (frames (num_frames abuf))
         (nchan (num_channels abuf))
         (playhead 0)
