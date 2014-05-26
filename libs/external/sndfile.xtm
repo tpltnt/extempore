@@ -281,11 +281,23 @@
               name)
       abuf)))
 
-(bind-func num_samples
+(bind-func audiobuffer_total_samples
   "get the total number of samples (* frames channels) from an Audiobuffer"
   (lambda (abuf:AudioBuffer*)
     (* (num_channels abuf)
        (num_frames abuf))))
+
+(bind-func audio_file_total_samples
+  "get the total number of samples (* frames channels) from an audio file"
+  (lambda (fname)
+    (let ((info:sf_info* (salloc))
+          (audiofile (sf_open fname SFM_READ info)))
+      (sf_close audiofile)
+      (* (sf_frames info)
+         (sf_channels info)))))
+
+(bind-poly total_samples audiobuffer_total_samples)
+(bind-poly total_samples audio_file_total_samples)
 
 (bind-func pretty_print_audio_file_info
   (lambda (abuf:AudioBuffer*)
@@ -383,6 +395,11 @@ starting at frame `read_offset'"
 (bind-func create_audiobuffer_from_file
   "read an audio file into an AudioBuffer"
   (lambda (fname)
+    (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
+
+(bind-func reload_audiobuffer_from_file_no_alloc
+  "read an audio file into an AudioBuffer, store audio data in `data'"
+  (lambda (abuf:AudioBuffer* fname data:SAMPLE*)
     (create_audiobuffer_from_file_with_frames_and_offset fname 0 0)))
 
 ;; poly'd constructors
