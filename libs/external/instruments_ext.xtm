@@ -41,19 +41,17 @@
 ;; ;; this reads 5000 frames starting 1000 frames into the file
 ;; (set-sampler-data sampler "/tmp/piano-C.aif" 60 1000 5000)
 (bind-func set_sample_data_
-  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* fname index:i64 offset lgth bank:i32 printdata:i32)
-    (let ((info:sf_info* (salloc))
-          (audiofile (sf_open fname 16 info))
-          (channels:i64 (convert (tref info 2)))
-          (num (if (= 0 lgth)
-                   (- (tref info 0) offset)
-                   lgth)))
-      (if (<> null audiofile)
-          (let ((adat:SAMPLE* (halloc (* num channels)))
-                (samples:|20,|128,SAMPLE*||* (inst.samples))
+  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* fname index:i64 frames_to_read read_offset bank:i32 printdata:i32)
+    (let ((abuf (AudioBuffer fname frames_to_read read_offset))
+          (channels (num_channels abuf))
+          (num (if (= 0 frames_to_read)
+                   (- (tref info 0) read_offset)
+                   frames_to_read)))
+      (if (not (null? audiofile))
+          (let ((samples:|20,|128,SAMPLE*||* (inst.samples))
                 (samples_channels:|20,|128,i64||* (inst.samples_channels))
                 (samples_length:|20,|128,i64||* (inst.samples_length))
-                (samples_read (read_audio_data fname adat (* offset channels) num printdata))
+                (samples_read (read_audio_data fname adat (* read_offset channels) num printdata))
                 (olddat (if (<> 0 (pref (aref-ptr samples_length bank) index))
                             (bitcast (pref (aref-ptr samples bank) index) i8*)
                             null)))
@@ -80,13 +78,13 @@
       (aset! (aref-ptr samples_length bank) index 0)
       (aset! (aref-ptr samples_channels bank) index 0)
       (aset! (aref-ptr samples bank) index null)
-      (if (null? olddat) 0
-          (begin (free olddat)
-                 1)))))
+      (if (null? olddat)
+          0
+          (begin (free olddat) 1)))))
     
 
 ;; passing a length of 0 will read the whole file
-(define-macro (set-sampler-index inst fname index offset lgth bank print?)
+(define-macro (set-sampler-index inst fname index frames_to_read read_offset bank print?)
   `(let ((native (llvm:get-native-closure ,(symbol->string inst))))
      (if (and (cptr? native)
               (> ,index 0)
@@ -94,8 +92,8 @@
          (set_sample_data_ native
                            ,fname
                            (real->integer ,index)
-                           (real->integer ,offset)
-                           (real->integer ,lgth)
+                           (real->integer ,frames_to_read)
+                           (real->integer ,read_offset)
                            (real->integer ,bank)
                            ,(if (> print? 0) 1 0)))))
 
@@ -104,9 +102,9 @@
 ;; helper functions for setting an individual samples offset
 ;; i.e. set sample index 60 to start at 40000 samples into the audio buffer
 (bind-func set_sample_offset_
-  (lambda (sampler:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* index:i64 offset:i64)
+  (lambda (sampler:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* index:i64 read_offset:i64)
     (let ((offsets:|128,i64|* (sampler.samples_offsets)))
-      (pset! offsets index offset)
+      (pset! offsets index read_offset)
       1)))
 
 
@@ -229,10 +227,10 @@
 (define-macro (define-sampler name note_kernel effect_kernel)
   `(bind-func ,name 100000
      (let ((poly:i64 48)
-           (samples:|20,|128,SAMPLE*||* (zalloc)) ;; 128 samples * 20 'banks'
-           (samples_length:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
-           (samples_channels:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
-           (samples_offsets:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
+           (samples:|20,|128,AudioBuffer*||* (zalloc)) ;; 128 samples * 20 'banks'
+           ;; (samples_length:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
+           ;; (samples_channels:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
+           ;; (samples_offsets:|20,|128,i64||* (zalloc)) ;; 128 samples * 10
            (notes:[SAMPLE,SAMPLE,i64,i64]** (zalloc poly))
            (attack:i64 200)
            (decay:i64 200)
@@ -255,7 +253,7 @@
                          (if (> free_note -1) ;; if we found a free poly spot assign a note
                              (begin (dotimes (idxi 128)
                                       (let ((v (llabs (- idx idxi))))
-                                        (if (and (<> (aref (aref-ptr samples_length bank) idxi) 0)
+                                        (if (and (<> (num_frames (aref (aref-ptr samples bank) idxi)) 0)
                                                  (< v closest))
                                             (begin (set! new_idx idxi)
                                                    (set! closest v) 0))))
@@ -270,6 +268,7 @@
                                                          (if (= nargs 2)
                                                              (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
                                                                            (aref-ptr samples_channels bank) new_idx (pref dargs 1) 0.0)
+                                                             ;; else (> nargs 2)
                                                              (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
                                                                            (aref-ptr samples_channels bank) new_idx (pref dargs 1) (pref dargs 2))))
                                                      note_zone))
@@ -330,8 +329,8 @@
                                                 (car samp-data)
                                                 (string-append ,(sys:expand-path path) "/" (car samp-data)))
                                             (+ ,midioffset (cadr samp-data))
-                                            (caddr samp-data)
                                             (cadddr samp-data)
+                                            (caddr samp-data)
                                             ,bank
                                             0))))
                  (,parser file-list))
