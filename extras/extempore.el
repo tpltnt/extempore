@@ -1560,7 +1560,7 @@ You shouldn't have to modify this list directly, use
   extempore code sent for evaluation) in all Extempore buffers."
   :global t
   :init-value nil
-  :lighter " exlog"
+  :lighter " Log"
   :keymap nil
   :group 'extempore
 
@@ -1592,7 +1592,20 @@ You shouldn't have to modify this list directly, use
   (mapc (lambda (function)
           (ad-add-advice
            function
-	   '(exlog-advice nil t (advice . (lambda () (exlog-log-command real-this-command current-prefix-arg (ad-get-args 0)))))
+           '(exlog-advice
+             nil t
+             (advice . (lambda ()
+                         (let ((args (ad-get-args 0)))
+                           (exlog-log-command
+                            real-this-command
+                            current-prefix-arg
+                            (if (member real-this-command
+                                        '(extempore-send-definition
+                                          extempore-send-region
+                                          extempore-send-buffer))
+                                (buffer-substring-no-properties
+                                 (car args) (cadr args))
+                              args))))))
            'after 'first)
           (ad-activate function))
         func-list))
@@ -1624,7 +1637,7 @@ You shouldn't have to modify this list directly, use
 (defun exlog-write-log-entry (bname command event args)
   (with-current-buffer (get-buffer-create "*exlog*")
     (insert
-     (format "(%s %s %s %s %s)\n"
+     (format "(#inst \"%s\" %s %s %s %s)\n"
              (format-time-string "%Y-%m-%dT%T.%3N")
              bname
              command
@@ -1637,14 +1650,11 @@ You shouldn't have to modify this list directly, use
     (exlog-write-log-entry (buffer-name)
                            (symbol-name command)
                            event
-                           (if (member command '(extempore-send-definition
-                                                 extempore-send-region
-                                                 extempore-send-buffer))
-                               (prin1-to-string (buffer-substring-no-properties (car args) (cadr args)))
-                             args))))
+                           args)))
 
 (defun exlog-pre-command-hook ()
-  (exlog-log-command real-this-command last-input-event current-prefix-arg))
+  (let (deactivate-mark)
+    (exlog-log-command real-this-command last-input-event current-prefix-arg)))
 
 ;; writing command list to file
 
@@ -1923,6 +1933,22 @@ If you don't want to be prompted for this name each time, set the
   (if (extempore-sb-slave-buffer-p (current-buffer))
       (extempore-sb-stop-pushing-current-buffer)
     (call-interactively #'extempore-sb-push-current-buffer)))
+
+;; on OSX, say command can generate output files
+
+(defun extempore-write-voice-files (string voice)
+  (interactive
+   (list (read-from-minibuffer "String: ")
+         (ido-completing-read "Voice: "
+                              '("Agnes" "Albert" "Alex" "Bad News" "Bahh" "Bells" "Boing" "Bruce" "Bubbles" "Cellos" "Deranged" "Fred" "Good News" "Hysterical" "Junior" "Kathy" "Pipe Organ" "Princess" "Ralph" "Trinoids" "Vicki" "Victoria" "Whisper" "Zarvox")
+                              nil
+                              t)))
+  (mkdir (format "speech-samples/%s" voice) t)
+  (dolist (word (split-string string " "))
+    (shell-command (format "say --output-file=speech-samples/%s/%s-22kHz.aiff --voice %s %s" voice word voice word))
+    ;; upsample to 44.1kHz
+    (shell-command (format "sox speech-samples/%s/%s-22kHz.aiff speech-samples/%s/%s.aiff rate 44100" voice word voice word))
+    (shell-command (format "rm speech-samples/%s/%s-22kHz.aiff" voice word))))
 
 (provide 'extempore)
 
