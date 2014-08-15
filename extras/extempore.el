@@ -2029,6 +2029,36 @@ If you don't want to be prompted for this name each time, set the
     (shell-command (format "sox speech-samples/%s/%s-22kHz.aiff speech-samples/%s/%s.aiff rate 44100" voice word voice word))
     (shell-command (format "rm speech-samples/%s/%s-22kHz.aiff" voice word))))
 
+;; stuff for parsing C header files
+
+(defun extempore-parser-extract-pointer-string (type-str)
+  (and (string-match "*+" type-str)
+       (match-string 0 type-str)))
+
+(defun extempore-parser-parse-arg (arg-str)
+  (let ((arg (cl-remove-if (lambda (s) (or (string= s "const")
+                                      (string= s "")))
+                           (split-string arg-str " "))))
+    (concat (car arg)
+            (extempore-parser-extract-pointer-string (cadr arg)))))
+
+(defun extempore-parser-parse-c-arg-string (arg-str)
+  (if (string= arg-str "(void)")
+      ""
+      (mapconcat #'extempore-parser-parse-arg
+                 (split-string (replace-regexp-in-string "[()]" "" arg-str) ",")
+                 ",")))
+
+;; ;; example of how it's done
+;; (with-current-buffer "opengl2.xtm"
+;;   (while (not (eobp))
+;;     (sp-down-sexp 3)
+;;     (backward-char)
+;;     (kill-sexp)
+;;     (insert (extempore-parser-parse-c-arg-string (current-kill 0)))
+;;     (beginning-of-line)
+;;     (forward-line)))
+
 (provide 'extempore)
 
 ;;; extempore.el ends here
