@@ -2036,9 +2036,8 @@ If you don't want to be prompted for this name each time, set the
        (match-string 0 type-str)))
 
 (defun extempore-parser-parse-arg (arg-str)
-  (let ((arg (cl-remove-if (lambda (s) (or (string= s "const")
-                                      (string= s "")))
-                           (split-string arg-str " "))))
+  (let ((arg (cl-remove-if (lambda (s) (string= s "const"))
+                           (split-string arg-str " " t))))
     (concat (car arg)
             (extempore-parser-extract-pointer-string (cadr arg)))))
 
@@ -2049,7 +2048,33 @@ If you don't want to be prompted for this name each time, set the
                  (split-string (replace-regexp-in-string "[()]" "" arg-str) ",")
                  ",")))
 
-;; ;; example of how it's done
+(defun extempore-parser-remove-ifdef-guards ()
+  (interactive)
+  (while (re-search-forward "#if\\(def\\)?" nil t)
+    (beginning-of-line)
+    (comment-dwim-line)
+    (if (re-search-forward "#endif")
+        (kill-line 0))))
+
+(defun extempore-parser-translate-define (define-line)
+  (let ((parsed-def (cl-remove-if (lambda (s) (string= s "#define"))
+                                  (split-string define-line " " t))))
+    (format "(bind-val %s i32 %s)"
+            (car parsed-def)
+            (let ((val-string (cadr parsed-def)))
+              (if (string-match "^0x" val-string)
+                  (concat "#" (substring val-string 1))
+                val-string)))))
+
+(defun extempore-parser-process-defines ()
+  (interactive)
+  (while (re-search-forward "#define" nil t)
+    (beginning-of-line)
+    (kill-line)
+    (insert (extempore-parser-translate-define (current-kill 0)))))
+
+
+
 ;; (with-current-buffer "opengl2.xtm"
 ;;   (while (not (eobp))
 ;;     (sp-down-sexp 3)
