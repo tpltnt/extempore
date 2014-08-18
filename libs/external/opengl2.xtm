@@ -58,7 +58,7 @@
 (bind-alias GLboolean i8) ;; unsigned char
 (bind-alias GLbitfield i32) ;; unsigned int
 (bind-alias GLbyte i8) ;; signed char
-(bind-alias GLshort short)
+(bind-alias GLshort i16)
 (bind-alias GLint i32)
 (bind-alias GLsizei i32)
 (bind-alias GLubyte i8) ;; unsigned char
@@ -1152,7 +1152,7 @@
 
 ;; /* TextureEnvMode */
 (bind-val GL_MODULATE                       i32 #x2100)
-(bind-val GL_DECAL                          i32 #0x2101)
+(bind-val GL_DECAL                          i32 #x2101)
 ;; /*      GL_BLEND */
 ;; /*      GL_REPLACE */
 
