@@ -2037,30 +2037,12 @@ If you don't want to be prompted for this name each time, set the
 
 ;; stuff for parsing C header files
 
-(defun extempore-parser-extract-pointer-string (type-str)
-  (and (string-match "*+" type-str)
-       (match-string 0 type-str)))
-
-(defun extempore-parser-parse-arg (arg-str)
-  (let ((arg (cl-remove-if (lambda (s) (string= s "const"))
-                           (split-string arg-str " " t))))
-    (concat (car arg)
-            (extempore-parser-extract-pointer-string (cadr arg)))))
-
-(defun extempore-parser-parse-c-arg-string (arg-str)
-  (if (string= arg-str "(void)")
-      ""
-      (mapconcat #'extempore-parser-parse-arg
-                 (split-string (replace-regexp-in-string "[()]" "" arg-str) ",")
-                 ",")))
-
 (defun extempore-parser-remove-ifdef-guards ()
   (interactive)
-  (while (re-search-forward "#if\\(def\\)?" nil t)
-    (beginning-of-line)
-    (comment-dwim-line)
-    (if (re-search-forward "#endif")
-        (kill-line 0))))
+  (while (re-search-forward (regexp-opt (list "#if" "#ifdef" "#ifndef" "#else" "#end" "#endif")) nil t)
+    (save-excursion
+      (beginning-of-line)
+      (comment-dwim-line))))
 
 (defun extempore-parser-translate-define (define-line)
   (let ((parsed-def (cl-remove-if (lambda (s) (string= s "#define"))
@@ -2079,16 +2061,53 @@ If you don't want to be prompted for this name each time, set the
     (kill-line)
     (insert (extempore-parser-translate-define (current-kill 0)))))
 
+(defun extempore-parser-extract-pointer-string (type-str)
+  (and (string-match "*+" type-str)
+       (match-string 0 type-str)))
 
+(defun extempore-parser-type-from-function-arg (arg-str)
+  (let ((elements (cl-remove-if (lambda (s) (string= s "const"))
+                                (split-string arg-str " " t))))
+    (concat (car elements)
+            (if (cadr elements)
+                (extempore-parser-extract-pointer-string (cadr elements))
+              ""))))
 
-;; (with-current-buffer "opengl2.xtm"
-;;   (while (not (eobp))
-;;     (sp-down-sexp 3)
-;;     (backward-char)
-;;     (kill-sexp)
-;;     (insert (extempore-parser-parse-c-arg-string (current-kill 0)))
-;;     (beginning-of-line)
-;;     (forward-line)))
+(defun extempore-parser-parse-all-c-args (all-args)
+  (if (or (string= all-args "")
+          (string= all-args "void"))
+      ""
+    (concat ","
+            (mapconcat #'extempore-parser-type-from-function-arg
+                       (split-string all-args ",")
+                       ","))))
+
+;; (extempore-parser-parse-all-c-args "GLfloat size")
+;; (extempore-parser-parse-all-c-args "GLsizei length, const GLvoid *pointer")
+;; (extempore-parser-parse-all-c-args "void")
+;; (extempore-parser-parse-all-c-args "const GLint *")
+;; (extempore-parser-parse-all-c-args "GLenum, const GLint *")
+;; (extempore-parser-parse-all-c-args "GLenum, GLenum, GLenum, GLenum, GLenum, GLenum")
+;; (extempore-parser-parse-all-c-args "")
+
+(defun extempore-parser-process-function-prototypes (libname)
+  (interactive "slibname: ")
+  (while (re-search-forward "extern" nil t)
+    (beginning-of-line)
+    (kill-line)
+    (let ((line (current-kill 0)))
+      (string-match "extern \\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]*(\\(.*\\))" line)
+      (let* ((return-type (match-string 1 line))
+             (function-name (match-string 2 line))
+             (arg-string (match-string 3 line))
+             (function-name-pointer-prefix (extempore-parser-extract-pointer-string function-name)))
+        (insert (format "(bind-lib %s %s [%s%s]*)"
+                        libname
+                        (if function-name-pointer-prefix
+                            (substring function-name (length function-name-pointer-prefix))
+                          function-name)
+                        (concat return-type function-name-pointer-prefix)
+                        (extempore-parser-parse-all-c-args arg-string)))))))
 
 (provide 'extempore)
 
