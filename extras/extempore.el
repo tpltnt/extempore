@@ -376,7 +376,13 @@ See `run-hooks'."
        '("\\_<[-+]?[/.[:digit:]]+?\\_>"
          (0 font-lock-constant-face))
        ;; hex literals
-       '("\\_<#[xob][[:digit:]]+?\\_>"
+       '("\\_<#x[0-9a-fA-F]+?\\_>"
+         (0 font-lock-constant-face))
+       ;; oct literals
+       '("\\_<#o[0-7]+?\\_>"
+         (0 font-lock-constant-face))
+       ;; binary literals
+       '("\\_<#b[01]+?\\_>"
          (0 font-lock-constant-face))
        ;; hack to make sure / gets highlighted as a function
        '("\\_</\\_>"
