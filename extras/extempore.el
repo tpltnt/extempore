@@ -2062,8 +2062,14 @@ If you don't want to be prompted for this name each time, set the
     (insert (extempore-parser-translate-define (current-kill 0)))))
 
 (defun extempore-parser-extract-pointer-string (type-str)
-  (and (string-match "*+" type-str)
-       (match-string 0 type-str)))
+  ;; TODO: should these numbers be multiplied, rather than added, in
+  ;; the case of e.g. **var[][]
+  (make-string (+ (length (and (string-match "*+" type-str)
+                               (match-string 0 type-str)))
+                  (/ (length (and (string-match "\\(\\[\\]\\)+" type-str)
+                                  (match-string 0 type-str)))
+                     2))
+               ?\*))
 
 (defun extempore-parser-type-from-function-arg (arg-str)
   (let ((elements (cl-remove-if (lambda (s) (string= s "const"))
@@ -2082,6 +2088,7 @@ If you don't want to be prompted for this name each time, set the
                        (split-string all-args ",")
                        ","))))
 
+;; here are some examples of strings which should parse correctly
 ;; (extempore-parser-parse-all-c-args "GLfloat size")
 ;; (extempore-parser-parse-all-c-args "GLsizei length, const GLvoid *pointer")
 ;; (extempore-parser-parse-all-c-args "void")
@@ -2089,6 +2096,7 @@ If you don't want to be prompted for this name each time, set the
 ;; (extempore-parser-parse-all-c-args "GLenum, const GLint *")
 ;; (extempore-parser-parse-all-c-args "GLenum, GLenum, GLenum, GLenum, GLenum, GLenum")
 ;; (extempore-parser-parse-all-c-args "")
+(extempore-parser-parse-all-c-args "(float part[], float q[], float qm, int nop, int idimp, int nxv, int nyv)")
 
 (defun extempore-parser-process-function-prototypes (libname)
   (interactive "slibname: ")
