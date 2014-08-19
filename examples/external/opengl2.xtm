@@ -1,0 +1,5 @@
+;; testing
+
+(sys:load "libs/external/opengl2.xtm")
+
+(get_llvm_path)
