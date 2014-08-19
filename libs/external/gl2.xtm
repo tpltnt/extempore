@@ -1,8 +1,14 @@
+;;; opengl2.xtm -- OpenGL 2.0 bindings for Extempore
+
 ;; Author: Ben Swift
 ;; Keywords: extempore
 ;; Required dylibs: libGL.dylib libGLU.dylib libGLUT.dylib
 
 ;;; Commentary:
+
+;; OpenGL 2.0 is now seriously old, and is only supported through
+;; compatibility profiles and such - check the details for your
+;; driver. This file is here for compatibility reasons.
 
 ;; If you'd prefer to use a more modern OpenGL (version 3+) library,
 ;; then then you should use libs/external/opengl4.xtm instead
@@ -11,9 +17,9 @@
 
 ;; Constants
 
-(sys:load "libs/opengl2.xtm")
-(sys:load-preload-check 'opengl2)
-(define *xtmlib-opengl2-loaded* #f)
+(sys:load "libs/gl2.xtm")
+(sys:load-preload-check 'gl2)
+(define *xtmlib-gl2-loaded* #f)
 
 ;; first make sure that math.xtm is loaded
 (set! *sys:precomp:suppress-precomp* #t)
@@ -22,7 +28,7 @@
 (sys:load "libs/core/std.xtm")
 (set! *sys:precomp:suppress-precomp* #f)
 
-(sys:precomp:insert-header "xtmopengl2")
+(sys:precomp:insert-header "xtmgl2")
 
 (sys:precomp:set-dylib-name-info
  'libGL
@@ -2385,5 +2391,5 @@
 (bind-lib libGL glUniformMatrix3x4fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 (bind-lib libGL glUniformMatrix4x3fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 
-(sys:precomp:insert-footer "xtmopengl2")
-(define *xtmlib-opengl2-loaded* #t)
+(sys:precomp:insert-footer "xtmgl2")
+(define *xtmlib-gl2-loaded* #t)
