@@ -2035,7 +2035,18 @@ If you don't want to be prompted for this name each time, set the
     (shell-command (format "sox speech-samples/%s/%s-22kHz.aiff speech-samples/%s/%s.aiff rate 44100" voice word voice word))
     (shell-command (format "rm speech-samples/%s/%s-22kHz.aiff" voice word))))
 
+;;;;;;;;;;;;;;;;;;;;;;
+;; extempore-parser ;;
+;;;;;;;;;;;;;;;;;;;;;;
+
 ;; stuff for parsing C header files
+
+(defun extempore-parser-handle-c-comments ()
+  (interactive)
+  (while (re-search-forward "/\\*" nil t)
+    (let ((comment-begin (- (point) 2)))
+      (re-search-forward "\\*/" nil t)
+      (comment-region comment-begin (point)))))
 
 (defun extempore-parser-remove-ifdef-guards ()
   (interactive)
@@ -2057,9 +2068,11 @@ If you don't want to be prompted for this name each time, set the
 (defun extempore-parser-process-defines ()
   (interactive)
   (while (re-search-forward "#define" nil t)
-    (beginning-of-line)
-    (kill-line)
-    (insert (extempore-parser-translate-define (current-kill 0)))))
+    (if (not (looking-back ";;.*" (line-beginning-position)))
+        (progn
+          (beginning-of-line)
+          (kill-line)
+          (insert (extempore-parser-translate-define (current-kill 0)))))))
 
 (defun extempore-parser-extract-pointer-string (type-str)
   ;; TODO: should these numbers be multiplied, rather than added, in
