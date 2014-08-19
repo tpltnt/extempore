@@ -2041,6 +2041,8 @@ If you don't want to be prompted for this name each time, set the
 
 ;; stuff for parsing C header files
 
+;; comments
+
 (defun extempore-parser-handle-c-comments ()
   (interactive)
   (while (re-search-forward "/\\*" nil t)
@@ -2054,6 +2056,8 @@ If you don't want to be prompted for this name each time, set the
     (save-excursion
       (beginning-of-line)
       (comment-dwim-line))))
+
+;; #define
 
 (defun extempore-parser-translate-define (define-line)
   (let ((parsed-def (cl-remove-if (lambda (s) (string= s "#define"))
@@ -2141,22 +2145,24 @@ If you don't want to be prompted for this name each time, set the
   (interactive
    (list (read-from-minibuffer "libname: ")
          (read-from-minibuffer "tokens to ignore: " "extern")))
-  (while (re-search-forward (format "^%s?[ ]?\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(.*\\))"
+  (while (re-search-forward (format "^%s?[ ]?\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*\\))"
                                     (regexp-opt (split-string ignore-tokens " " t)))
                             nil
                             t)
-    (let* ((return-type (match-string 1))
-           (function-name (match-string 2))
-           (arg-string (match-string 3))
-           (function-name-pointer-prefix (extempore-parser-extract-pointer-string function-name)))
-      (kill-whole-line)
-      (insert (format "(bind-lib %s %s [%s%s]*)\n"
-                      libname
-                      (if function-name-pointer-prefix
-                          (substring function-name (length function-name-pointer-prefix))
-                        function-name)
-                      (concat return-type function-name-pointer-prefix)
-                      (extempore-parser-parse-all-c-args arg-string))))))
+    (if (not (looking-back ";;.*" (line-beginning-position)))
+        (let* ((prototype-beginning (match-beginning 0))
+               (return-type (match-string 1))
+               (function-name (match-string 2))
+               (arg-string (replace-regexp-in-string "[\n]" "" (match-string 3)))
+               (function-name-pointer-prefix (extempore-parser-extract-pointer-string function-name)))
+          (kill-region prototype-beginning (line-end-position))
+          (insert (format "(bind-lib %s %s [%s%s]*)\n"
+                          libname
+                          (if function-name-pointer-prefix
+                              (substring function-name (length function-name-pointer-prefix))
+                            function-name)
+                          (concat return-type function-name-pointer-prefix)
+                          (extempore-parser-parse-all-c-args arg-string)))))))
 
 (provide 'extempore)
 
