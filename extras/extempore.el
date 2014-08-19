@@ -2078,6 +2078,8 @@ If you don't want to be prompted for this name each time, set the
           (kill-line)
           (insert (extempore-parser-translate-define (current-kill 0)))))))
 
+;; function prototypes
+
 (defun extempore-parser-extract-pointer-string (type-str)
   ;; TODO: should these numbers be multiplied, rather than added, in
   ;; the case of e.g. **var[][]
@@ -2116,10 +2118,17 @@ If you don't want to be prompted for this name each time, set the
 (defun extempore-parser-type-from-function-arg (arg-str)
   (let ((elements (cl-remove-if (lambda (s) (member s (list "const" "struct")))
                                 (split-string arg-str " " t))))
-    (concat (extempore-parser-map-c-type-to-xtlang-type (car elements))
-            (if (cadr elements)
-                (extempore-parser-extract-pointer-string (cadr elements))
-              ""))))
+    (cond ((= (length elements) 1)
+           (extempore-parser-map-c-type-to-xtlang-type (car elements)))
+          ((= (length elements) 2)
+           (concat (extempore-parser-map-c-type-to-xtlang-type (car elements))
+                   (extempore-parser-extract-pointer-string (cadr elements))))
+          ((= (length elements) 3)
+           (concat (extempore-parser-map-c-type-to-xtlang-type
+                    (concat (car elements) " " (cadr elements)))
+                   (extempore-parser-extract-pointer-string (caddr elements))))
+          (t (message "cannot parse arg string: \"%s\"" arg-str)
+             ""))))
 
 (defun extempore-parser-parse-all-c-args (all-args)
   (if (or (string= all-args "")
@@ -2130,7 +2139,7 @@ If you don't want to be prompted for this name each time, set the
                        (split-string all-args ",")
                        ","))))
 
-;; here are some examples of strings which should parse correctly
+;; ;; here are some examples of strings which should parse correctly
 ;; (extempore-parser-parse-all-c-args "GLfloat size")
 ;; (extempore-parser-parse-all-c-args "GLsizei length, const GLvoid *pointer")
 ;; (extempore-parser-parse-all-c-args "void")
@@ -2139,13 +2148,13 @@ If you don't want to be prompted for this name each time, set the
 ;; (extempore-parser-parse-all-c-args "GLenum, GLenum, GLenum, GLenum, GLenum, GLenum")
 ;; (extempore-parser-parse-all-c-args "")
 ;; (extempore-parser-parse-all-c-args "float part[], float q[], float qm, int nop, int idimp, int nxv, int nyv")
+;; (extempore-parser-parse-all-c-args "unsigned short GLhalfARB")
 
-;; TODO this only handles one-line prototypes at present
 (defun extempore-parser-process-function-prototypes (libname ignore-tokens)
   (interactive
    (list (read-from-minibuffer "libname: ")
          (read-from-minibuffer "tokens to ignore: " "extern")))
-  (while (re-search-forward (format "^%s?[ ]?\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*\\))"
+  (while (re-search-forward (format "^%s?[ ]?\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
                                     (regexp-opt (split-string ignore-tokens " " t)))
                             nil
                             t)
@@ -2153,16 +2162,46 @@ If you don't want to be prompted for this name each time, set the
         (let* ((prototype-beginning (match-beginning 0))
                (return-type (match-string 1))
                (function-name (match-string 2))
-               (arg-string (replace-regexp-in-string "[\n]" "" (match-string 3)))
+               (arg-string (extempore-parser-parse-all-c-args (replace-regexp-in-string "[\n]" "" (match-string 3))))
                (function-name-pointer-prefix (extempore-parser-extract-pointer-string function-name)))
           (kill-region prototype-beginning (line-end-position))
-          (insert (format "(bind-lib %s %s [%s%s]*)\n"
+          (insert (format "(bind-lib %s %s [%s%s]*)"
                           libname
                           (if function-name-pointer-prefix
                               (substring function-name (length function-name-pointer-prefix))
                             function-name)
                           (concat return-type function-name-pointer-prefix)
-                          (extempore-parser-parse-all-c-args arg-string)))))))
+                          arg-string))))))
+
+;; typedef
+
+;; only single-line, for multi-line example see
+;; `extempore-parser-process-function-prototypes'
+(defun extempore-parser-process-function-pointer-typedefs ()
+  (interactive)
+  (while (re-search-forward "^typedef \\([\\*[:word:]]*\\) (\\(\\*[ ]?[[:word:]]*\\))[ ]?(\\(.*\\))"
+                            nil t)
+    (if (not (looking-back ";;.*" (line-beginning-position)))
+        (let ((typedef-beginning (match-beginning 0))
+              (return-type (match-string 1))
+              (alias-name (replace-regexp-in-string "[* ]" "" (match-string 2)))
+              (arg-string (extempore-parser-parse-all-c-args (replace-regexp-in-string "[\n]" "" (match-string 3)))))
+          (kill-region typedef-beginning (line-end-position))
+          (insert (format "(bind-alias %s [%s%s]*)"
+                          alias-name
+                          return-type
+                          arg-string))))))
+
+;; this is just for simple ones
+(defun extempore-parser-process-typedefs ()
+  (interactive)
+  (while (re-search-forward "^typedef " nil t)
+    (if (not (looking-back ";;.*" (line-beginning-position)))
+        (progn (kill-region (match-beginning 0) (line-end-position))
+               (let ((typedef-string (replace-regexp-in-string ";" "" (substring (current-kill 0) 8))))
+                 (insert (format "(bind-alias %s %s)"
+                                 (car (reverse (split-string typedef-string " " t)))
+                                 (extempore-parser-type-from-function-arg typedef-string))))))))
 
 (provide 'extempore)
 
