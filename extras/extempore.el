@@ -2097,7 +2097,7 @@ If you don't want to be prompted for this name each time, set the
         c-type)))
 
 (defun extempore-parser-type-from-function-arg (arg-str)
-  (let ((elements (cl-remove-if (lambda (s) (string= s "const"))
+  (let ((elements (cl-remove-if (lambda (s) (member s (list "const" "struct")))
                                 (split-string arg-str " " t))))
     (concat (extempore-parser-map-c-type-to-xtlang-type (car elements))
             (if (cadr elements)
