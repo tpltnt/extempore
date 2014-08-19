@@ -1,0 +1,3682 @@
+;; /* switches to providing function pointers */
+;; /* #define GL_GLEXT_FUNCTION_POINTERS 1 */
+
+(bind-val GL_ARB_color_buffer_float i32 1)
+(bind-val GL_ARB_depth_buffer_float i32 1)
+(bind-val GL_ARB_depth_clamp i32 1)
+(bind-val GL_ARB_depth_texture i32 1)
+(bind-val GL_ARB_draw_buffers i32 1)
+(bind-val GL_ARB_draw_elements_base_vertex i32 1)
+(bind-val GL_ARB_draw_instanced i32 1)
+(bind-val GL_ARB_fragment_program i32 1)
+(bind-val GL_ARB_fragment_program_shadow i32 1)
+(bind-val GL_ARB_fragment_shader i32 1)
+(bind-val GL_ARB_framebuffer_object i32 1)
+(bind-val GL_ARB_framebuffer_sRGB i32 1)
+(bind-val GL_ARB_half_float_pixel i32 1)
+(bind-val GL_ARB_half_float_vertex i32 1)
+(bind-val GL_ARB_imaging i32 1)
+(bind-val GL_ARB_instanced_arrays i32 1)
+(bind-val GL_ARB_multisample i32 1)
+(bind-val GL_ARB_multitexture i32 1)
+(bind-val GL_ARB_occlusion_query i32 1)
+(bind-val GL_ARB_pixel_buffer_object i32 1)
+(bind-val GL_ARB_point_parameters i32 1)
+(bind-val GL_ARB_point_sprite i32 1)
+(bind-val GL_ARB_provoking_vertex i32 1)
+(bind-val GL_ARB_seamless_cube_map i32 1)
+(bind-val GL_ARB_shader_objects i32 1)
+(bind-val GL_ARB_shader_texture_lod i32 1)
+(bind-val GL_ARB_shading_language_100 i32 1)
+(bind-val GL_ARB_shadow i32 1)
+(bind-val GL_ARB_shadow_ambient i32 1)
+(bind-val GL_ARB_sync i32 1)
+(bind-val GL_ARB_texture_border_clamp i32 1)
+(bind-val GL_ARB_texture_compression i32 1)
+(bind-val GL_ARB_texture_compression_rgtc i32 1)
+(bind-val GL_ARB_texture_cube_map i32 1)
+(bind-val GL_ARB_texture_env_add i32 1)
+(bind-val GL_ARB_texture_env_combine i32 1)
+(bind-val GL_ARB_texture_env_crossbar i32 1)
+(bind-val GL_ARB_texture_env_dot3 i32 1)
+(bind-val GL_ARB_texture_float i32 1)
+(bind-val GL_ARB_texture_mirrored_repeat i32 1)
+(bind-val GL_ARB_texture_non_power_of_two i32 1)
+(bind-val GL_ARB_texture_rectangle i32 1)
+(bind-val GL_ARB_texture_rg i32 1)
+(bind-val GL_ARB_transpose_matrix i32 1)
+(bind-val GL_ARB_vertex_array_bgra i32 1)
+(bind-val GL_ARB_vertex_blend i32 1)
+(bind-val GL_ARB_vertex_buffer_object i32 1)
+(bind-val GL_ARB_vertex_program i32 1)
+(bind-val GL_ARB_vertex_shader i32 1)
+(bind-val GL_ARB_window_pos i32 1)
+(bind-val GL_EXT_abgr i32 1)
+(bind-val GL_EXT_bgra i32 1)
+(bind-val GL_EXT_bindable_uniform i32 1)
+(bind-val GL_EXT_blend_color i32 1)
+(bind-val GL_EXT_blend_equation_separate i32 1)
+(bind-val GL_EXT_blend_func_separate i32 1)
+(bind-val GL_EXT_blend_minmax i32 1)
+(bind-val GL_EXT_blend_subtract i32 1)
+(bind-val GL_EXT_clip_volume_hint i32 1)
+(bind-val GL_EXT_debug_label i32 1)
+(bind-val GL_EXT_debug_marker i32 1)
+(bind-val GL_EXT_depth_bounds_test i32 1)
+(bind-val GL_EXT_draw_buffers2 i32 1)
+(bind-val GL_EXT_draw_range_elements i32 1)
+(bind-val GL_EXT_fog_coord i32 1)
+(bind-val GL_EXT_framebuffer_blit i32 1)
+(bind-val GL_EXT_framebuffer_multisample i32 1)
+(bind-val GL_EXT_framebuffer_multisample_blit_scaled i32 1)
+(bind-val GL_EXT_framebuffer_object i32 1)
+(bind-val GL_EXT_framebuffer_sRGB i32 1)
+(bind-val GL_EXT_geometry_shader4 i32 1)
+(bind-val GL_EXT_gpu_program_parameters i32 1)
+(bind-val GL_EXT_gpu_shader4 i32 1)
+(bind-val GL_EXT_multi_draw_arrays i32 1)
+(bind-val GL_EXT_packed_depth_stencil i32 1)
+(bind-val GL_EXT_packed_float i32 1)
+(bind-val GL_EXT_provoking_vertex i32 1)
+(bind-val GL_EXT_rescale_normal i32 1)
+(bind-val GL_EXT_secondary_color i32 1)
+(bind-val GL_EXT_separate_specular_color i32 1)
+(bind-val GL_EXT_shadow_funcs i32 1)
+(bind-val GL_EXT_stencil_two_side i32 1)
+(bind-val GL_EXT_stencil_wrap i32 1)
+(bind-val GL_EXT_texture_array i32 1)
+(bind-val GL_EXT_texture_compression_dxt1 i32 1)
+(bind-val GL_EXT_texture_compression_s3tc i32 1)
+(bind-val GL_EXT_texture_env_add i32 1)
+(bind-val GL_EXT_texture_filter_anisotropic i32 1)
+(bind-val GL_EXT_texture_integer i32 1)
+(bind-val GL_EXT_texture_lod_bias i32 1)
+(bind-val GL_EXT_texture_mirror_clamp i32 1)
+(bind-val GL_EXT_texture_rectangle i32 1)
+(bind-val GL_EXT_texture_shared_exponent i32 1)
+(bind-val GL_EXT_texture_sRGB i32 1)
+(bind-val GL_EXT_texture_sRGB_decode i32 1)
+(bind-val GL_EXT_timer_query i32 1)
+(bind-val GL_EXT_transform_feedback i32 1)
+(bind-val GL_EXT_vertex_array_bgra i32 1)
+(bind-val GL_APPLE_aux_depth_stencil i32 1)
+(bind-val GL_APPLE_client_storage i32 1)
+(bind-val GL_APPLE_element_array i32 1)
+(bind-val GL_APPLE_fence i32 1)
+(bind-val GL_APPLE_float_pixels i32 1)
+(bind-val GL_APPLE_flush_buffer_range i32 1)
+(bind-val GL_APPLE_flush_render i32 1)
+(bind-val GL_APPLE_object_purgeable i32 1)
+(bind-val GL_APPLE_packed_pixels i32 1)
+(bind-val GL_APPLE_pixel_buffer i32 1)
+(bind-val GL_APPLE_rgb_422 i32 1)
+(bind-val GL_APPLE_row_bytes i32 1)
+(bind-val GL_APPLE_specular_vector i32 1)
+(bind-val GL_APPLE_texture_range i32 1)
+(bind-val GL_APPLE_transform_hint i32 1)
+(bind-val GL_APPLE_vertex_array_object i32 1)
+(bind-val GL_APPLE_vertex_array_range i32 1)
+(bind-val GL_APPLE_vertex_point_size i32 1)
+(bind-val GL_APPLE_vertex_program_evaluators i32 1)
+(bind-val GL_APPLE_ycbcr_422 i32 1)
+(bind-val GL_ATI_blend_equation_separate i32 1)
+(bind-val GL_ATI_blend_weighted_minmax i32 1)
+(bind-val GL_ATI_point_cull_mode i32 1)
+(bind-val GL_ATI_separate_stencil i32 1)
+(bind-val GL_ATI_texture_compression_3dc i32 1)
+(bind-val GL_ATI_texture_env_combine3 i32 1)
+(bind-val GL_ATI_texture_float i32 1)
+(bind-val GL_ATI_texture_mirror_once i32 1)
+(bind-val GL_IBM_rasterpos_clip i32 1)
+(bind-val GL_NV_blend_square i32 1)
+(bind-val GL_NV_conditional_render i32 1)
+(bind-val GL_NV_depth_clamp i32 1)
+(bind-val GL_NV_fog_distance i32 1)
+(bind-val GL_NV_fragment_program_option i32 1)
+(bind-val GL_NV_fragment_program2 i32 1)
+(bind-val GL_NV_light_max_exponent i32 1)
+(bind-val GL_NV_multisample_filter_hint i32 1)
+(bind-val GL_NV_point_sprite i32 1)
+(bind-val GL_NV_texgen_reflection i32 1)
+(bind-val GL_NV_texture_barrier i32 1)
+(bind-val GL_NV_vertex_program2_option i32 1)
+(bind-val GL_NV_vertex_program3 i32 1)
+(bind-val GL_SGI_color_matrix i32 1)
+(bind-val GL_SGIS_generate_mipmap i32 1)
+(bind-val GL_SGIS_texture_edge_clamp i32 1)
+(bind-val GL_SGIS_texture_lod i32 1)
+
+;; #ifdef GL_GLEXT_WUNDEF_SUPPORT
+(bind-val GL_EXT_color_subtable i32 0)
+(bind-val GL_EXT_compiled_vertex_array i32 0)
+(bind-val GL_EXT_convolution i32 0)
+(bind-val GL_EXT_copy_texture i32 0)
+(bind-val GL_EXT_histogram i32 0)
+(bind-val GL_EXT_packed_pixels i32 0)
+(bind-val GL_EXT_paletted_texture i32 0)
+(bind-val GL_EXT_polygon_offset i32 0)
+(bind-val GL_EXT_shared_texture_palette i32 0)
+(bind-val GL_EXT_subtexture i32 0)
+(bind-val GL_EXT_texture i32 0)
+(bind-val GL_EXT_texture_cube_map i32 0)
+(bind-val GL_EXT_texture_env_combine i32 0)
+(bind-val GL_EXT_texture_object i32 0)
+(bind-val GL_EXT_texture3D i32 0)
+(bind-val GL_EXT_vertex_array i32 0)
+(bind-val GL_ATI_array_rev_comps_in_4_bytes i32 0)
+(bind-val GL_ATI_pn_triangles i32 0)
+(bind-val GL_ATI_text_fragment_shader i32 0)
+(bind-val GL_ATIX_pn_triangles i32 0)
+(bind-val GL_HP_convolution_border_modes i32 0)
+(bind-val GL_NV_register_combiners i32 0)
+(bind-val GL_NV_register_combiners2 i32 0)
+(bind-val GL_NV_texture_shader i32 0)
+(bind-val GL_NV_texture_shader2 i32 0)
+(bind-val GL_NV_texture_shader3 i32 0)
+(bind-val GL_NV_vertex_array_range i32 0)
+(bind-val GL_NV_vertex_array_range2 i32 0)
+(bind-val GL_NV_vertex_program i32 0)
+(bind-val GL_SGI_color_table i32 0)
+(bind-val GL_SGIS_point_parameters i32 0)
+(bind-val GL_SGIS_texture_border_clamp i32 0)
+(bind-val GL_SGIX_depth_texture i32 0)
+;; #endif
+
+;; /*************************************************************/
+
+;; #ifndef __gltypes_h_
+;; #if GL_ARB_half_float_pixel
+(bind-alias GLhalfARB i16)
+;; #endif
+
+;; #if GL_ARB_half_float_vertex
+(bind-alias GLhalf i16)
+;; #endif
+
+;; #if GL_ARB_shader_objects
+(bind-alias GLcharARB i8)
+(bind-alias *GLhandleARB void*)
+;; #endif
+
+;; #if GL_ARB_sync
+(bind-alias GLint64 i64)
+(bind-alias GLuint64 i64)
+(bind-alias *GLsync __GLsync*)
+;; #endif
+
+;; #if GL_ARB_vertex_buffer_object
+(bind-alias GLintptrARB i32)
+(bind-alias GLsizeiptrARB i32)
+;; #endif
+
+;; #if GL_EXT_timer_query
+(bind-alias GLint64EXT i64)
+(bind-alias GLuint64EXT i64)
+;; #endif
+;; #endif
+
+;; /*************************************************************/
+(bind-val GL_GLEXT_VERSION i32 8)
+
+;; #if GL_ARB_color_buffer_float
+(bind-val GL_RGBA_FLOAT_MODE_ARB i32 #x8820)
+(bind-val GL_CLAMP_VERTEX_COLOR_ARB i32 #x891A)
+(bind-val GL_CLAMP_FRAGMENT_COLOR_ARB i32 #x891B)
+(bind-val GL_CLAMP_READ_COLOR_ARB i32 #x891C)
+(bind-val GL_FIXED_ONLY_ARB i32 #x891D)
+;; #endif
+
+;; #if GL_ARB_depth_buffer_float
+(bind-val GL_DEPTH_COMPONENT32F i32 #x8CAC)
+(bind-val GL_DEPTH32F_STENCIL8 i32 #x8CAD)
+(bind-val GL_FLOAT_32_UNSIGNED_INT_24_8_REV i32 #x8DAD)
+;; #endif
+
+;; #if GL_ARB_depth_clamp
+(bind-val GL_DEPTH_CLAMP i32 #x864F)
+;; #endif
+
+;; #if GL_ARB_depth_texture
+(bind-val GL_DEPTH_COMPONENT16_ARB i32 #x81A5)
+(bind-val GL_DEPTH_COMPONENT24_ARB i32 #x81A6)
+(bind-val GL_DEPTH_COMPONENT32_ARB i32 #x81A7)
+(bind-val GL_TEXTURE_DEPTH_SIZE_ARB i32 #x884A)
+(bind-val GL_DEPTH_TEXTURE_MODE_ARB i32 #x884B)
+;; #endif
+
+;; #if GL_ARB_draw_buffers
+(bind-val GL_MAX_DRAW_BUFFERS_ARB i32 #x8824)
+(bind-val GL_DRAW_BUFFER0_ARB i32 #x8825)
+(bind-val GL_DRAW_BUFFER1_ARB i32 #x8826)
+(bind-val GL_DRAW_BUFFER2_ARB i32 #x8827)
+(bind-val GL_DRAW_BUFFER3_ARB i32 #x8828)
+(bind-val GL_DRAW_BUFFER4_ARB i32 #x8829)
+(bind-val GL_DRAW_BUFFER5_ARB i32 #x882A)
+(bind-val GL_DRAW_BUFFER6_ARB i32 #x882B)
+(bind-val GL_DRAW_BUFFER7_ARB i32 #x882C)
+(bind-val GL_DRAW_BUFFER8_ARB i32 #x882D)
+(bind-val GL_DRAW_BUFFER9_ARB i32 #x882E)
+(bind-val GL_DRAW_BUFFER10_ARB i32 #x882F)
+(bind-val GL_DRAW_BUFFER11_ARB i32 #x8830)
+(bind-val GL_DRAW_BUFFER12_ARB i32 #x8831)
+(bind-val GL_DRAW_BUFFER13_ARB i32 #x8832)
+(bind-val GL_DRAW_BUFFER14_ARB i32 #x8833)
+(bind-val GL_DRAW_BUFFER15_ARB i32 #x8834)
+;; #endif
+
+;; #if GL_ARB_fragment_program
+(bind-val GL_FRAGMENT_PROGRAM_ARB i32 #x8804)
+(bind-val GL_PROGRAM_ALU_INSTRUCTIONS_ARB i32 #x8805)
+(bind-val GL_PROGRAM_TEX_INSTRUCTIONS_ARB i32 #x8806)
+(bind-val GL_PROGRAM_TEX_INDIRECTIONS_ARB i32 #x8807)
+(bind-val GL_PROGRAM_NATIVE_ALU_INSTRUCTIONS_ARB i32 #x8808)
+(bind-val GL_PROGRAM_NATIVE_TEX_INSTRUCTIONS_ARB i32 #x8809)
+(bind-val GL_PROGRAM_NATIVE_TEX_INDIRECTIONS_ARB i32 #x880A)
+(bind-val GL_MAX_PROGRAM_ALU_INSTRUCTIONS_ARB i32 #x880B)
+(bind-val GL_MAX_PROGRAM_TEX_INSTRUCTIONS_ARB i32 #x880C)
+(bind-val GL_MAX_PROGRAM_TEX_INDIRECTIONS_ARB i32 #x880D)
+(bind-val GL_MAX_PROGRAM_NATIVE_ALU_INSTRUCTIONS_ARB i32 #x880E)
+(bind-val GL_MAX_PROGRAM_NATIVE_TEX_INSTRUCTIONS_ARB i32 #x880F)
+(bind-val GL_MAX_PROGRAM_NATIVE_TEX_INDIRECTIONS_ARB i32 #x8810)
+(bind-val GL_MAX_TEXTURE_COORDS_ARB i32 #x8871)
+(bind-val GL_MAX_TEXTURE_IMAGE_UNITS_ARB i32 #x8872)
+;; #endif
+
+;; #if GL_ARB_fragment_shader
+(bind-val GL_FRAGMENT_SHADER_ARB i32 #x8B30)
+(bind-val GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB i32 #x8B49)
+(bind-val GL_FRAGMENT_SHADER_DERIVATIVE_HINT_ARB i32 #x8B8B)
+(bind-val GL_MAX_TEXTURE_COORDS_ARB i32 #x8871)
+(bind-val GL_MAX_TEXTURE_IMAGE_UNITS_ARB i32 #x8872)
+;; #endif
+
+;; #if GL_ARB_framebuffer_object
+(bind-val GL_INVALID_FRAMEBUFFER_OPERATION i32 #x0506)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING i32 #x8210)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE i32 #x8211)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE i32 #x8212)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE i32 #x8213)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE i32 #x8214)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE i32 #x8215)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE i32 #x8216)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE i32 #x8217)
+(bind-val GL_FRAMEBUFFER_DEFAULT i32 #x8218)
+(bind-val GL_FRAMEBUFFER_UNDEFINED i32 #x8219)
+(bind-val GL_DEPTH_STENCIL_ATTACHMENT i32 #x821A)
+(bind-val GL_MAX_RENDERBUFFER_SIZE i32 #x84E8)
+(bind-val GL_DEPTH_STENCIL i32 #x84F9)
+(bind-val GL_UNSIGNED_INT_24_8 i32 #x84FA)
+(bind-val GL_DEPTH24_STENCIL8 i32 #x88F0)
+(bind-val GL_TEXTURE_STENCIL_SIZE i32 #x88F1)
+(bind-val GL_TEXTURE_RED_TYPE i32 #x8C10)
+(bind-val GL_TEXTURE_GREEN_TYPE i32 #x8C11)
+(bind-val GL_TEXTURE_BLUE_TYPE i32 #x8C12)
+(bind-val GL_TEXTURE_ALPHA_TYPE i32 #x8C13)
+(bind-val GL_TEXTURE_DEPTH_TYPE i32 #x8C16)
+(bind-val GL_UNSIGNED_NORMALIZED i32 #x8C17)
+(bind-val GL_FRAMEBUFFER_BINDING i32 #x8CA6)
+(bind-val GL_DRAW_FRAMEBUFFER_BINDING i32 #x8CA6)
+(bind-val GL_RENDERBUFFER_BINDING i32 #x8CA7)
+(bind-val GL_READ_FRAMEBUFFER i32 #x8CA8)
+(bind-val GL_DRAW_FRAMEBUFFER i32 #x8CA9)
+(bind-val GL_READ_FRAMEBUFFER_BINDING i32 #x8CAA)
+(bind-val GL_RENDERBUFFER_SAMPLES i32 #x8CAB)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE i32 #x8CD0)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME i32 #x8CD1)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL i32 #x8CD2)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE i32 #x8CD3)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER i32 #x8CD4)
+(bind-val GL_FRAMEBUFFER_COMPLETE i32 #x8CD5)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT i32 #x8CD6)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT i32 #x8CD7)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER i32 #x8CDB)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER i32 #x8CDC)
+(bind-val GL_FRAMEBUFFER_UNSUPPORTED i32 #x8CDD)
+(bind-val GL_MAX_COLOR_ATTACHMENTS i32 #x8CDF)
+(bind-val GL_COLOR_ATTACHMENT0 i32 #x8CE0)
+(bind-val GL_COLOR_ATTACHMENT1 i32 #x8CE1)
+(bind-val GL_COLOR_ATTACHMENT2 i32 #x8CE2)
+(bind-val GL_COLOR_ATTACHMENT3 i32 #x8CE3)
+(bind-val GL_COLOR_ATTACHMENT4 i32 #x8CE4)
+(bind-val GL_COLOR_ATTACHMENT5 i32 #x8CE5)
+(bind-val GL_COLOR_ATTACHMENT6 i32 #x8CE6)
+(bind-val GL_COLOR_ATTACHMENT7 i32 #x8CE7)
+(bind-val GL_COLOR_ATTACHMENT8 i32 #x8CE8)
+(bind-val GL_COLOR_ATTACHMENT9 i32 #x8CE9)
+(bind-val GL_COLOR_ATTACHMENT10 i32 #x8CEA)
+(bind-val GL_COLOR_ATTACHMENT11 i32 #x8CEB)
+(bind-val GL_COLOR_ATTACHMENT12 i32 #x8CEC)
+(bind-val GL_COLOR_ATTACHMENT13 i32 #x8CED)
+(bind-val GL_COLOR_ATTACHMENT14 i32 #x8CEE)
+(bind-val GL_COLOR_ATTACHMENT15 i32 #x8CEF)
+(bind-val GL_DEPTH_ATTACHMENT i32 #x8D00)
+(bind-val GL_STENCIL_ATTACHMENT i32 #x8D20)
+(bind-val GL_FRAMEBUFFER i32 #x8D40)
+(bind-val GL_RENDERBUFFER i32 #x8D41)
+(bind-val GL_RENDERBUFFER_WIDTH i32 #x8D42)
+(bind-val GL_RENDERBUFFER_HEIGHT i32 #x8D43)
+(bind-val GL_RENDERBUFFER_INTERNAL_FORMAT i32 #x8D44)
+(bind-val GL_STENCIL_INDEX1 i32 #x8D46)
+(bind-val GL_STENCIL_INDEX4 i32 #x8D47)
+(bind-val GL_STENCIL_INDEX8 i32 #x8D48)
+(bind-val GL_STENCIL_INDEX16 i32 #x8D49)
+(bind-val GL_RENDERBUFFER_RED_SIZE i32 #x8D50)
+(bind-val GL_RENDERBUFFER_GREEN_SIZE i32 #x8D51)
+(bind-val GL_RENDERBUFFER_BLUE_SIZE i32 #x8D52)
+(bind-val GL_RENDERBUFFER_ALPHA_SIZE i32 #x8D53)
+(bind-val GL_RENDERBUFFER_DEPTH_SIZE i32 #x8D54)
+(bind-val GL_RENDERBUFFER_STENCIL_SIZE i32 #x8D55)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE i32 #x8D56)
+(bind-val GL_MAX_SAMPLES i32 #x8D57)
+;; #endif
+
+;; #if GL_ARB_framebuffer_sRGB
+(bind-val GL_FRAMEBUFFER_SRGB i32 #x8DB9)
+;; #endif
+
+;; #if GL_ARB_half_float_pixel
+(bind-val GL_HALF_FLOAT_ARB i32 #x140B)
+;; #endif
+
+;; #if GL_ARB_half_float_vertex
+(bind-val GL_HALF_FLOAT i32 #x140B)
+;; #endif
+
+;; #if GL_ARB_instanced_arrays
+(bind-val GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ARB i32 #x88FE)
+;; #endif
+
+;; #if GL_ARB_multisample
+(bind-val GL_MULTISAMPLE_ARB i32 #x809D)
+(bind-val GL_SAMPLE_ALPHA_TO_COVERAGE_ARB i32 #x809E)
+(bind-val GL_SAMPLE_ALPHA_TO_ONE_ARB i32 #x809F)
+(bind-val GL_SAMPLE_COVERAGE_ARB i32 #x80A0)
+(bind-val GL_SAMPLE_BUFFERS_ARB i32 #x80A8)
+(bind-val GL_SAMPLES_ARB i32 #x80A9)
+(bind-val GL_SAMPLE_COVERAGE_VALUE_ARB i32 #x80AA)
+(bind-val GL_SAMPLE_COVERAGE_INVERT_ARB i32 #x80AB)
+(bind-val GL_MULTISAMPLE_BIT_ARB i32 #x20000000)
+;; #endif
+
+;; #if GL_ARB_multitexture
+(bind-val GL_TEXTURE0_ARB i32 #x84C0)
+(bind-val GL_TEXTURE1_ARB i32 #x84C1)
+(bind-val GL_TEXTURE2_ARB i32 #x84C2)
+(bind-val GL_TEXTURE3_ARB i32 #x84C3)
+(bind-val GL_TEXTURE4_ARB i32 #x84C4)
+(bind-val GL_TEXTURE5_ARB i32 #x84C5)
+(bind-val GL_TEXTURE6_ARB i32 #x84C6)
+(bind-val GL_TEXTURE7_ARB i32 #x84C7)
+(bind-val GL_TEXTURE8_ARB i32 #x84C8)
+(bind-val GL_TEXTURE9_ARB i32 #x84C9)
+(bind-val GL_TEXTURE10_ARB i32 #x84CA)
+(bind-val GL_TEXTURE11_ARB i32 #x84CB)
+(bind-val GL_TEXTURE12_ARB i32 #x84CC)
+(bind-val GL_TEXTURE13_ARB i32 #x84CD)
+(bind-val GL_TEXTURE14_ARB i32 #x84CE)
+(bind-val GL_TEXTURE15_ARB i32 #x84CF)
+(bind-val GL_TEXTURE16_ARB i32 #x84D0)
+(bind-val GL_TEXTURE17_ARB i32 #x84D1)
+(bind-val GL_TEXTURE18_ARB i32 #x84D2)
+(bind-val GL_TEXTURE19_ARB i32 #x84D3)
+(bind-val GL_TEXTURE20_ARB i32 #x84D4)
+(bind-val GL_TEXTURE21_ARB i32 #x84D5)
+(bind-val GL_TEXTURE22_ARB i32 #x84D6)
+(bind-val GL_TEXTURE23_ARB i32 #x84D7)
+(bind-val GL_TEXTURE24_ARB i32 #x84D8)
+(bind-val GL_TEXTURE25_ARB i32 #x84D9)
+(bind-val GL_TEXTURE26_ARB i32 #x84DA)
+(bind-val GL_TEXTURE27_ARB i32 #x84DB)
+(bind-val GL_TEXTURE28_ARB i32 #x84DC)
+(bind-val GL_TEXTURE29_ARB i32 #x84DD)
+(bind-val GL_TEXTURE30_ARB i32 #x84DE)
+(bind-val GL_TEXTURE31_ARB i32 #x84DF)
+(bind-val GL_ACTIVE_TEXTURE_ARB i32 #x84E0)
+(bind-val GL_CLIENT_ACTIVE_TEXTURE_ARB i32 #x84E1)
+(bind-val GL_MAX_TEXTURE_UNITS_ARB i32 #x84E2)
+;; #endif
+
+;; #if GL_ARB_occlusion_query
+(bind-val GL_SAMPLES_PASSED_ARB i32 #x8914)
+(bind-val GL_QUERY_COUNTER_BITS_ARB i32 #x8864)
+(bind-val GL_CURRENT_QUERY_ARB i32 #x8865)
+(bind-val GL_QUERY_RESULT_ARB i32 #x8866)
+(bind-val GL_QUERY_RESULT_AVAILABLE_ARB i32 #x8867)
+;; #endif
+
+;; #if GL_ARB_pixel_buffer_object
+(bind-val GL_PIXEL_PACK_BUFFER_ARB i32 #x88EB)
+(bind-val GL_PIXEL_UNPACK_BUFFER_ARB i32 #x88EC)
+(bind-val GL_PIXEL_PACK_BUFFER_BINDING_ARB i32 #x88ED)
+(bind-val GL_PIXEL_UNPACK_BUFFER_BINDING_ARB i32 #x88EF)
+;; #endif
+
+;; #if GL_ARB_point_parameters
+(bind-val GL_POINT_SIZE_MIN_ARB i32 #x8126)
+(bind-val GL_POINT_SIZE_MAX_ARB i32 #x8127)
+(bind-val GL_POINT_FADE_THRESHOLD_SIZE_ARB i32 #x8128)
+(bind-val GL_POINT_DISTANCE_ATTENUATION_ARB i32 #x8129)
+;; #endif
+
+;; #if GL_ARB_point_sprite
+(bind-val GL_POINT_SPRITE_ARB i32 #x8861)
+(bind-val GL_COORD_REPLACE_ARB i32 #x8862)
+;; #endif
+
+;; #if GL_ARB_provoking_vertex
+(bind-val GL_FIRST_VERTEX_CONVENTION i32 #x8E4D)
+(bind-val GL_LAST_VERTEX_CONVENTION i32 #x8E4E)
+(bind-val GL_PROVOKING_VERTEX i32 #x8E4F)
+(bind-val GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION i32 #x8E4C)
+;; #endif
+
+;; #if GL_ARB_seamless_cube_map
+(bind-val GL_TEXTURE_CUBE_MAP_SEAMLESS i32 #x884F)
+;; #endif
+
+;; #if GL_ARB_shader_objects
+(bind-val GL_PROGRAM_OBJECT_ARB i32 #x8B40)
+(bind-val GL_OBJECT_TYPE_ARB i32 #x8B4E)
+(bind-val GL_OBJECT_SUBTYPE_ARB i32 #x8B4F)
+(bind-val GL_OBJECT_DELETE_STATUS_ARB i32 #x8B80)
+(bind-val GL_OBJECT_COMPILE_STATUS_ARB i32 #x8B81)
+(bind-val GL_OBJECT_LINK_STATUS_ARB i32 #x8B82)
+(bind-val GL_OBJECT_VALIDATE_STATUS_ARB i32 #x8B83)
+(bind-val GL_OBJECT_INFO_LOG_LENGTH_ARB i32 #x8B84)
+(bind-val GL_OBJECT_ATTACHED_OBJECTS_ARB i32 #x8B85)
+(bind-val GL_OBJECT_ACTIVE_UNIFORMS_ARB i32 #x8B86)
+(bind-val GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB i32 #x8B87)
+(bind-val GL_OBJECT_SHADER_SOURCE_LENGTH_ARB i32 #x8B88)
+(bind-val GL_SHADER_OBJECT_ARB i32 #x8B48)
+(bind-val GL_FLOAT_VEC2_ARB i32 #x8B50)
+(bind-val GL_FLOAT_VEC3_ARB i32 #x8B51)
+(bind-val GL_FLOAT_VEC4_ARB i32 #x8B52)
+(bind-val GL_INT_VEC2_ARB i32 #x8B53)
+(bind-val GL_INT_VEC3_ARB i32 #x8B54)
+(bind-val GL_INT_VEC4_ARB i32 #x8B55)
+(bind-val GL_BOOL_ARB i32 #x8B56)
+(bind-val GL_BOOL_VEC2_ARB i32 #x8B57)
+(bind-val GL_BOOL_VEC3_ARB i32 #x8B58)
+(bind-val GL_BOOL_VEC4_ARB i32 #x8B59)
+(bind-val GL_FLOAT_MAT2_ARB i32 #x8B5A)
+(bind-val GL_FLOAT_MAT3_ARB i32 #x8B5B)
+(bind-val GL_FLOAT_MAT4_ARB i32 #x8B5C)
+(bind-val GL_SAMPLER_1D_ARB i32 #x8B5D)
+(bind-val GL_SAMPLER_2D_ARB i32 #x8B5E)
+(bind-val GL_SAMPLER_3D_ARB i32 #x8B5F)
+(bind-val GL_SAMPLER_CUBE_ARB i32 #x8B60)
+(bind-val GL_SAMPLER_1D_SHADOW_ARB i32 #x8B61)
+(bind-val GL_SAMPLER_2D_SHADOW_ARB i32 #x8B62)
+(bind-val GL_SAMPLER_2D_RECT_ARB i32 #x8B63)
+(bind-val GL_SAMPLER_2D_RECT_SHADOW_ARB i32 #x8B64)
+;; #endif
+
+;; #if GL_ARB_shading_language_100
+(bind-val GL_SHADING_LANGUAGE_VERSION_ARB i32 #x8B8C)
+;; #endif
+
+;; #if GL_ARB_shadow
+(bind-val GL_TEXTURE_COMPARE_MODE_ARB i32 #x884C)
+(bind-val GL_TEXTURE_COMPARE_FUNC_ARB i32 #x884D)
+(bind-val GL_COMPARE_R_TO_TEXTURE_ARB i32 #x884E)
+;; #endif
+
+;; #if GL_ARB_shadow_ambient
+(bind-val GL_TEXTURE_COMPARE_FAIL_VALUE_ARB i32 #x80BF)
+;; #endif
+
+;; #if GL_ARB_sync
+(bind-val GL_MAX_SERVER_WAIT_TIMEOUT i32 #x9111)
+(bind-val GL_OBJECT_TYPE i32 #x9112)
+(bind-val GL_SYNC_CONDITION i32 #x9113)
+(bind-val GL_SYNC_STATUS i32 #x9114)
+(bind-val GL_SYNC_FLAGS i32 #x9115)
+(bind-val GL_SYNC_FENCE i32 #x9116)
+(bind-val GL_SYNC_GPU_COMMANDS_COMPLETE i32 #x9117)
+(bind-val GL_UNSIGNALED i32 #x9118)
+(bind-val GL_SIGNALED i32 #x9119)
+(bind-val GL_ALREADY_SIGNALED i32 #x911A)
+(bind-val GL_TIMEOUT_EXPIRED i32 #x911B)
+(bind-val GL_CONDITION_SATISFIED i32 #x911C)
+(bind-val GL_WAIT_FAILED i32 #x911D)
+(bind-val GL_SYNC_FLUSH_COMMANDS_BIT i32 #x00000001)
+(bind-val GL_TIMEOUT_IGNORED i32 #xFFFFFFFFFFFFFFFFull)
+;; #endif
+
+;; #if GL_ARB_texture_border_clamp
+(bind-val GL_CLAMP_TO_BORDER_ARB i32 #x812D)
+;; #endif
+
+;; #if GL_ARB_texture_compression
+(bind-val GL_COMPRESSED_ALPHA_ARB i32 #x84E9)
+(bind-val GL_COMPRESSED_LUMINANCE_ARB i32 #x84EA)
+(bind-val GL_COMPRESSED_LUMINANCE_ALPHA_ARB i32 #x84EB)
+(bind-val GL_COMPRESSED_INTENSITY_ARB i32 #x84EC)
+(bind-val GL_COMPRESSED_RGB_ARB i32 #x84ED)
+(bind-val GL_COMPRESSED_RGBA_ARB i32 #x84EE)
+(bind-val GL_TEXTURE_COMPRESSION_HINT_ARB i32 #x84EF)
+(bind-val GL_TEXTURE_COMPRESSED_IMAGE_SIZE_ARB i32 #x86A0)
+(bind-val GL_TEXTURE_COMPRESSED_ARB i32 #x86A1)
+(bind-val GL_NUM_COMPRESSED_TEXTURE_FORMATS_ARB i32 #x86A2)
+(bind-val GL_COMPRESSED_TEXTURE_FORMATS_ARB i32 #x86A3)
+;; #endif
+
+;; #if GL_ARB_texture_compression_rgtc
+(bind-val GL_COMPRESSED_RED_RGTC1 i32 #x8DBB)
+(bind-val GL_COMPRESSED_SIGNED_RED_RGTC1 i32 #x8DBC)
+(bind-val GL_COMPRESSED_RG_RGTC2 i32 #x8DBD)
+(bind-val GL_COMPRESSED_SIGNED_RG_RGTC2 i32 #x8DBE)
+;; #endif
+
+;; #if GL_ARB_texture_cube_map
+(bind-val GL_NORMAL_MAP_ARB i32 #x8511)
+(bind-val GL_REFLECTION_MAP_ARB i32 #x8512)
+(bind-val GL_TEXTURE_CUBE_MAP_ARB i32 #x8513)
+(bind-val GL_TEXTURE_BINDING_CUBE_MAP_ARB i32 #x8514)
+(bind-val GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB i32 #x8515)
+(bind-val GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB i32 #x8516)
+(bind-val GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB i32 #x8517)
+(bind-val GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB i32 #x8518)
+(bind-val GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB i32 #x8519)
+(bind-val GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB i32 #x851A)
+(bind-val GL_PROXY_TEXTURE_CUBE_MAP_ARB i32 #x851B)
+(bind-val GL_MAX_CUBE_MAP_TEXTURE_SIZE_ARB i32 #x851C)
+;; #endif
+
+;; #if GL_ARB_texture_env_combine
+(bind-val GL_COMBINE_ARB i32 #x8570)
+(bind-val GL_COMBINE_RGB_ARB i32 #x8571)
+(bind-val GL_COMBINE_ALPHA_ARB i32 #x8572)
+(bind-val GL_RGB_SCALE_ARB i32 #x8573)
+(bind-val GL_ADD_SIGNED_ARB i32 #x8574)
+(bind-val GL_INTERPOLATE_ARB i32 #x8575)
+(bind-val GL_CONSTANT_ARB i32 #x8576)
+(bind-val GL_PRIMARY_COLOR_ARB i32 #x8577)
+(bind-val GL_PREVIOUS_ARB i32 #x8578)
+(bind-val GL_SUBTRACT_ARB i32 #x84E7)
+(bind-val GL_SOURCE0_RGB_ARB i32 #x8580)
+(bind-val GL_SOURCE1_RGB_ARB i32 #x8581)
+(bind-val GL_SOURCE2_RGB_ARB i32 #x8582)
+(bind-val GL_SOURCE0_ALPHA_ARB i32 #x8588)
+(bind-val GL_SOURCE1_ALPHA_ARB i32 #x8589)
+(bind-val GL_SOURCE2_ALPHA_ARB i32 #x858A)
+(bind-val GL_OPERAND0_RGB_ARB i32 #x8590)
+(bind-val GL_OPERAND1_RGB_ARB i32 #x8591)
+(bind-val GL_OPERAND2_RGB_ARB i32 #x8592)
+(bind-val GL_OPERAND0_ALPHA_ARB i32 #x8598)
+(bind-val GL_OPERAND1_ALPHA_ARB i32 #x8599)
+(bind-val GL_OPERAND2_ALPHA_ARB i32 #x859A)
+;; #endif
+
+;; #if GL_ARB_texture_env_dot3
+(bind-val GL_DOT3_RGB_ARB i32 #x86AE)
+(bind-val GL_DOT3_RGBA_ARB i32 #x86AF)
+;; #endif
+
+;; #if GL_ARB_texture_float
+(bind-val GL_TEXTURE_RED_TYPE_ARB i32 #x8C10)
+(bind-val GL_TEXTURE_GREEN_TYPE_ARB i32 #x8C11)
+(bind-val GL_TEXTURE_BLUE_TYPE_ARB i32 #x8C12)
+(bind-val GL_TEXTURE_ALPHA_TYPE_ARB i32 #x8C13)
+(bind-val GL_TEXTURE_LUMINANCE_TYPE_ARB i32 #x8C14)
+(bind-val GL_TEXTURE_INTENSITY_TYPE_ARB i32 #x8C15)
+(bind-val GL_TEXTURE_DEPTH_TYPE_ARB i32 #x8C16)
+(bind-val GL_UNSIGNED_NORMALIZED_ARB i32 #x8C17)
+(bind-val GL_RGBA32F_ARB i32 #x8814)
+(bind-val GL_RGB32F_ARB i32 #x8815)
+(bind-val GL_ALPHA32F_ARB i32 #x8816)
+(bind-val GL_INTENSITY32F_ARB i32 #x8817)
+(bind-val GL_LUMINANCE32F_ARB i32 #x8818)
+(bind-val GL_LUMINANCE_ALPHA32F_ARB i32 #x8819)
+(bind-val GL_RGBA16F_ARB i32 #x881A)
+(bind-val GL_RGB16F_ARB i32 #x881B)
+(bind-val GL_ALPHA16F_ARB i32 #x881C)
+(bind-val GL_INTENSITY16F_ARB i32 #x881D)
+(bind-val GL_LUMINANCE16F_ARB i32 #x881E)
+(bind-val GL_LUMINANCE_ALPHA16F_ARB i32 #x881F)
+;; #endif
+
+;; #if GL_ARB_texture_mirrored_repeat
+(bind-val GL_MIRRORED_REPEAT_ARB i32 #x8370)
+;; #endif
+
+;; #if GL_ARB_texture_rectangle
+(bind-val GL_TEXTURE_RECTANGLE_ARB i32 #x84F5)
+(bind-val GL_TEXTURE_BINDING_RECTANGLE_ARB i32 #x84F6)
+(bind-val GL_PROXY_TEXTURE_RECTANGLE_ARB i32 #x84F7)
+(bind-val GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB i32 #x84F8)
+;; #endif
+
+;; #if GL_ARB_texture_rg
+(bind-val GL_COMPRESSED_RED i32 #x8225)
+(bind-val GL_COMPRESSED_RG i32 #x8226)
+(bind-val GL_RG i32 #x8227)
+(bind-val GL_RG_INTEGER i32 #x8228)
+(bind-val GL_R8 i32 #x8229)
+(bind-val GL_R16 i32 #x822A)
+(bind-val GL_RG8 i32 #x822B)
+(bind-val GL_RG16 i32 #x822C)
+(bind-val GL_R16F i32 #x822D)
+(bind-val GL_R32F i32 #x822E)
+(bind-val GL_RG16F i32 #x822F)
+(bind-val GL_RG32F i32 #x8230)
+(bind-val GL_R8I i32 #x8231)
+(bind-val GL_R8UI i32 #x8232)
+(bind-val GL_R16I i32 #x8233)
+(bind-val GL_R16UI i32 #x8234)
+(bind-val GL_R32I i32 #x8235)
+(bind-val GL_R32UI i32 #x8236)
+(bind-val GL_RG8I i32 #x8237)
+(bind-val GL_RG8UI i32 #x8238)
+(bind-val GL_RG16I i32 #x8239)
+(bind-val GL_RG16UI i32 #x823A)
+(bind-val GL_RG32I i32 #x823B)
+(bind-val GL_RG32UI i32 #x823C)
+;; #endif
+
+;; #if GL_ARB_transpose_matrix
+(bind-val GL_TRANSPOSE_MODELVIEW_MATRIX_ARB i32 #x84E3)
+(bind-val GL_TRANSPOSE_PROJECTION_MATRIX_ARB i32 #x84E4)
+(bind-val GL_TRANSPOSE_TEXTURE_MATRIX_ARB i32 #x84E5)
+(bind-val GL_TRANSPOSE_COLOR_MATRIX_ARB i32 #x84E6)
+;; #endif
+
+;; #if GL_ARB_vertex_blend
+(bind-val GL_MAX_VERTEX_UNITS_ARB i32 #x86A4)
+(bind-val GL_ACTIVE_VERTEX_UNITS_ARB i32 #x86A5)
+(bind-val GL_WEIGHT_SUM_UNITY_ARB i32 #x86A6)
+(bind-val GL_VERTEX_BLEND_ARB i32 #x86A7)
+(bind-val GL_CURRENT_WEIGHT_ARB i32 #x86A8)
+(bind-val GL_WEIGHT_ARRAY_TYPE_ARB i32 #x86A9)
+(bind-val GL_WEIGHT_ARRAY_STRIDE_ARB i32 #x86AA)
+(bind-val GL_WEIGHT_ARRAY_SIZE_ARB i32 #x86AB)
+(bind-val GL_WEIGHT_ARRAY_POINTER_ARB i32 #x86AC)
+(bind-val GL_WEIGHT_ARRAY_ARB i32 #x86AD)
+(bind-val GL_MODELVIEW0_ARB i32 #x1700)
+(bind-val GL_MODELVIEW1_ARB i32 #x850A)
+(bind-val GL_MODELVIEW2_ARB i32 #x8722)
+(bind-val GL_MODELVIEW3_ARB i32 #x8723)
+(bind-val GL_MODELVIEW4_ARB i32 #x8724)
+(bind-val GL_MODELVIEW5_ARB i32 #x8725)
+(bind-val GL_MODELVIEW6_ARB i32 #x8726)
+(bind-val GL_MODELVIEW7_ARB i32 #x8727)
+(bind-val GL_MODELVIEW8_ARB i32 #x8728)
+(bind-val GL_MODELVIEW9_ARB i32 #x8729)
+(bind-val GL_MODELVIEW10_ARB i32 #x872A)
+(bind-val GL_MODELVIEW11_ARB i32 #x872B)
+(bind-val GL_MODELVIEW12_ARB i32 #x872C)
+(bind-val GL_MODELVIEW13_ARB i32 #x872D)
+(bind-val GL_MODELVIEW14_ARB i32 #x872E)
+(bind-val GL_MODELVIEW15_ARB i32 #x872F)
+(bind-val GL_MODELVIEW16_ARB i32 #x8730)
+(bind-val GL_MODELVIEW17_ARB i32 #x8731)
+(bind-val GL_MODELVIEW18_ARB i32 #x8732)
+(bind-val GL_MODELVIEW19_ARB i32 #x8733)
+(bind-val GL_MODELVIEW20_ARB i32 #x8734)
+(bind-val GL_MODELVIEW21_ARB i32 #x8735)
+(bind-val GL_MODELVIEW22_ARB i32 #x8736)
+(bind-val GL_MODELVIEW23_ARB i32 #x8737)
+(bind-val GL_MODELVIEW24_ARB i32 #x8738)
+(bind-val GL_MODELVIEW25_ARB i32 #x8739)
+(bind-val GL_MODELVIEW26_ARB i32 #x873A)
+(bind-val GL_MODELVIEW27_ARB i32 #x873B)
+(bind-val GL_MODELVIEW28_ARB i32 #x873C)
+(bind-val GL_MODELVIEW29_ARB i32 #x873D)
+(bind-val GL_MODELVIEW30_ARB i32 #x873E)
+(bind-val GL_MODELVIEW31_ARB i32 #x873F)
+;; #endif
+
+;; #if GL_ARB_vertex_buffer_object
+(bind-val GL_ARRAY_BUFFER_ARB i32 #x8892)
+(bind-val GL_ELEMENT_ARRAY_BUFFER_ARB i32 #x8893)
+(bind-val GL_ARRAY_BUFFER_BINDING_ARB i32 #x8894)
+(bind-val GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB i32 #x8895)
+(bind-val GL_VERTEX_ARRAY_BUFFER_BINDING_ARB i32 #x8896)
+(bind-val GL_NORMAL_ARRAY_BUFFER_BINDING_ARB i32 #x8897)
+(bind-val GL_COLOR_ARRAY_BUFFER_BINDING_ARB i32 #x8898)
+(bind-val GL_INDEX_ARRAY_BUFFER_BINDING_ARB i32 #x8899)
+(bind-val GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING_ARB i32 #x889A)
+(bind-val GL_EDGE_FLAG_ARRAY_BUFFER_BINDING_ARB i32 #x889B)
+(bind-val GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING_ARB i32 #x889C)
+(bind-val GL_FOG_COORD_ARRAY_BUFFER_BINDING_ARB i32 #x889D)
+(bind-val GL_WEIGHT_ARRAY_BUFFER_BINDING_ARB i32 #x889E)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING_ARB i32 #x889F)
+(bind-val GL_STREAM_DRAW_ARB i32 #x88E0)
+(bind-val GL_STREAM_READ_ARB i32 #x88E1)
+(bind-val GL_STREAM_COPY_ARB i32 #x88E2)
+(bind-val GL_STATIC_DRAW_ARB i32 #x88E4)
+(bind-val GL_STATIC_READ_ARB i32 #x88E5)
+(bind-val GL_STATIC_COPY_ARB i32 #x88E6)
+(bind-val GL_DYNAMIC_DRAW_ARB i32 #x88E8)
+(bind-val GL_DYNAMIC_READ_ARB i32 #x88E9)
+(bind-val GL_DYNAMIC_COPY_ARB i32 #x88EA)
+(bind-val GL_READ_ONLY_ARB i32 #x88B8)
+(bind-val GL_WRITE_ONLY_ARB i32 #x88B9)
+(bind-val GL_READ_WRITE_ARB i32 #x88BA)
+(bind-val GL_BUFFER_SIZE_ARB i32 #x8764)
+(bind-val GL_BUFFER_USAGE_ARB i32 #x8765)
+(bind-val GL_BUFFER_ACCESS_ARB i32 #x88BB)
+(bind-val GL_BUFFER_MAPPED_ARB i32 #x88BC)
+(bind-val GL_BUFFER_MAP_POINTER_ARB i32 #x88BD)
+;; /* Obsolete */
+(bind-val GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING_ARB i32 #x889D)
+;; #endif
+
+;; #if GL_ARB_vertex_program
+(bind-val GL_VERTEX_PROGRAM_ARB i32 #x8620)
+(bind-val GL_VERTEX_PROGRAM_POINT_SIZE_ARB i32 #x8642)
+(bind-val GL_VERTEX_PROGRAM_TWO_SIDE_ARB i32 #x8643)
+(bind-val GL_PROGRAM_FORMAT_ASCII_ARB i32 #x8875)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_ENABLED_ARB i32 #x8622)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_SIZE_ARB i32 #x8623)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_STRIDE_ARB i32 #x8624)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_TYPE_ARB i32 #x8625)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_NORMALIZED_ARB i32 #x886A)
+(bind-val GL_CURRENT_VERTEX_ATTRIB_ARB i32 #x8626)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_POINTER_ARB i32 #x8645)
+(bind-val GL_PROGRAM_LENGTH_ARB i32 #x8627)
+(bind-val GL_PROGRAM_FORMAT_ARB i32 #x8876)
+(bind-val GL_PROGRAM_NAME_ARB i32 #x8677)
+(bind-val GL_PROGRAM_BINDING_ARB i32 #x8677)
+(bind-val GL_PROGRAM_INSTRUCTIONS_ARB i32 #x88A0)
+(bind-val GL_MAX_PROGRAM_INSTRUCTIONS_ARB i32 #x88A1)
+(bind-val GL_PROGRAM_NATIVE_INSTRUCTIONS_ARB i32 #x88A2)
+(bind-val GL_MAX_PROGRAM_NATIVE_INSTRUCTIONS_ARB i32 #x88A3)
+(bind-val GL_PROGRAM_TEMPORARIES_ARB i32 #x88A4)
+(bind-val GL_MAX_PROGRAM_TEMPORARIES_ARB i32 #x88A5)
+(bind-val GL_PROGRAM_NATIVE_TEMPORARIES_ARB i32 #x88A6)
+(bind-val GL_MAX_PROGRAM_NATIVE_TEMPORARIES_ARB i32 #x88A7)
+(bind-val GL_PROGRAM_PARAMETERS_ARB i32 #x88A8)
+(bind-val GL_MAX_PROGRAM_PARAMETERS_ARB i32 #x88A9)
+(bind-val GL_PROGRAM_NATIVE_PARAMETERS_ARB i32 #x88AA)
+(bind-val GL_MAX_PROGRAM_NATIVE_PARAMETERS_ARB i32 #x88AB)
+(bind-val GL_PROGRAM_ATTRIBS_ARB i32 #x88AC)
+(bind-val GL_MAX_PROGRAM_ATTRIBS_ARB i32 #x88AD)
+(bind-val GL_PROGRAM_NATIVE_ATTRIBS_ARB i32 #x88AE)
+(bind-val GL_MAX_PROGRAM_NATIVE_ATTRIBS_ARB i32 #x88AF)
+(bind-val GL_PROGRAM_ADDRESS_REGISTERS_ARB i32 #x88B0)
+(bind-val GL_MAX_PROGRAM_ADDRESS_REGISTERS_ARB i32 #x88B1)
+(bind-val GL_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB i32 #x88B2)
+(bind-val GL_MAX_PROGRAM_NATIVE_ADDRESS_REGISTERS_ARB i32 #x88B3)
+(bind-val GL_MAX_PROGRAM_LOCAL_PARAMETERS_ARB i32 #x88B4)
+(bind-val GL_MAX_PROGRAM_ENV_PARAMETERS_ARB i32 #x88B5)
+(bind-val GL_PROGRAM_UNDER_NATIVE_LIMITS_ARB i32 #x88B6)
+(bind-val GL_PROGRAM_STRING_ARB i32 #x8628)
+(bind-val GL_PROGRAM_ERROR_POSITION_ARB i32 #x864B)
+(bind-val GL_CURRENT_MATRIX_ARB i32 #x8641)
+(bind-val GL_TRANSPOSE_CURRENT_MATRIX_ARB i32 #x88B7)
+(bind-val GL_CURRENT_MATRIX_STACK_DEPTH_ARB i32 #x8640)
+(bind-val GL_MAX_VERTEX_ATTRIBS_ARB i32 #x8869)
+(bind-val GL_MAX_PROGRAM_MATRICES_ARB i32 #x862F)
+(bind-val GL_MAX_PROGRAM_MATRIX_STACK_DEPTH_ARB i32 #x862E)
+(bind-val GL_PROGRAM_ERROR_STRING_ARB i32 #x8874)
+(bind-val GL_MATRIX0_ARB i32 #x88C0)
+(bind-val GL_MATRIX1_ARB i32 #x88C1)
+(bind-val GL_MATRIX2_ARB i32 #x88C2)
+(bind-val GL_MATRIX3_ARB i32 #x88C3)
+(bind-val GL_MATRIX4_ARB i32 #x88C4)
+(bind-val GL_MATRIX5_ARB i32 #x88C5)
+(bind-val GL_MATRIX6_ARB i32 #x88C6)
+(bind-val GL_MATRIX7_ARB i32 #x88C7)
+(bind-val GL_MATRIX8_ARB i32 #x88C8)
+(bind-val GL_MATRIX9_ARB i32 #x88C9)
+(bind-val GL_MATRIX10_ARB i32 #x88CA)
+(bind-val GL_MATRIX11_ARB i32 #x88CB)
+(bind-val GL_MATRIX12_ARB i32 #x88CC)
+(bind-val GL_MATRIX13_ARB i32 #x88CD)
+(bind-val GL_MATRIX14_ARB i32 #x88CE)
+(bind-val GL_MATRIX15_ARB i32 #x88CF)
+(bind-val GL_MATRIX16_ARB i32 #x88D0)
+(bind-val GL_MATRIX17_ARB i32 #x88D1)
+(bind-val GL_MATRIX18_ARB i32 #x88D2)
+(bind-val GL_MATRIX19_ARB i32 #x88D3)
+(bind-val GL_MATRIX20_ARB i32 #x88D4)
+(bind-val GL_MATRIX21_ARB i32 #x88D5)
+(bind-val GL_MATRIX22_ARB i32 #x88D6)
+(bind-val GL_MATRIX23_ARB i32 #x88D7)
+(bind-val GL_MATRIX24_ARB i32 #x88D8)
+(bind-val GL_MATRIX25_ARB i32 #x88D9)
+(bind-val GL_MATRIX26_ARB i32 #x88DA)
+(bind-val GL_MATRIX27_ARB i32 #x88DB)
+(bind-val GL_MATRIX28_ARB i32 #x88DC)
+(bind-val GL_MATRIX29_ARB i32 #x88DD)
+(bind-val GL_MATRIX30_ARB i32 #x88DE)
+(bind-val GL_MATRIX31_ARB i32 #x88DF)
+(bind-val GL_COLOR_SUM_ARB i32 #x8458)
+;; #endif
+
+;; #if GL_ARB_vertex_shader
+(bind-val GL_VERTEX_SHADER_ARB i32 #x8B31)
+(bind-val GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB i32 #x8B4A)
+(bind-val GL_MAX_TEXTURE_COORDS_ARB i32 #x8871)
+(bind-val GL_MAX_TEXTURE_IMAGE_UNITS_ARB i32 #x8872)
+(bind-val GL_MAX_VARYING_FLOATS_ARB i32 #x8B4B)
+(bind-val GL_MAX_VERTEX_ATTRIBS_ARB i32 #x8869)
+(bind-val GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB i32 #x8B4D)
+(bind-val GL_VERTEX_PROGRAM_POINT_SIZE_ARB i32 #x8642)
+(bind-val GL_VERTEX_PROGRAM_TWO_SIDE_ARB i32 #x8643)
+(bind-val GL_OBJECT_ACTIVE_ATTRIBUTES_ARB i32 #x8B89)
+(bind-val GL_OBJECT_ACTIVE_ATTRIBUTE_MAX_LENGTH_ARB i32 #x8B8A)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_ENABLED_ARB i32 #x8622)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_SIZE_ARB i32 #x8623)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_STRIDE_ARB i32 #x8624)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_TYPE_ARB i32 #x8625)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_NORMALIZED_ARB i32 #x886A)
+(bind-val GL_CURRENT_VERTEX_ATTRIB_ARB i32 #x8626)
+(bind-val GL_VERTEX_ATTRIB_ARRAY_POINTER_ARB i32 #x8645)
+;; #endif
+
+;; #if GL_ARB_vertex_shader || GL_NV_vertex_program3
+(bind-val GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB i32 #x8B4C)
+;; #endif
+
+;; #if GL_EXT_abgr
+(bind-val GL_ABGR_EXT i32 #x8000)
+;; #endif
+
+;; #if GL_EXT_bgra
+(bind-val GL_BGR_EXT i32 #x80E0)
+(bind-val GL_BGRA_EXT i32 #x80E1)
+;; #endif
+
+;; #if GL_EXT_bindable_uniform
+(bind-val GL_MAX_VERTEX_BINDABLE_UNIFORMS_EXT i32 #x8DE2)
+(bind-val GL_MAX_FRAGMENT_BINDABLE_UNIFORMS_EXT i32 #x8DE3)
+(bind-val GL_MAX_GEOMETRY_BINDABLE_UNIFORMS_EXT i32 #x8DE4)
+(bind-val GL_MAX_BINDABLE_UNIFORM_SIZE_EXT i32 #x8DED)
+(bind-val GL_UNIFORM_BUFFER_BINDING_EXT i32 #x8DEF)
+(bind-val GL_UNIFORM_BUFFER_EXT i32 #x8DEE)
+;; #endif
+
+;; #if GL_EXT_blend_color
+(bind-val GL_CONSTANT_COLOR_EXT i32 #x8001)
+(bind-val GL_ONE_MINUS_CONSTANT_COLOR_EXT i32 #x8002)
+(bind-val GL_CONSTANT_ALPHA_EXT i32 #x8003)
+(bind-val GL_ONE_MINUS_CONSTANT_ALPHA_EXT i32 #x8004)
+(bind-val GL_BLEND_COLOR_EXT i32 #x8005)
+;; #endif
+
+;; #if GL_EXT_blend_equation_separate
+(bind-val GL_BLEND_EQUATION_RGB_EXT i32 #x8009)
+(bind-val GL_BLEND_EQUATION_ALPHA_EXT i32 #x883D)
+;; #endif
+
+;; #if GL_EXT_blend_func_separate
+(bind-val GL_BLEND_DST_RGB_EXT i32 #x80C8)
+(bind-val GL_BLEND_SRC_RGB_EXT i32 #x80C9)
+(bind-val GL_BLEND_DST_ALPHA_EXT i32 #x80CA)
+(bind-val GL_BLEND_SRC_ALPHA_EXT i32 #x80CB)
+;; #endif
+
+;; #if GL_EXT_blend_minmax
+(bind-val GL_FUNC_ADD_EXT i32 #x8006)
+(bind-val GL_MIN_EXT i32 #x8007)
+(bind-val GL_MAX_EXT i32 #x8008)
+(bind-val GL_BLEND_EQUATION_EXT i32 #x8009)
+;; #endif
+
+;; #if GL_EXT_blend_subtract
+(bind-val GL_FUNC_SUBTRACT_EXT i32 #x800A)
+(bind-val GL_FUNC_REVERSE_SUBTRACT_EXT i32 #x800B)
+;; #endif
+
+;; #if GL_EXT_clip_volume_hint
+(bind-val GL_CLIP_VOLUME_CLIPPING_HINT_EXT i32 #x80F0)
+;; #endif
+
+;; #if GL_EXT_compiled_vertex_array
+(bind-val GL_ARRAY_ELEMENT_LOCK_FIRST_EXT i32 #x81A8)
+(bind-val GL_ARRAY_ELEMENT_LOCK_COUNT_EXT i32 #x81A9)
+;; #endif
+
+;; #if GL_EXT_convolution
+(bind-val GL_CONVOLUTION_1D_EXT i32 #x8010)
+(bind-val GL_CONVOLUTION_2D_EXT i32 #x8011)
+(bind-val GL_SEPARABLE_2D_EXT i32 #x8012)
+(bind-val GL_CONVOLUTION_BORDER_MODE_EXT i32 #x8013)
+(bind-val GL_CONVOLUTION_FILTER_SCALE_EXT i32 #x8014)
+(bind-val GL_CONVOLUTION_FILTER_BIAS_EXT i32 #x8015)
+(bind-val GL_REDUCE_EXT i32 #x8016)
+(bind-val GL_CONVOLUTION_FORMAT_EXT i32 #x8017)
+(bind-val GL_CONVOLUTION_WIDTH_EXT i32 #x8018)
+(bind-val GL_CONVOLUTION_HEIGHT_EXT i32 #x8019)
+(bind-val GL_MAX_CONVOLUTION_WIDTH_EXT i32 #x801A)
+(bind-val GL_MAX_CONVOLUTION_HEIGHT_EXT i32 #x801B)
+(bind-val GL_POST_CONVOLUTION_RED_SCALE_EXT i32 #x801C)
+(bind-val GL_POST_CONVOLUTION_GREEN_SCALE_EXT i32 #x801D)
+(bind-val GL_POST_CONVOLUTION_BLUE_SCALE_EXT i32 #x801E)
+(bind-val GL_POST_CONVOLUTION_ALPHA_SCALE_EXT i32 #x801F)
+(bind-val GL_POST_CONVOLUTION_RED_BIAS_EXT i32 #x8020)
+(bind-val GL_POST_CONVOLUTION_GREEN_BIAS_EXT i32 #x8021)
+(bind-val GL_POST_CONVOLUTION_BLUE_BIAS_EXT i32 #x8022)
+(bind-val GL_POST_CONVOLUTION_ALPHA_BIAS_EXT i32 #x8023)
+;; #endif
+
+;; #if GL_EXT_debug_label
+(bind-val GL_BUFFER_OBJECT_EXT i32 #x9151)
+(bind-val GL_SHADER_OBJECT_EXT i32 #x8B48)
+(bind-val GL_PROGRAM_OBJECT_EXT i32 #x8B40)
+(bind-val GL_QUERY_OBJECT_EXT i32 #x9153)
+(bind-val GL_VERTEX_ARRAY_OBJECT_EXT i32 #x9154)
+(bind-val GL_SAMPLER i32 #x82E6)
+(bind-val GL_SYNC_OBJECT_APPLE								 i32 #x8A53)
+;; #endif
+
+;; #if GL_EXT_depth_bounds_test
+(bind-val GL_DEPTH_BOUNDS_TEST_EXT i32 #x8890)
+(bind-val GL_DEPTH_BOUNDS_EXT i32 #x8891)
+;; #endif
+
+;; #if GL_EXT_draw_range_elements
+(bind-val GL_MAX_ELEMENTS_VERTICES_EXT i32 #x80E8)
+(bind-val GL_MAX_ELEMENTS_INDICES_EXT i32 #x80E9)
+;; #endif
+
+;; #if GL_EXT_fog_coord
+(bind-val GL_FOG_COORDINATE_SOURCE_EXT i32 #x8450)
+(bind-val GL_FOG_COORDINATE_EXT i32 #x8451)
+(bind-val GL_FRAGMENT_DEPTH_EXT i32 #x8452)
+(bind-val GL_CURRENT_FOG_COORDINATE_EXT i32 #x8453)
+(bind-val GL_FOG_COORDINATE_ARRAY_TYPE_EXT i32 #x8454)
+(bind-val GL_FOG_COORDINATE_ARRAY_STRIDE_EXT i32 #x8455)
+(bind-val GL_FOG_COORDINATE_ARRAY_POINTER_EXT i32 #x8456)
+(bind-val GL_FOG_COORDINATE_ARRAY_EXT i32 #x8457)
+;; #endif
+
+;; #if GL_EXT_framebuffer_blit
+(bind-val GL_READ_FRAMEBUFFER_EXT i32 #x8CA8)
+(bind-val GL_DRAW_FRAMEBUFFER_EXT i32 #x8CA9)
+(bind-val GL_DRAW_FRAMEBUFFER_BINDING_EXT i32 #x8CA6)
+(bind-val GL_READ_FRAMEBUFFER_BINDING_EXT i32 #x8CAA)
+;; #endif
+
+;; #if GL_EXT_framebuffer_multisample
+(bind-val GL_RENDERBUFFER_SAMPLES_EXT i32 #x8CAB)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT i32 #x8D56)
+(bind-val GL_MAX_SAMPLES_EXT i32 #x8D57)
+;; #endif
+
+;; #if GL_EXT_framebuffer_multisample_blit_scaled
+(bind-val GL_SCALED_RESOLVE_FASTEST_EXT i32 #x90BA)
+(bind-val GL_SCALED_RESOLVE_NICEST_EXT i32 #x90BB)
+;; #endif
+
+;; #if GL_EXT_framebuffer_object
+(bind-val GL_FRAMEBUFFER_EXT i32 #x8D40)
+(bind-val GL_RENDERBUFFER_EXT i32 #x8D41)
+(bind-val GL_STENCIL_INDEX1_EXT i32 #x8D46)
+(bind-val GL_STENCIL_INDEX4_EXT i32 #x8D47)
+(bind-val GL_STENCIL_INDEX8_EXT i32 #x8D48)
+(bind-val GL_STENCIL_INDEX16_EXT i32 #x8D49)
+(bind-val GL_RENDERBUFFER_WIDTH_EXT i32 #x8D42)
+(bind-val GL_RENDERBUFFER_HEIGHT_EXT i32 #x8D43)
+(bind-val GL_RENDERBUFFER_INTERNAL_FORMAT_EXT i32 #x8D44)
+(bind-val GL_RENDERBUFFER_RED_SIZE_EXT i32 #x8D50)
+(bind-val GL_RENDERBUFFER_GREEN_SIZE_EXT i32 #x8D51)
+(bind-val GL_RENDERBUFFER_BLUE_SIZE_EXT i32 #x8D52)
+(bind-val GL_RENDERBUFFER_ALPHA_SIZE_EXT i32 #x8D53)
+(bind-val GL_RENDERBUFFER_DEPTH_SIZE_EXT i32 #x8D54)
+(bind-val GL_RENDERBUFFER_STENCIL_SIZE_EXT i32 #x8D55)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE_EXT i32 #x8CD0)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME_EXT i32 #x8CD1)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL_EXT i32 #x8CD2)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE_EXT i32 #x8CD3)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_3D_ZOFFSET_EXT i32 #x8CD4)
+(bind-val GL_COLOR_ATTACHMENT0_EXT i32 #x8CE0)
+(bind-val GL_COLOR_ATTACHMENT1_EXT i32 #x8CE1)
+(bind-val GL_COLOR_ATTACHMENT2_EXT i32 #x8CE2)
+(bind-val GL_COLOR_ATTACHMENT3_EXT i32 #x8CE3)
+(bind-val GL_COLOR_ATTACHMENT4_EXT i32 #x8CE4)
+(bind-val GL_COLOR_ATTACHMENT5_EXT i32 #x8CE5)
+(bind-val GL_COLOR_ATTACHMENT6_EXT i32 #x8CE6)
+(bind-val GL_COLOR_ATTACHMENT7_EXT i32 #x8CE7)
+(bind-val GL_COLOR_ATTACHMENT8_EXT i32 #x8CE8)
+(bind-val GL_COLOR_ATTACHMENT9_EXT i32 #x8CE9)
+(bind-val GL_COLOR_ATTACHMENT10_EXT i32 #x8CEA)
+(bind-val GL_COLOR_ATTACHMENT11_EXT i32 #x8CEB)
+(bind-val GL_COLOR_ATTACHMENT12_EXT i32 #x8CEC)
+(bind-val GL_COLOR_ATTACHMENT13_EXT i32 #x8CED)
+(bind-val GL_COLOR_ATTACHMENT14_EXT i32 #x8CEE)
+(bind-val GL_COLOR_ATTACHMENT15_EXT i32 #x8CEF)
+(bind-val GL_DEPTH_ATTACHMENT_EXT i32 #x8D00)
+(bind-val GL_STENCIL_ATTACHMENT_EXT i32 #x8D20)
+(bind-val GL_FRAMEBUFFER_COMPLETE_EXT i32 #x8CD5)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT i32 #x8CD6)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT i32 #x8CD7)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT i32 #x8CD9)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT i32 #x8CDA)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT i32 #x8CDB)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT i32 #x8CDC)
+(bind-val GL_FRAMEBUFFER_UNSUPPORTED_EXT i32 #x8CDD)
+(bind-val GL_FRAMEBUFFER_BINDING_EXT i32 #x8CA6)
+(bind-val GL_RENDERBUFFER_BINDING_EXT i32 #x8CA7)
+(bind-val GL_MAX_COLOR_ATTACHMENTS_EXT i32 #x8CDF)
+(bind-val GL_MAX_RENDERBUFFER_SIZE_EXT i32 #x84E8)
+(bind-val GL_INVALID_FRAMEBUFFER_OPERATION_EXT i32 #x0506)
+;; #endif
+
+;; #if GL_EXT_framebuffer_sRGB
+(bind-val GL_FRAMEBUFFER_SRGB_EXT i32 #x8DB9)
+(bind-val GL_FRAMEBUFFER_SRGB_CAPABLE_EXT i32 #x8DBA)
+;; #endif
+
+;; #if GL_EXT_geometry_shader4
+(bind-val GL_GEOMETRY_SHADER_EXT i32 #x8DD9)
+(bind-val GL_GEOMETRY_VERTICES_OUT_EXT i32 #x8DDA)
+(bind-val GL_GEOMETRY_INPUT_TYPE_EXT i32 #x8DDB)
+(bind-val GL_GEOMETRY_OUTPUT_TYPE_EXT i32 #x8DDC)
+(bind-val GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS_EXT i32 #x8C29)
+(bind-val GL_MAX_GEOMETRY_VARYING_COMPONENTS_EXT i32 #x8DDD)
+(bind-val GL_MAX_VERTEX_VARYING_COMPONENTS_EXT i32 #x8DDE)
+(bind-val GL_MAX_VARYING_COMPONENTS_EXT i32 #x8B4B)
+(bind-val GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_EXT i32 #x8DDF)
+(bind-val GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT i32 #x8DE0)
+(bind-val GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS_EXT i32 #x8DE1)
+(bind-val GL_LINES_ADJACENCY_EXT i32 #xA)
+(bind-val GL_LINE_STRIP_ADJACENCY_EXT i32 #xB)
+(bind-val GL_TRIANGLES_ADJACENCY_EXT i32 #xC)
+(bind-val GL_TRIANGLE_STRIP_ADJACENCY_EXT i32 #xD)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS_EXT i32 #x8DA8)
+(bind-val GL_FRAMEBUFFER_INCOMPLETE_LAYER_COUNT_EXT i32 #x8DA9)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_LAYERED_EXT i32 #x8DA7)
+(bind-val GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER_EXT i32 #x8CD4)
+(bind-val GL_PROGRAM_POINT_SIZE_EXT i32 #x8642)
+;; #endif
+
+;; #if GL_EXT_gpu_shader4
+(bind-val GL_VERTEX_ATTRIB_ARRAY_INTEGER_EXT i32 #x88FD)
+(bind-val GL_SAMPLER_1D_ARRAY_EXT i32 #x8DC0)
+(bind-val GL_SAMPLER_2D_ARRAY_EXT i32 #x8DC1)
+(bind-val GL_SAMPLER_BUFFER_EXT i32 #x8DC2)
+(bind-val GL_SAMPLER_1D_ARRAY_SHADOW_EXT i32 #x8DC3)
+(bind-val GL_SAMPLER_2D_ARRAY_SHADOW_EXT i32 #x8DC4)
+(bind-val GL_SAMPLER_CUBE_SHADOW_EXT i32 #x8DC5)
+(bind-val GL_UNSIGNED_INT_VEC2_EXT i32 #x8DC6)
+(bind-val GL_UNSIGNED_INT_VEC3_EXT i32 #x8DC7)
+(bind-val GL_UNSIGNED_INT_VEC4_EXT i32 #x8DC8)
+(bind-val GL_INT_SAMPLER_1D_EXT i32 #x8DC9)
+(bind-val GL_INT_SAMPLER_2D_EXT i32 #x8DCA)
+(bind-val GL_INT_SAMPLER_3D_EXT i32 #x8DCB)
+(bind-val GL_INT_SAMPLER_CUBE_EXT i32 #x8DCC)
+(bind-val GL_INT_SAMPLER_2D_RECT_EXT i32 #x8DCD)
+(bind-val GL_INT_SAMPLER_1D_ARRAY_EXT i32 #x8DCE)
+(bind-val GL_INT_SAMPLER_2D_ARRAY_EXT i32 #x8DCF)
+(bind-val GL_INT_SAMPLER_BUFFER_EXT i32 #x8DD0)
+(bind-val GL_UNSIGNED_INT_SAMPLER_1D_EXT i32 #x8DD1)
+(bind-val GL_UNSIGNED_INT_SAMPLER_2D_EXT i32 #x8DD2)
+(bind-val GL_UNSIGNED_INT_SAMPLER_3D_EXT i32 #x8DD3)
+(bind-val GL_UNSIGNED_INT_SAMPLER_CUBE_EXT i32 #x8DD4)
+(bind-val GL_UNSIGNED_INT_SAMPLER_2D_RECT_EXT i32 #x8DD5)
+(bind-val GL_UNSIGNED_INT_SAMPLER_1D_ARRAY_EXT i32 #x8DD6)
+(bind-val GL_UNSIGNED_INT_SAMPLER_2D_ARRAY_EXT i32 #x8DD7)
+(bind-val GL_UNSIGNED_INT_SAMPLER_BUFFER_EXT i32 #x8DD8)
+(bind-val GL_MIN_PROGRAM_TEXEL_OFFSET_EXT i32 #x8904)
+(bind-val GL_MAX_PROGRAM_TEXEL_OFFSET_EXT i32 #x8905)
+;; #endif
+
+;; #if GL_EXT_histogram
+(bind-val GL_HISTOGRAM_EXT i32 #x8024)
+(bind-val GL_PROXY_HISTOGRAM_EXT i32 #x8025)
+(bind-val GL_HISTOGRAM_WIDTH_EXT i32 #x8026)
+(bind-val GL_HISTOGRAM_FORMAT_EXT i32 #x8027)
+(bind-val GL_HISTOGRAM_RED_SIZE_EXT i32 #x8028)
+(bind-val GL_HISTOGRAM_GREEN_SIZE_EXT i32 #x8029)
+(bind-val GL_HISTOGRAM_BLUE_SIZE_EXT i32 #x802A)
+(bind-val GL_HISTOGRAM_ALPHA_SIZE_EXT i32 #x802B)
+(bind-val GL_HISTOGRAM_LUMINANCE_SIZE_EXT i32 #x802C)
+(bind-val GL_HISTOGRAM_SINK_EXT i32 #x802D)
+(bind-val GL_MINMAX_EXT i32 #x802E)
+(bind-val GL_MINMAX_FORMAT_EXT i32 #x802F)
+(bind-val GL_MINMAX_SINK_EXT i32 #x8030)
+(bind-val GL_TABLE_TOO_LARGE_EXT i32 #x8031)
+;; #endif
+
+;; #if GL_EXT_packed_depth_stencil
+(bind-val GL_DEPTH_STENCIL_EXT i32 #x84F9)
+(bind-val GL_UNSIGNED_INT_24_8_EXT i32 #x84FA)
+(bind-val GL_DEPTH24_STENCIL8_EXT i32 #x88F0)
+(bind-val GL_TEXTURE_STENCIL_SIZE_EXT i32 #x88F1)
+;; #endif
+
+;; #if GL_EXT_packed_float
+(bind-val GL_R11F_G11F_B10F_EXT i32 #x8C3A)
+(bind-val GL_UNSIGNED_INT_10F_11F_11F_REV_EXT i32 #x8C3B)
+(bind-val GL_RGBA_SIGNED_COMPONENTS_EXT i32 #x8C3C)
+;; #endif
+
+;; #if GL_EXT_packed_pixels
+(bind-val GL_UNSIGNED_BYTE_3_3_2_EXT i32 #x8032)
+(bind-val GL_UNSIGNED_SHORT_4_4_4_4_EXT i32 #x8033)
+(bind-val GL_UNSIGNED_SHORT_5_5_5_1_EXT i32 #x8034)
+(bind-val GL_UNSIGNED_INT_8_8_8_8_EXT i32 #x8035)
+(bind-val GL_UNSIGNED_INT_10_10_10_2_EXT i32 #x8036)
+;; #endif
+
+;; #if GL_EXT_paletted_texture
+(bind-val GL_COLOR_INDEX1_EXT i32 #x80E2)
+(bind-val GL_COLOR_INDEX2_EXT i32 #x80E3)
+(bind-val GL_COLOR_INDEX4_EXT i32 #x80E4)
+(bind-val GL_COLOR_INDEX8_EXT i32 #x80E5)
+(bind-val GL_COLOR_INDEX12_EXT i32 #x80E6)
+(bind-val GL_COLOR_INDEX16_EXT i32 #x80E7)
+(bind-val GL_TEXTURE_INDEX_SIZE_EXT i32 #x80ED)
+;; #endif
+
+;; #if GL_EXT_polygon_offset
+(bind-val GL_POLYGON_OFFSET_EXT i32 #x8037)
+(bind-val GL_POLYGON_OFFSET_FACTOR_EXT i32 #x8038)
+(bind-val GL_POLYGON_OFFSET_BIAS_EXT i32 #x8039)
+;; #endif
+
+;; #if GL_EXT_provoking_vertex
+(bind-val GL_FIRST_VERTEX_CONVENTION_EXT i32 #x8E4D)
+(bind-val GL_LAST_VERTEX_CONVENTION_EXT i32 #x8E4E)
+(bind-val GL_PROVOKING_VERTEX_EXT i32 #x8E4F)
+(bind-val GL_QUADS_FOLLOW_PROVOKING_VERTEX_CONVENTION_EXT i32 #x8E4C)
+;; #endif
+
+;; #if GL_EXT_rescale_normal
+(bind-val GL_RESCALE_NORMAL_EXT i32 #x803A)
+;; #endif
+
+;; #if GL_EXT_secondary_color
+(bind-val GL_COLOR_SUM_EXT i32 #x8458)
+(bind-val GL_CURRENT_SECONDARY_COLOR_EXT i32 #x8459)
+(bind-val GL_SECONDARY_COLOR_ARRAY_SIZE_EXT i32 #x845A)
+(bind-val GL_SECONDARY_COLOR_ARRAY_TYPE_EXT i32 #x845B)
+(bind-val GL_SECONDARY_COLOR_ARRAY_STRIDE_EXT i32 #x845C)
+(bind-val GL_SECONDARY_COLOR_ARRAY_POINTER_EXT i32 #x845D)
+(bind-val GL_SECONDARY_COLOR_ARRAY_EXT i32 #x845E)
+;; #endif
+
+;; #if GL_EXT_separate_specular_color
+(bind-val GL_LIGHT_MODEL_COLOR_CONTROL_EXT i32 #x81F8)
+(bind-val GL_SINGLE_COLOR_EXT i32 #x81F9)
+(bind-val GL_SEPARATE_SPECULAR_COLOR_EXT i32 #x81FA)
+;; #endif
+
+;; #if GL_EXT_shared_texture_palette
+(bind-val GL_SHARED_TEXTURE_PALETTE_EXT i32 #x81FB)
+;; #endif
+
+;; #if GL_EXT_stencil_two_side
+(bind-val GL_STENCIL_TEST_TWO_SIDE_EXT i32 #x8910)
+(bind-val GL_ACTIVE_STENCIL_FACE_EXT i32 #x8911)
+;; #endif
+
+;; #if GL_EXT_stencil_wrap
+(bind-val GL_INCR_WRAP_EXT i32 #x8507)
+(bind-val GL_DECR_WRAP_EXT i32 #x8508)
+;; #endif
+
+;; #if GL_EXT_texture
+(bind-val GL_ALPHA4_EXT i32 #x803B)
+(bind-val GL_ALPHA8_EXT i32 #x803C)
+(bind-val GL_ALPHA12_EXT i32 #x803D)
+(bind-val GL_ALPHA16_EXT i32 #x803E)
+(bind-val GL_LUMINANCE4_EXT i32 #x803F)
+(bind-val GL_LUMINANCE8_EXT i32 #x8040)
+(bind-val GL_LUMINANCE12_EXT i32 #x8041)
+(bind-val GL_LUMINANCE16_EXT i32 #x8042)
+(bind-val GL_LUMINANCE4_ALPHA4_EXT i32 #x8043)
+(bind-val GL_LUMINANCE6_ALPHA2_EXT i32 #x8044)
+(bind-val GL_LUMINANCE8_ALPHA8_EXT i32 #x8045)
+(bind-val GL_LUMINANCE12_ALPHA4_EXT i32 #x8046)
+(bind-val GL_LUMINANCE12_ALPHA12_EXT i32 #x8047)
+(bind-val GL_LUMINANCE16_ALPHA16_EXT i32 #x8048)
+(bind-val GL_INTENSITY_EXT i32 #x8049)
+(bind-val GL_INTENSITY4_EXT i32 #x804A)
+(bind-val GL_INTENSITY8_EXT i32 #x804B)
+(bind-val GL_INTENSITY12_EXT i32 #x804C)
+(bind-val GL_INTENSITY16_EXT i32 #x804D)
+(bind-val GL_RGB2_EXT i32 #x804E)
+(bind-val GL_RGB4_EXT i32 #x804F)
+(bind-val GL_RGB5_EXT i32 #x8050)
+(bind-val GL_RGB8_EXT i32 #x8051)
+(bind-val GL_RGB10_EXT i32 #x8052)
+(bind-val GL_RGB12_EXT i32 #x8053)
+(bind-val GL_RGB16_EXT i32 #x8054)
+(bind-val GL_RGBA2_EXT i32 #x8055)
+(bind-val GL_RGBA4_EXT i32 #x8056)
+(bind-val GL_RGB5_A1_EXT i32 #x8057)
+(bind-val GL_RGBA8_EXT i32 #x8058)
+(bind-val GL_RGB10_A2_EXT i32 #x8059)
+(bind-val GL_RGBA12_EXT i32 #x805A)
+(bind-val GL_RGBA16_EXT i32 #x805B)
+(bind-val GL_TEXTURE_RED_SIZE_EXT i32 #x805C)
+(bind-val GL_TEXTURE_GREEN_SIZE_EXT i32 #x805D)
+(bind-val GL_TEXTURE_BLUE_SIZE_EXT i32 #x805E)
+(bind-val GL_TEXTURE_ALPHA_SIZE_EXT i32 #x805F)
+(bind-val GL_TEXTURE_LUMINANCE_SIZE_EXT i32 #x8060)
+(bind-val GL_TEXTURE_INTENSITY_SIZE_EXT i32 #x8061)
+(bind-val GL_REPLACE_EXT i32 #x8062)
+(bind-val GL_PROXY_TEXTURE_1D_EXT i32 #x8063)
+(bind-val GL_PROXY_TEXTURE_2D_EXT i32 #x8064)
+(bind-val GL_TEXTURE_TOO_LARGE_EXT i32 #x8065)
+;; #endif
+
+;; #if GL_EXT_texture3D
+(bind-val GL_PACK_SKIP_IMAGES_EXT i32 #x806B)
+(bind-val GL_PACK_IMAGE_HEIGHT_EXT i32 #x806C)
+(bind-val GL_UNPACK_SKIP_IMAGES_EXT i32 #x806D)
+(bind-val GL_UNPACK_IMAGE_HEIGHT_EXT i32 #x806E)
+(bind-val GL_TEXTURE_3D_EXT i32 #x806F)
+(bind-val GL_PROXY_TEXTURE_3D_EXT i32 #x8070)
+(bind-val GL_TEXTURE_DEPTH_EXT i32 #x8071)
+(bind-val GL_TEXTURE_WRAP_R_EXT i32 #x8072)
+(bind-val GL_MAX_3D_TEXTURE_SIZE_EXT i32 #x8073)
+;; #endif
+
+;; #if GL_EXT_texture_array
+(bind-val GL_TEXTURE_1D_ARRAY_EXT i32 #x8C18)
+(bind-val GL_PROXY_TEXTURE_1D_ARRAY_EXT i32 #x8C19)
+(bind-val GL_TEXTURE_2D_ARRAY_EXT i32 #x8C1A)
+(bind-val GL_PROXY_TEXTURE_2D_ARRAY_EXT i32 #x8C1B)
+(bind-val GL_TEXTURE_BINDING_1D_ARRAY_EXT i32 #x8C1C)
+(bind-val GL_TEXTURE_BINDING_2D_ARRAY_EXT i32 #x8C1D)
+(bind-val GL_MAX_ARRAY_TEXTURE_LAYERS_EXT i32 #x88FF)
+(bind-val GL_COMPARE_REF_DEPTH_TO_TEXTURE_EXT i32 #x884E)
+;; /* reuse GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER_EXT */
+;; /* reuse GL_SAMPLER_1D_ARRAY_EXT */
+;; /* reuse GL_SAMPLER_2D_ARRAY_EXT */
+;; /* reuse GL_SAMPLER_1D_ARRAY_SHADOW_EXT */
+;; /* reuse GL_SAMPLER_2D_ARRAY_SHADOW_EXT */
+;; #endif
+
+;; #if GL_EXT_texture_compression_s3tc
+(bind-val GL_COMPRESSED_RGB_S3TC_DXT1_EXT i32 #x83F0)
+(bind-val GL_COMPRESSED_RGBA_S3TC_DXT1_EXT i32 #x83F1)
+(bind-val GL_COMPRESSED_RGBA_S3TC_DXT3_EXT i32 #x83F2)
+(bind-val GL_COMPRESSED_RGBA_S3TC_DXT5_EXT i32 #x83F3)
+;; #endif
+
+;; #if GL_EXT_texture_cube_map
+(bind-val GL_NORMAL_MAP_EXT i32 #x8511)
+(bind-val GL_REFLECTION_MAP_EXT i32 #x8512)
+(bind-val GL_TEXTURE_CUBE_MAP_EXT i32 #x8513)
+(bind-val GL_TEXTURE_BINDING_CUBE_MAP_EXT i32 #x8514)
+(bind-val GL_TEXTURE_CUBE_MAP_POSITIVE_X_EXT i32 #x8515)
+(bind-val GL_TEXTURE_CUBE_MAP_NEGATIVE_X_EXT i32 #x8516)
+(bind-val GL_TEXTURE_CUBE_MAP_POSITIVE_Y_EXT i32 #x8517)
+(bind-val GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_EXT i32 #x8518)
+(bind-val GL_TEXTURE_CUBE_MAP_POSITIVE_Z_EXT i32 #x8519)
+(bind-val GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_EXT i32 #x851A)
+(bind-val GL_PROXY_TEXTURE_CUBE_MAP_EXT i32 #x851B)
+(bind-val GL_MAX_CUBE_MAP_TEXTURE_SIZE_EXT i32 #x851C)
+;; #endif
+
+;; #if GL_EXT_texture_env_combine
+(bind-val GL_COMBINE_EXT i32 #x8570)
+(bind-val GL_COMBINE_RGB_EXT i32 #x8571)
+(bind-val GL_COMBINE_ALPHA_EXT i32 #x8572)
+(bind-val GL_RGB_SCALE_EXT i32 #x8573)
+(bind-val GL_ADD_SIGNED_EXT i32 #x8574)
+(bind-val GL_INTERPOLATE_EXT i32 #x8575)
+(bind-val GL_CONSTANT_EXT i32 #x8576)
+(bind-val GL_PRIMARY_COLOR_EXT i32 #x8577)
+(bind-val GL_PREVIOUS_EXT i32 #x8578)
+(bind-val GL_SOURCE0_RGB_EXT i32 #x8580)
+(bind-val GL_SOURCE1_RGB_EXT i32 #x8581)
+(bind-val GL_SOURCE2_RGB_EXT i32 #x8582)
+(bind-val GL_SOURCE0_ALPHA_EXT i32 #x8588)
+(bind-val GL_SOURCE1_ALPHA_EXT i32 #x8589)
+(bind-val GL_SOURCE2_ALPHA_EXT i32 #x858A)
+(bind-val GL_OPERAND0_RGB_EXT i32 #x8590)
+(bind-val GL_OPERAND1_RGB_EXT i32 #x8591)
+(bind-val GL_OPERAND2_RGB_EXT i32 #x8592)
+(bind-val GL_OPERAND0_ALPHA_EXT i32 #x8598)
+(bind-val GL_OPERAND1_ALPHA_EXT i32 #x8599)
+(bind-val GL_OPERAND2_ALPHA_EXT i32 #x859A)
+;; #endif
+
+;; #if GL_EXT_texture_filter_anisotropic
+(bind-val GL_TEXTURE_MAX_ANISOTROPY_EXT i32 #x84FE)
+(bind-val GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT i32 #x84FF)
+;; #endif
+
+;; #if GL_EXT_texture_integer
+(bind-val GL_RGBA_INTEGER_MODE_EXT i32 #x8D9E)
+(bind-val GL_RGBA32UI_EXT i32 #x8D70)
+(bind-val GL_RGB32UI_EXT i32 #x8D71)
+(bind-val GL_ALPHA32UI_EXT i32 #x8D72)
+(bind-val GL_INTENSITY32UI_EXT i32 #x8D73)
+(bind-val GL_LUMINANCE32UI_EXT i32 #x8D74)
+(bind-val GL_LUMINANCE_ALPHA32UI_EXT i32 #x8D75)
+(bind-val GL_RGBA16UI_EXT i32 #x8D76)
+(bind-val GL_RGB16UI_EXT i32 #x8D77)
+(bind-val GL_ALPHA16UI_EXT i32 #x8D78)
+(bind-val GL_INTENSITY16UI_EXT i32 #x8D79)
+(bind-val GL_LUMINANCE16UI_EXT i32 #x8D7A)
+(bind-val GL_LUMINANCE_ALPHA16UI_EXT i32 #x8D7B)
+(bind-val GL_RGBA8UI_EXT i32 #x8D7C)
+(bind-val GL_RGB8UI_EXT i32 #x8D7D)
+(bind-val GL_ALPHA8UI_EXT i32 #x8D7E)
+(bind-val GL_INTENSITY8UI_EXT i32 #x8D7F)
+(bind-val GL_LUMINANCE8UI_EXT i32 #x8D80)
+(bind-val GL_LUMINANCE_ALPHA8UI_EXT i32 #x8D81)
+(bind-val GL_RGBA32I_EXT i32 #x8D82)
+(bind-val GL_RGB32I_EXT i32 #x8D83)
+(bind-val GL_ALPHA32I_EXT i32 #x8D84)
+(bind-val GL_INTENSITY32I_EXT i32 #x8D85)
+(bind-val GL_LUMINANCE32I_EXT i32 #x8D86)
+(bind-val GL_LUMINANCE_ALPHA32I_EXT i32 #x8D87)
+(bind-val GL_RGBA16I_EXT i32 #x8D88)
+(bind-val GL_RGB16I_EXT i32 #x8D89)
+(bind-val GL_ALPHA16I_EXT i32 #x8D8A)
+(bind-val GL_INTENSITY16I_EXT i32 #x8D8B)
+(bind-val GL_LUMINANCE16I_EXT i32 #x8D8C)
+(bind-val GL_LUMINANCE_ALPHA16I_EXT i32 #x8D8D)
+(bind-val GL_RGBA8I_EXT i32 #x8D8E)
+(bind-val GL_RGB8I_EXT i32 #x8D8F)
+(bind-val GL_ALPHA8I_EXT i32 #x8D90)
+(bind-val GL_INTENSITY8I_EXT i32 #x8D91)
+(bind-val GL_LUMINANCE8I_EXT i32 #x8D92)
+(bind-val GL_LUMINANCE_ALPHA8I_EXT i32 #x8D93)
+(bind-val GL_RED_INTEGER_EXT i32 #x8D94)
+(bind-val GL_GREEN_INTEGER_EXT i32 #x8D95)
+(bind-val GL_BLUE_INTEGER_EXT i32 #x8D96)
+(bind-val GL_ALPHA_INTEGER_EXT i32 #x8D97)
+(bind-val GL_RGB_INTEGER_EXT i32 #x8D98)
+(bind-val GL_RGBA_INTEGER_EXT i32 #x8D99)
+(bind-val GL_BGR_INTEGER_EXT i32 #x8D9A)
+(bind-val GL_BGRA_INTEGER_EXT i32 #x8D9B)
+(bind-val GL_LUMINANCE_INTEGER_EXT i32 #x8D9C)
+(bind-val GL_LUMINANCE_ALPHA_INTEGER_EXT i32 #x8D9D)
+;; #endif
+
+;; #if GL_EXT_texture_lod_bias
+(bind-val GL_MAX_TEXTURE_LOD_BIAS_EXT i32 #x84FD)
+(bind-val GL_TEXTURE_FILTER_CONTROL_EXT i32 #x8500)
+(bind-val GL_TEXTURE_LOD_BIAS_EXT i32 #x8501)
+;; #endif
+
+;; #if GL_EXT_texture_mirror_clamp
+(bind-val GL_MIRROR_CLAMP_EXT i32 #x8742)
+(bind-val GL_MIRROR_CLAMP_TO_EDGE_EXT i32 #x8743)
+(bind-val GL_MIRROR_CLAMP_TO_BORDER_EXT i32 #x8912)
+;; #endif
+
+;; #if GL_EXT_texture_object
+(bind-val GL_TEXTURE_PRIORITY_EXT i32 #x8066)
+(bind-val GL_TEXTURE_RESIDENT_EXT i32 #x8067)
+(bind-val GL_TEXTURE_1D_BINDING_EXT i32 #x8068)
+(bind-val GL_TEXTURE_2D_BINDING_EXT i32 #x8069)
+(bind-val GL_TEXTURE_3D_BINDING_EXT i32 #x806A)
+;; #endif
+
+;; #if GL_EXT_texture_rectangle
+(bind-val GL_TEXTURE_RECTANGLE_EXT i32 #x84F5)
+(bind-val GL_TEXTURE_BINDING_RECTANGLE_EXT i32 #x84F6)
+(bind-val GL_PROXY_TEXTURE_RECTANGLE_EXT i32 #x84F7)
+(bind-val GL_MAX_RECTANGLE_TEXTURE_SIZE_EXT i32 #x84F8)
+;; #endif
+
+;; #if GL_EXT_texture_shared_exponent
+(bind-val GL_RGB9_E5_EXT i32 #x8C3D)
+(bind-val GL_UNSIGNED_INT_5_9_9_9_REV_EXT i32 #x8C3E)
+(bind-val GL_TEXTURE_SHARED_SIZE_EXT i32 #x8C3F)
+;; #endif
+
+;; #if GL_EXT_texture_sRGB
+(bind-val GL_SRGB_EXT i32 #x8C40)
+(bind-val GL_SRGB8_EXT i32 #x8C41)
+(bind-val GL_SRGB_ALPHA_EXT i32 #x8C42)
+(bind-val GL_SRGB8_ALPHA8_EXT i32 #x8C43)
+(bind-val GL_SLUMINANCE_ALPHA_EXT i32 #x8C44)
+(bind-val GL_SLUMINANCE8_ALPHA8_EXT i32 #x8C45)
+(bind-val GL_SLUMINANCE_EXT i32 #x8C46)
+(bind-val GL_SLUMINANCE8_EXT i32 #x8C47)
+(bind-val GL_COMPRESSED_SRGB_EXT i32 #x8C48)
+(bind-val GL_COMPRESSED_SRGB_ALPHA_EXT i32 #x8C49)
+(bind-val GL_COMPRESSED_SLUMINANCE_EXT i32 #x8C4A)
+(bind-val GL_COMPRESSED_SLUMINANCE_ALPHA_EXT i32 #x8C4B)
+(bind-val GL_COMPRESSED_SRGB_S3TC_DXT1_EXT i32 #x8C4C)
+(bind-val GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT i32 #x8C4D)
+(bind-val GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT i32 #x8C4E)
+(bind-val GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT i32 #x8C4F)
+;; #endif
+
+;; #if GL_EXT_texture_sRGB_decode
+(bind-val GL_TEXTURE_SRGB_DECODE_EXT i32 #x8A48)
+(bind-val GL_DECODE_EXT i32 #x8A49)
+(bind-val GL_SKIP_DECODE_EXT i32 #x8A4A)
+;; #endif
+
+;; #if GL_EXT_timer_query
+(bind-val GL_TIME_ELAPSED_EXT i32 #x88BF)
+;; #endif
+
+;; #if GL_EXT_transform_feedback
+(bind-val GL_TRANSFORM_FEEDBACK_BUFFER_EXT i32 #x8C8E)
+(bind-val GL_TRANSFORM_FEEDBACK_BUFFER_START_EXT i32 #x8C84)
+(bind-val GL_TRANSFORM_FEEDBACK_BUFFER_SIZE_EXT i32 #x8C85)
+(bind-val GL_TRANSFORM_FEEDBACK_BUFFER_BINDING_EXT i32 #x8C8F)
+(bind-val GL_INTERLEAVED_ATTRIBS_EXT i32 #x8C8C)
+(bind-val GL_SEPARATE_ATTRIBS_EXT i32 #x8C8D)
+(bind-val GL_PRIMITIVES_GENERATED_EXT i32 #x8C87)
+(bind-val GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN_EXT i32 #x8C88)
+(bind-val GL_RASTERIZER_DISCARD_EXT i32 #x8C89)
+(bind-val GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS_EXT i32 #x8C8A)
+(bind-val GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS_EXT i32 #x8C8B)
+(bind-val GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS_EXT i32 #x8C80)
+(bind-val GL_TRANSFORM_FEEDBACK_VARYINGS_EXT i32 #x8C83)
+(bind-val GL_TRANSFORM_FEEDBACK_BUFFER_MODE_EXT i32 #x8C7F)
+(bind-val GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH_EXT i32 #x8C76)
+;; #endif
+
+;; #if GL_EXT_vertex_array
+(bind-val GL_VERTEX_ARRAY_EXT i32 #x8074)
+(bind-val GL_NORMAL_ARRAY_EXT i32 #x8075)
+(bind-val GL_COLOR_ARRAY_EXT i32 #x8076)
+(bind-val GL_INDEX_ARRAY_EXT i32 #x8077)
+(bind-val GL_TEXTURE_COORD_ARRAY_EXT i32 #x8078)
+(bind-val GL_EDGE_FLAG_ARRAY_EXT i32 #x8079)
+(bind-val GL_VERTEX_ARRAY_SIZE_EXT i32 #x807A)
+(bind-val GL_VERTEX_ARRAY_TYPE_EXT i32 #x807B)
+(bind-val GL_VERTEX_ARRAY_STRIDE_EXT i32 #x807C)
+(bind-val GL_VERTEX_ARRAY_COUNT_EXT i32 #x807D)
+(bind-val GL_NORMAL_ARRAY_TYPE_EXT i32 #x807E)
+(bind-val GL_NORMAL_ARRAY_STRIDE_EXT i32 #x807F)
+(bind-val GL_NORMAL_ARRAY_COUNT_EXT i32 #x8080)
+(bind-val GL_COLOR_ARRAY_SIZE_EXT i32 #x8081)
+(bind-val GL_COLOR_ARRAY_TYPE_EXT i32 #x8082)
+(bind-val GL_COLOR_ARRAY_STRIDE_EXT i32 #x8083)
+(bind-val GL_COLOR_ARRAY_COUNT_EXT i32 #x8084)
+(bind-val GL_INDEX_ARRAY_TYPE_EXT i32 #x8085)
+(bind-val GL_INDEX_ARRAY_STRIDE_EXT i32 #x8086)
+(bind-val GL_INDEX_ARRAY_COUNT_EXT i32 #x8087)
+(bind-val GL_TEXTURE_COORD_ARRAY_SIZE_EXT i32 #x8088)
+(bind-val GL_TEXTURE_COORD_ARRAY_TYPE_EXT i32 #x8089)
+(bind-val GL_TEXTURE_COORD_ARRAY_STRIDE_EXT i32 #x808A)
+(bind-val GL_TEXTURE_COORD_ARRAY_COUNT_EXT i32 #x808B)
+(bind-val GL_EDGE_FLAG_ARRAY_STRIDE_EXT i32 #x808C)
+(bind-val GL_EDGE_FLAG_ARRAY_COUNT_EXT i32 #x808D)
+(bind-val GL_VERTEX_ARRAY_POINTER_EXT i32 #x808E)
+(bind-val GL_NORMAL_ARRAY_POINTER_EXT i32 #x808F)
+(bind-val GL_COLOR_ARRAY_POINTER_EXT i32 #x8090)
+(bind-val GL_INDEX_ARRAY_POINTER_EXT i32 #x8091)
+(bind-val GL_TEXTURE_COORD_ARRAY_POINTER_EXT i32 #x8092)
+(bind-val GL_EDGE_FLAG_ARRAY_POINTER_EXT i32 #x8093)
+;; #endif
+
+;; #if GL_APPLE_aux_depth_stencil
+(bind-val GL_AUX_DEPTH_STENCIL_APPLE i32 #x8A14)
+;; #endif
+
+;; #if GL_APPLE_client_storage
+(bind-val GL_UNPACK_CLIENT_STORAGE_APPLE i32 #x85B2)
+;; #endif
+
+;; #if GL_APPLE_element_array
+(bind-val GL_ELEMENT_ARRAY_APPLE i32 #x8A0C)
+(bind-val GL_ELEMENT_ARRAY_TYPE_APPLE i32 #x8A0D)
+(bind-val GL_ELEMENT_ARRAY_POINTER_APPLE i32 #x8A0E)
+;; #endif
+
+;; #if GL_APPLE_fence
+(bind-val GL_DRAW_PIXELS_APPLE i32 #x8A0A)
+(bind-val GL_FENCE_APPLE i32 #x8A0B)
+(bind-val GL_BUFFER_OBJECT_APPLE i32 #x85B3)
+;; #endif
+
+;; #if GL_APPLE_float_pixels
+(bind-val GL_HALF_APPLE i32 #x140B)
+(bind-val GL_COLOR_FLOAT_APPLE i32 #x8A0F)
+(bind-val GL_RGBA_FLOAT32_APPLE i32 #x8814)
+(bind-val GL_RGB_FLOAT32_APPLE i32 #x8815)
+(bind-val GL_ALPHA_FLOAT32_APPLE i32 #x8816)
+(bind-val GL_INTENSITY_FLOAT32_APPLE i32 #x8817)
+(bind-val GL_LUMINANCE_FLOAT32_APPLE i32 #x8818)
+(bind-val GL_LUMINANCE_ALPHA_FLOAT32_APPLE i32 #x8819)
+(bind-val GL_RGBA_FLOAT16_APPLE i32 #x881A)
+(bind-val GL_RGB_FLOAT16_APPLE i32 #x881B)
+(bind-val GL_ALPHA_FLOAT16_APPLE i32 #x881C)
+(bind-val GL_INTENSITY_FLOAT16_APPLE i32 #x881D)
+(bind-val GL_LUMINANCE_FLOAT16_APPLE i32 #x881E)
+(bind-val GL_LUMINANCE_ALPHA_FLOAT16_APPLE i32 #x881F)
+;; #endif
+
+;; #if GL_APPLE_flush_buffer_range
+(bind-val GL_BUFFER_SERIALIZED_MODIFY_APPLE i32 #x8A12)
+(bind-val GL_BUFFER_FLUSHING_UNMAP_APPLE i32 #x8A13)
+;; #endif
+
+;; #if GL_APPLE_object_purgeable
+(bind-val GL_RELEASED_APPLE i32 #x8A19)
+(bind-val GL_VOLATILE_APPLE i32 #x8A1A)
+(bind-val GL_RETAINED_APPLE i32 #x8A1B)
+(bind-val GL_UNDEFINED_APPLE i32 #x8A1C)
+(bind-val GL_PURGEABLE_APPLE i32 #x8A1D)
+;; #endif
+
+;; #if GL_APPLE_pixel_buffer
+(bind-val GL_MIN_PBUFFER_VIEWPORT_DIMS_APPLE i32 #x8A10)
+;; #endif
+
+;; #if GL_APPLE_rgb_422
+(bind-val GL_RGB_422_APPLE i32 #x8A1F)
+;; #endif
+
+;; #if GL_APPLE_row_bytes
+(bind-val GL_PACK_ROW_BYTES_APPLE i32 #x8A15)
+(bind-val GL_UNPACK_ROW_BYTES_APPLE i32 #x8A16)
+(bind-val GL_PACK_IMAGE_BYTES_APPLE i32 #x8A17)
+(bind-val GL_UNPACK_IMAGE_BYTES_APPLE i32 #x8A18)
+;; #endif
+
+;; #if GL_APPLE_specular_vector
+(bind-val GL_LIGHT_MODEL_SPECULAR_VECTOR_APPLE i32 #x85B0)
+;; #endif
+
+;; #if GL_APPLE_texture_range
+(bind-val GL_TEXTURE_RANGE_LENGTH_APPLE i32 #x85B7)
+(bind-val GL_TEXTURE_RANGE_POINTER_APPLE i32 #x85B8)
+(bind-val GL_TEXTURE_STORAGE_HINT_APPLE i32 #x85BC)
+(bind-val GL_TEXTURE_MINIMIZE_STORAGE_APPLE i32 #x85B6)
+(bind-val GL_STORAGE_PRIVATE_APPLE i32 #x85BD)
+(bind-val GL_STORAGE_CACHED_APPLE i32 #x85BE)
+(bind-val GL_STORAGE_SHARED_APPLE i32 #x85BF)
+;; #endif
+
+;; #if GL_APPLE_transform_hint
+(bind-val GL_TRANSFORM_HINT_APPLE i32 #x85B1)
+;; #endif
+
+;; #if GL_APPLE_vertex_array_object
+(bind-val GL_VERTEX_ARRAY_BINDING_APPLE i32 #x85B5)
+;; #endif
+
+;; #if GL_APPLE_vertex_array_range
+(bind-val GL_VERTEX_ARRAY_RANGE_APPLE i32 #x851D)
+(bind-val GL_VERTEX_ARRAY_RANGE_LENGTH_APPLE i32 #x851E)
+(bind-val GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_APPLE i32 #x8520)
+(bind-val GL_VERTEX_ARRAY_RANGE_POINTER_APPLE i32 #x8521)
+(bind-val GL_VERTEX_ARRAY_STORAGE_HINT_APPLE i32 #x851F)
+(bind-val GL_STORAGE_CLIENT_APPLE i32 #x85B4)
+(bind-val GL_STORAGE_PRIVATE_APPLE i32 #x85BD)
+(bind-val GL_STORAGE_CACHED_APPLE i32 #x85BE)
+(bind-val GL_STORAGE_SHARED_APPLE i32 #x85BF)
+;; #endif
+
+;; #if GL_APPLE_vertex_point_size
+(bind-val GL_VERTEX_POINT_SIZE_APPLE i32 #x8A26)
+(bind-val GL_CURRENT_POINT_SIZE_APPLE i32 #x8A27)
+(bind-val GL_POINT_SIZE_ARRAY_APPLE i32 #x8B9C)
+(bind-val GL_POINT_SIZE_ARRAY_TYPE_APPLE i32 #x898A)
+(bind-val GL_POINT_SIZE_ARRAY_STRIDE_APPLE i32 #x898B)
+(bind-val GL_POINT_SIZE_ARRAY_POINTER_APPLE i32 #x898C)
+(bind-val GL_POINT_SIZE_ARRAY_BUFFER_BINDING_APPLE i32 #x8B9F)
+;; #endif
+
+;; #if GL_APPLE_vertex_program_evaluators
+(bind-val GL_VERTEX_ATTRIB_MAP1_APPLE i32 #x8A00)
+(bind-val GL_VERTEX_ATTRIB_MAP2_APPLE i32 #x8A01)
+(bind-val GL_VERTEX_ATTRIB_MAP1_SIZE_APPLE i32 #x8A02)
+(bind-val GL_VERTEX_ATTRIB_MAP1_COEFF_APPLE i32 #x8A03)
+(bind-val GL_VERTEX_ATTRIB_MAP1_ORDER_APPLE i32 #x8A04)
+(bind-val GL_VERTEX_ATTRIB_MAP1_DOMAIN_APPLE i32 #x8A05)
+(bind-val GL_VERTEX_ATTRIB_MAP2_SIZE_APPLE i32 #x8A06)
+(bind-val GL_VERTEX_ATTRIB_MAP2_COEFF_APPLE i32 #x8A07)
+(bind-val GL_VERTEX_ATTRIB_MAP2_ORDER_APPLE i32 #x8A08)
+(bind-val GL_VERTEX_ATTRIB_MAP2_DOMAIN_APPLE i32 #x8A09)
+;; #endif
+
+;; #if GL_APPLE_ycbcr_422
+(bind-val GL_YCBCR_422_APPLE i32 #x85B9)
+;; #endif
+
+;; #if GL_APPLE_ycbcr_422 || GL_APPLE_rgb_422
+(bind-val GL_UNSIGNED_SHORT_8_8_APPLE i32 #x85BA)
+(bind-val GL_UNSIGNED_SHORT_8_8_REV_APPLE i32 #x85BB)
+;; #endif
+
+;; #if GL_ATI_array_rev_comps_in_4_bytes
+(bind-val GL_ARRAY_REV_COMPS_IN_4_BYTES_ATI i32 #x897C)
+;; #endif
+
+;; #if GL_ATI_blend_equation_separate
+(bind-val GL_ALPHA_BLEND_EQUATION_ATI i32 #x883D)
+;; #endif
+
+;; #if GL_ATI_blend_weighted_minmax
+(bind-val GL_MIN_WEIGHTED_ATI i32 #x877D)
+(bind-val GL_MAX_WEIGHTED_ATI i32 #x877E)
+;; #endif
+
+;; #if GL_ATI_pn_triangles
+(bind-val GL_PN_TRIANGLES_ATI i32 #x6090)
+(bind-val GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATI i32 #x6091)
+(bind-val GL_PN_TRIANGLES_POINT_MODE_ATI i32 #x6092)
+(bind-val GL_PN_TRIANGLES_NORMAL_MODE_ATI i32 #x6093)
+(bind-val GL_PN_TRIANGLES_TESSELATION_LEVEL_ATI i32 #x6094)
+(bind-val GL_PN_TRIANGLES_POINT_MODE_LINEAR_ATI i32 #x6095)
+(bind-val GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATI i32 #x6096)
+(bind-val GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATI i32 #x6097)
+(bind-val GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATI i32 #x6098)
+;; #endif
+
+;; #if GL_ATI_point_cull_mode
+(bind-val GL_POINT_CULL_MODE_ATI i32 #x60B3)
+(bind-val GL_POINT_CULL_CENTER_ATI i32 #x60B4)
+(bind-val GL_POINT_CULL_CLIP_ATI i32 #x60B5)
+;; #endif
+
+;; #if GL_ATI_separate_stencil
+(bind-val GL_STENCIL_BACK_FUNC_ATI i32 #x8800)
+(bind-val GL_STENCIL_BACK_FAIL_ATI i32 #x8801)
+(bind-val GL_STENCIL_BACK_PASS_DEPTH_FAIL_ATI i32 #x8802)
+(bind-val GL_STENCIL_BACK_PASS_DEPTH_PASS_ATI i32 #x8803)
+;; #endif
+
+;; #if GL_ATI_text_fragment_shader
+(bind-val GL_TEXT_FRAGMENT_SHADER_ATI i32 #x8200)
+;; #endif
+
+;; #if GL_ATI_texture_compression_3dc
+(bind-val GL_COMPRESSED_LUMINANCE_ALPHA_3DC_ATI i32 #x8837)
+;; #endif
+
+;; #if GL_ATI_texture_env_combine3
+(bind-val GL_MODULATE_ADD_ATI i32 #x8744)
+(bind-val GL_MODULATE_SIGNED_ADD_ATI i32 #x8745)
+(bind-val GL_MODULATE_SUBTRACT_ATI i32 #x8746)
+;; #endif
+
+;; #if GL_ATI_texture_float
+(bind-val GL_RGBA_FLOAT32_ATI i32 #x8814)
+(bind-val GL_RGB_FLOAT32_ATI i32 #x8815)
+(bind-val GL_ALPHA_FLOAT32_ATI i32 #x8816)
+(bind-val GL_INTENSITY_FLOAT32_ATI i32 #x8817)
+(bind-val GL_LUMINANCE_FLOAT32_ATI i32 #x8818)
+(bind-val GL_LUMINANCE_ALPHA_FLOAT32_ATI i32 #x8819)
+(bind-val GL_RGBA_FLOAT16_ATI i32 #x881A)
+(bind-val GL_RGB_FLOAT16_ATI i32 #x881B)
+(bind-val GL_ALPHA_FLOAT16_ATI i32 #x881C)
+(bind-val GL_INTENSITY_FLOAT16_ATI i32 #x881D)
+(bind-val GL_LUMINANCE_FLOAT16_ATI i32 #x881E)
+(bind-val GL_LUMINANCE_ALPHA_FLOAT16_ATI i32 #x881F)
+;; #endif
+
+;; #if GL_ATI_texture_mirror_once
+(bind-val GL_MIRROR_CLAMP_ATI i32 #x8742)
+(bind-val GL_MIRROR_CLAMP_TO_EDGE_ATI i32 #x8743)
+;; #endif
+
+;; #if GL_ATIX_pn_triangles
+(bind-val GL_PN_TRIANGLES_ATIX i32 #x6090)
+(bind-val GL_MAX_PN_TRIANGLES_TESSELATION_LEVEL_ATIX i32 #x6091)
+(bind-val GL_PN_TRIANGLES_POINT_MODE_ATIX i32 #x6092)
+(bind-val GL_PN_TRIANGLES_NORMAL_MODE_ATIX i32 #x6093)
+(bind-val GL_PN_TRIANGLES_TESSELATION_LEVEL_ATIX i32 #x6094)
+(bind-val GL_PN_TRIANGLES_POINT_MODE_LINEAR_ATIX i32 #x6095)
+(bind-val GL_PN_TRIANGLES_POINT_MODE_CUBIC_ATIX i32 #x6096)
+(bind-val GL_PN_TRIANGLES_NORMAL_MODE_LINEAR_ATIX i32 #x6097)
+(bind-val GL_PN_TRIANGLES_NORMAL_MODE_QUADRATIC_ATIX i32 #x6098)
+;; #endif
+
+;; #if GL_HP_convolution_border_modes
+(bind-val GL_IGNORE_BORDER_HP i32 #x8150)
+(bind-val GL_CONSTANT_BORDER_HP i32 #x8151)
+(bind-val GL_REPLICATE_BORDER_HP i32 #x8153)
+(bind-val GL_CONVOLUTION_BORDER_COLOR_HP i32 #x8154)
+;; #endif
+
+;; #if GL_IBM_rasterpos_clip
+(bind-val GL_RASTER_POSITION_UNCLIPPED_IBM i32 #x19262)
+;; #endif
+
+;; #if GL_NV_conditional_render
+(bind-val GL_QUERY_WAIT_NV i32 #x8E13)
+(bind-val GL_QUERY_NO_WAIT_NV i32 #x8E14)
+(bind-val GL_QUERY_BY_REGION_WAIT_NV i32 #x8E15)
+(bind-val GL_QUERY_BY_REGION_NO_WAIT_NV i32 #x8E16)
+;; #endif
+
+;; #if GL_NV_depth_clamp
+(bind-val GL_DEPTH_CLAMP_NV i32 #x864F)
+;; #endif
+
+;; #if GL_NV_fog_distance
+(bind-val GL_FOG_DISTANCE_MODE_NV i32 #x855A)
+(bind-val GL_EYE_RADIAL_NV i32 #x855B)
+(bind-val GL_EYE_PLANE_ABSOLUTE_NV i32 #x855C)
+;; /* reuse GL_EYE_PLANE */
+;; #endif
+
+;; #if GL_NV_fragment_program2
+(bind-val GL_MAX_PROGRAM_IF_DEPTH_NV i32 #x88F6)
+(bind-val GL_MAX_PROGRAM_LOOP_DEPTH_NV i32 #x88F7)
+(bind-val GL_MAX_PROGRAM_LOOP_COUNT_NV i32 #x88F8)
+;; #endif
+
+;; #if GL_NV_fragment_program2 || GL_NV_vertex_program2_option
+(bind-val GL_MAX_PROGRAM_EXEC_INSTRUCTIONS_NV i32 #x88F4)
+(bind-val GL_MAX_PROGRAM_CALL_DEPTH_NV i32 #x88F5)
+;; #endif
+
+;; #if GL_NV_light_max_exponent
+(bind-val GL_MAX_SHININESS_NV i32 #x8504)
+(bind-val GL_MAX_SPOT_EXPONENT_NV i32 #x8505)
+;; #endif
+
+;; #if GL_NV_multisample_filter_hint
+(bind-val GL_MULTISAMPLE_FILTER_HINT_NV i32 #x8534)
+;; #endif
+
+;; #if GL_NV_point_sprite
+(bind-val GL_POINT_SPRITE_NV i32 #x8861)
+(bind-val GL_COORD_REPLACE_NV i32 #x8862)
+(bind-val GL_POINT_SPRITE_R_MODE_NV i32 #x8863)
+;; #endif
+
+;; #if GL_NV_register_combiners
+(bind-val GL_REGISTER_COMBINERS_NV i32 #x8522)
+(bind-val GL_VARIABLE_A_NV i32 #x8523)
+(bind-val GL_VARIABLE_B_NV i32 #x8524)
+(bind-val GL_VARIABLE_C_NV i32 #x8525)
+(bind-val GL_VARIABLE_D_NV i32 #x8526)
+(bind-val GL_VARIABLE_E_NV i32 #x8527)
+(bind-val GL_VARIABLE_F_NV i32 #x8528)
+(bind-val GL_VARIABLE_G_NV i32 #x8529)
+(bind-val GL_CONSTANT_COLOR0_NV i32 #x852A)
+(bind-val GL_CONSTANT_COLOR1_NV i32 #x852B)
+(bind-val GL_PRIMARY_COLOR_NV i32 #x852C)
+(bind-val GL_SECONDARY_COLOR_NV i32 #x852D)
+(bind-val GL_SPARE0_NV i32 #x852E)
+(bind-val GL_SPARE1_NV i32 #x852F)
+(bind-val GL_DISCARD_NV i32 #x8530)
+(bind-val GL_E_TIMES_F_NV i32 #x8531)
+(bind-val GL_SPARE0_PLUS_SECONDARY_COLOR_NV i32 #x8532)
+(bind-val GL_UNSIGNED_IDENTITY_NV i32 #x8536)
+(bind-val GL_UNSIGNED_INVERT_NV i32 #x8537)
+(bind-val GL_EXPAND_NORMAL_NV i32 #x8538)
+(bind-val GL_EXPAND_NEGATE_NV i32 #x8539)
+(bind-val GL_HALF_BIAS_NORMAL_NV i32 #x853A)
+(bind-val GL_HALF_BIAS_NEGATE_NV i32 #x853B)
+(bind-val GL_SIGNED_IDENTITY_NV i32 #x853C)
+(bind-val GL_SIGNED_NEGATE_NV i32 #x853D)
+(bind-val GL_SCALE_BY_TWO_NV i32 #x853E)
+(bind-val GL_SCALE_BY_FOUR_NV i32 #x853F)
+(bind-val GL_SCALE_BY_ONE_HALF_NV i32 #x8540)
+(bind-val GL_BIAS_BY_NEGATIVE_ONE_HALF_NV i32 #x8541)
+(bind-val GL_COMBINER_INPUT_NV i32 #x8542)
+(bind-val GL_COMBINER_MAPPING_NV i32 #x8543)
+(bind-val GL_COMBINER_COMPONENT_USAGE_NV i32 #x8544)
+(bind-val GL_COMBINER_AB_DOT_PRODUCT_NV i32 #x8545)
+(bind-val GL_COMBINER_CD_DOT_PRODUCT_NV i32 #x8546)
+(bind-val GL_COMBINER_MUX_SUM_NV i32 #x8547)
+(bind-val GL_COMBINER_SCALE_NV i32 #x8548)
+(bind-val GL_COMBINER_BIAS_NV i32 #x8549)
+(bind-val GL_COMBINER_AB_OUTPUT_NV i32 #x854A)
+(bind-val GL_COMBINER_CD_OUTPUT_NV i32 #x854B)
+(bind-val GL_COMBINER_SUM_OUTPUT_NV i32 #x854C)
+(bind-val GL_MAX_GENERAL_COMBINERS_NV i32 #x854D)
+(bind-val GL_NUM_GENERAL_COMBINERS_NV i32 #x854E)
+(bind-val GL_COLOR_SUM_CLAMP_NV i32 #x854F)
+(bind-val GL_COMBINER0_NV i32 #x8550)
+(bind-val GL_COMBINER1_NV i32 #x8551)
+(bind-val GL_COMBINER2_NV i32 #x8552)
+(bind-val GL_COMBINER3_NV i32 #x8553)
+(bind-val GL_COMBINER4_NV i32 #x8554)
+(bind-val GL_COMBINER5_NV i32 #x8555)
+(bind-val GL_COMBINER6_NV i32 #x8556)
+(bind-val GL_COMBINER7_NV i32 #x8557)
+;; /* reuse GL_TEXTURE0_ARB */
+;; /* reuse GL_TEXTURE1_ARB */
+;; /* reuse GL_ZERO */
+;; /* reuse GL_NONE */
+;; /* reuse GL_FOG */
+;; #endif
+
+;; #if GL_NV_register_combiners2
+(bind-val GL_PER_STAGE_CONSTANTS_NV i32 #x8535)
+;; #endif
+
+;; #if GL_NV_texgen_reflection
+(bind-val GL_NORMAL_MAP_NV i32 #x8511)
+(bind-val GL_REFLECTION_MAP_NV i32 #x8512)
+;; #endif
+
+;; #if GL_NV_texture_shader
+(bind-val GL_RGBA_UNSIGNED_DOT_PRODUCT_MAPPING_NV i32 #x86D9)
+(bind-val GL_UNSIGNED_INT_S8_S8_8_8_NV i32 #x86DA)
+(bind-val GL_UNSIGNED_INT_8_8_S8_S8_REV_NV i32 #x86DB)
+(bind-val GL_DSDT_MAG_INTENSITY_NV i32 #x86DC)
+(bind-val GL_TEXTURE_SHADER_NV i32 #x86DE)
+(bind-val GL_SHADER_OPERATION_NV i32 #x86DF)
+(bind-val GL_CULL_MODES_NV i32 #x86E0)
+(bind-val GL_OFFSET_TEXTURE_MATRIX_NV i32 #x86E1)
+(bind-val GL_OFFSET_TEXTURE_SCALE_NV i32 #x86E2)
+(bind-val GL_OFFSET_TEXTURE_BIAS_NV i32 #x86E3)
+(bind-val GL_OFFSET_TEXTURE_2D_MATRIX_NV i32 #x86E1)
+(bind-val GL_OFFSET_TEXTURE_2D_SCALE_NV i32 #x86E2)
+(bind-val GL_OFFSET_TEXTURE_2D_BIAS_NV i32 #x86E3)
+(bind-val GL_PREVIOUS_TEXTURE_INPUT_NV i32 #x86E4)
+(bind-val GL_CONST_EYE_NV i32 #x86E5)
+(bind-val GL_SHADER_CONSISTENT_NV i32 #x86DD)
+(bind-val GL_PASS_THROUGH_NV i32 #x86E6)
+(bind-val GL_CULL_FRAGMENT_NV i32 #x86E7)
+(bind-val GL_OFFSET_TEXTURE_2D_NV i32 #x86E8)
+(bind-val GL_OFFSET_TEXTURE_RECTANGLE_NV i32 #x864C)
+(bind-val GL_OFFSET_TEXTURE_RECTANGLE_SCALE_NV i32 #x864D)
+(bind-val GL_DEPENDENT_AR_TEXTURE_2D_NV i32 #x86E9)
+(bind-val GL_DEPENDENT_GB_TEXTURE_2D_NV i32 #x86EA)
+(bind-val GL_DOT_PRODUCT_NV i32 #x86EC)
+(bind-val GL_DOT_PRODUCT_DEPTH_REPLACE_NV i32 #x86ED)
+(bind-val GL_DOT_PRODUCT_TEXTURE_2D_NV i32 #x86EE)
+(bind-val GL_DOT_PRODUCT_TEXTURE_RECTANGLE_NV i32 #x864E)
+(bind-val GL_DOT_PRODUCT_TEXTURE_CUBE_MAP_NV i32 #x86F0)
+(bind-val GL_DOT_PRODUCT_DIFFUSE_CUBE_MAP_NV i32 #x86F1)
+(bind-val GL_DOT_PRODUCT_REFLECT_CUBE_MAP_NV i32 #x86F2)
+(bind-val GL_DOT_PRODUCT_CONST_EYE_REFLECT_CUBE_MAP_NV i32 #x86F3)
+(bind-val GL_HILO_NV i32 #x86F4)
+(bind-val GL_DSDT_NV i32 #x86F5)
+(bind-val GL_DSDT_MAG_NV i32 #x86F6)
+(bind-val GL_DSDT_MAG_VIB_NV i32 #x86F7)
+(bind-val GL_HILO16_NV i32 #x86F8)
+(bind-val GL_SIGNED_HILO_NV i32 #x86F9)
+(bind-val GL_SIGNED_HILO16_NV i32 #x86FA)
+(bind-val GL_SIGNED_RGBA_NV i32 #x86FB)
+(bind-val GL_SIGNED_RGBA8_NV i32 #x86FC)
+(bind-val GL_SIGNED_RGB_NV i32 #x86FE)
+(bind-val GL_SIGNED_RGB8_NV i32 #x86FF)
+(bind-val GL_SIGNED_LUMINANCE_NV i32 #x8701)
+(bind-val GL_SIGNED_LUMINANCE8_NV i32 #x8702)
+(bind-val GL_SIGNED_LUMINANCE_ALPHA_NV i32 #x8703)
+(bind-val GL_SIGNED_LUMINANCE8_ALPHA8_NV i32 #x8704)
+(bind-val GL_SIGNED_ALPHA_NV i32 #x8705)
+(bind-val GL_SIGNED_ALPHA8_NV i32 #x8706)
+(bind-val GL_SIGNED_INTENSITY_NV i32 #x8707)
+(bind-val GL_SIGNED_INTENSITY8_NV i32 #x8708)
+(bind-val GL_DSDT8_NV i32 #x8709)
+(bind-val GL_DSDT8_MAG8_NV i32 #x870A)
+(bind-val GL_DSDT8_MAG8_INTENSITY8_NV i32 #x870B)
+(bind-val GL_SIGNED_RGB_UNSIGNED_ALPHA_NV i32 #x870C)
+(bind-val GL_SIGNED_RGB8_UNSIGNED_ALPHA8_NV i32 #x870D)
+(bind-val GL_HI_SCALE_NV i32 #x870E)
+(bind-val GL_LO_SCALE_NV i32 #x870F)
+(bind-val GL_DS_SCALE_NV i32 #x8710)
+(bind-val GL_DT_SCALE_NV i32 #x8711)
+(bind-val GL_MAGNITUDE_SCALE_NV i32 #x8712)
+(bind-val GL_VIBRANCE_SCALE_NV i32 #x8713)
+(bind-val GL_HI_BIAS_NV i32 #x8714)
+(bind-val GL_LO_BIAS_NV i32 #x8715)
+(bind-val GL_DS_BIAS_NV i32 #x8716)
+(bind-val GL_DT_BIAS_NV i32 #x8717)
+(bind-val GL_MAGNITUDE_BIAS_NV i32 #x8718)
+(bind-val GL_VIBRANCE_BIAS_NV i32 #x8719)
+(bind-val GL_TEXTURE_BORDER_VALUES_NV i32 #x871A)
+(bind-val GL_TEXTURE_HI_SIZE_NV i32 #x871B)
+(bind-val GL_TEXTURE_LO_SIZE_NV i32 #x871C)
+(bind-val GL_TEXTURE_DS_SIZE_NV i32 #x871D)
+(bind-val GL_TEXTURE_DT_SIZE_NV i32 #x871E)
+(bind-val GL_TEXTURE_MAG_SIZE_NV i32 #x871F)
+;; #endif
+
+;; #if GL_NV_texture_shader2
+(bind-val GL_DOT_PRODUCT_TEXTURE_3D_NV i32 #x86EF)
+;; #endif
+
+;; #if GL_NV_texture_shader3
+(bind-val GL_OFFSET_PROJECTIVE_TEXTURE_2D_NV i32 #x8850)
+(bind-val GL_OFFSET_PROJECTIVE_TEXTURE_2D_SCALE_NV i32 #x8851)
+(bind-val GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_NV i32 #x8852)
+(bind-val GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_SCALE_NV i32 #x8853)
+(bind-val GL_OFFSET_HILO_TEXTURE_2D_NV i32 #x8854)
+(bind-val GL_OFFSET_HILO_TEXTURE_RECTANGLE_NV i32 #x8855)
+(bind-val GL_OFFSET_HILO_PROJECTIVE_TEXTURE_2D_NV i32 #x8856)
+(bind-val GL_OFFSET_HILO_PROJECTIVE_TEXTURE_RECTANGLE_NV i32 #x8857)
+(bind-val GL_DEPENDENT_HILO_TEXTURE_2D_NV i32 #x8858)
+(bind-val GL_DEPENDENT_RGB_TEXTURE_3D_NV i32 #x8859)
+(bind-val GL_DEPENDENT_RGB_TEXTURE_CUBE_MAP_NV i32 #x885A)
+(bind-val GL_DOT_PRODUCT_PASS_THROUGH_NV i32 #x885B)
+(bind-val GL_DOT_PRODUCT_TEXTURE_1D_NV i32 #x885C)
+(bind-val GL_DOT_PRODUCT_AFFINE_DEPTH_REPLACE_NV i32 #x885D)
+(bind-val GL_HILO8_NV i32 #x885E)
+(bind-val GL_SIGNED_HILO8_NV i32 #x885F)
+(bind-val GL_FORCE_BLUE_TO_ONE_NV i32 #x8860)
+;; #endif
+
+;; #if GL_NV_vertex_array_range
+(bind-val GL_VERTEX_ARRAY_RANGE_NV i32 #x851D)
+(bind-val GL_VERTEX_ARRAY_RANGE_LENGTH_NV i32 #x851E)
+(bind-val GL_VERTEX_ARRAY_RANGE_VALID_NV i32 #x851F)
+(bind-val GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_NV i32 #x8520)
+(bind-val GL_VERTEX_ARRAY_RANGE_POINTER_NV i32 #x8521)
+;; #endif
+
+;; #if GL_NV_vertex_array_range2
+(bind-val GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV i32 #x8533)
+;; #endif
+
+;; #if GL_NV_vertex_program
+(bind-val GL_VERTEX_PROGRAM_NV i32 #x8620)
+(bind-val GL_VERTEX_STATE_PROGRAM_NV i32 #x8621)
+(bind-val GL_ATTRIB_ARRAY_SIZE_NV i32 #x8623)
+(bind-val GL_ATTRIB_ARRAY_STRIDE_NV i32 #x8624)
+(bind-val GL_ATTRIB_ARRAY_TYPE_NV i32 #x8625)
+(bind-val GL_CURRENT_ATTRIB_NV i32 #x8626)
+(bind-val GL_PROGRAM_LENGTH_NV i32 #x8627)
+(bind-val GL_PROGRAM_STRING_NV i32 #x8628)
+(bind-val GL_MODELVIEW_PROJECTION_NV i32 #x8629)
+(bind-val GL_IDENTITY_NV i32 #x862A)
+(bind-val GL_INVERSE_NV i32 #x862B)
+(bind-val GL_TRANSPOSE_NV i32 #x862C)
+(bind-val GL_INVERSE_TRANSPOSE_NV i32 #x862D)
+(bind-val GL_MAX_TRACK_MATRIX_STACK_DEPTH_NV i32 #x862E)
+(bind-val GL_MAX_TRACK_MATRICES_NV i32 #x862F)
+(bind-val GL_MATRIX0_NV i32 #x8630)
+(bind-val GL_MATRIX1_NV i32 #x8631)
+(bind-val GL_MATRIX2_NV i32 #x8632)
+(bind-val GL_MATRIX3_NV i32 #x8633)
+(bind-val GL_MATRIX4_NV i32 #x8634)
+(bind-val GL_MATRIX5_NV i32 #x8635)
+(bind-val GL_MATRIX6_NV i32 #x8636)
+(bind-val GL_MATRIX7_NV i32 #x8637)
+(bind-val GL_CURRENT_MATRIX_STACK_DEPTH_NV i32 #x8640)
+(bind-val GL_CURRENT_MATRIX_NV i32 #x8641)
+(bind-val GL_VERTEX_PROGRAM_POINT_SIZE_NV i32 #x8642)
+(bind-val GL_VERTEX_PROGRAM_TWO_SIDE_NV i32 #x8643)
+(bind-val GL_PROGRAM_PARAMETER_NV i32 #x8644)
+(bind-val GL_ATTRIB_ARRAY_POINTER_NV i32 #x8645)
+(bind-val GL_PROGRAM_TARGET_NV i32 #x8646)
+(bind-val GL_PROGRAM_RESIDENT_NV i32 #x8647)
+(bind-val GL_TRACK_MATRIX_NV i32 #x8648)
+(bind-val GL_TRACK_MATRIX_TRANSFORM_NV i32 #x8649)
+(bind-val GL_VERTEX_PROGRAM_BINDING_NV i32 #x864A)
+(bind-val GL_PROGRAM_ERROR_POSITION_NV i32 #x864B)
+(bind-val GL_VERTEX_ATTRIB_ARRAY0_NV i32 #x8650)
+(bind-val GL_VERTEX_ATTRIB_ARRAY1_NV i32 #x8651)
+(bind-val GL_VERTEX_ATTRIB_ARRAY2_NV i32 #x8652)
+(bind-val GL_VERTEX_ATTRIB_ARRAY3_NV i32 #x8653)
+(bind-val GL_VERTEX_ATTRIB_ARRAY4_NV i32 #x8654)
+(bind-val GL_VERTEX_ATTRIB_ARRAY5_NV i32 #x8655)
+(bind-val GL_VERTEX_ATTRIB_ARRAY6_NV i32 #x8656)
+(bind-val GL_VERTEX_ATTRIB_ARRAY7_NV i32 #x8657)
+(bind-val GL_VERTEX_ATTRIB_ARRAY8_NV i32 #x8658)
+(bind-val GL_VERTEX_ATTRIB_ARRAY9_NV i32 #x8659)
+(bind-val GL_VERTEX_ATTRIB_ARRAY10_NV i32 #x865A)
+(bind-val GL_VERTEX_ATTRIB_ARRAY11_NV i32 #x865B)
+(bind-val GL_VERTEX_ATTRIB_ARRAY12_NV i32 #x865C)
+(bind-val GL_VERTEX_ATTRIB_ARRAY13_NV i32 #x865D)
+(bind-val GL_VERTEX_ATTRIB_ARRAY14_NV i32 #x865E)
+(bind-val GL_VERTEX_ATTRIB_ARRAY15_NV i32 #x865F)
+(bind-val GL_MAP1_VERTEX_ATTRIB0_4_NV i32 #x8660)
+(bind-val GL_MAP1_VERTEX_ATTRIB1_4_NV i32 #x8661)
+(bind-val GL_MAP1_VERTEX_ATTRIB2_4_NV i32 #x8662)
+(bind-val GL_MAP1_VERTEX_ATTRIB3_4_NV i32 #x8663)
+(bind-val GL_MAP1_VERTEX_ATTRIB4_4_NV i32 #x8664)
+(bind-val GL_MAP1_VERTEX_ATTRIB5_4_NV i32 #x8665)
+(bind-val GL_MAP1_VERTEX_ATTRIB6_4_NV i32 #x8666)
+(bind-val GL_MAP1_VERTEX_ATTRIB7_4_NV i32 #x8667)
+(bind-val GL_MAP1_VERTEX_ATTRIB8_4_NV i32 #x8668)
+(bind-val GL_MAP1_VERTEX_ATTRIB9_4_NV i32 #x8669)
+(bind-val GL_MAP1_VERTEX_ATTRIB10_4_NV i32 #x866A)
+(bind-val GL_MAP1_VERTEX_ATTRIB11_4_NV i32 #x866B)
+(bind-val GL_MAP1_VERTEX_ATTRIB12_4_NV i32 #x866C)
+(bind-val GL_MAP1_VERTEX_ATTRIB13_4_NV i32 #x866D)
+(bind-val GL_MAP1_VERTEX_ATTRIB14_4_NV i32 #x866E)
+(bind-val GL_MAP1_VERTEX_ATTRIB15_4_NV i32 #x866F)
+(bind-val GL_MAP2_VERTEX_ATTRIB0_4_NV i32 #x8670)
+(bind-val GL_MAP2_VERTEX_ATTRIB1_4_NV i32 #x8671)
+(bind-val GL_MAP2_VERTEX_ATTRIB2_4_NV i32 #x8672)
+(bind-val GL_MAP2_VERTEX_ATTRIB3_4_NV i32 #x8673)
+(bind-val GL_MAP2_VERTEX_ATTRIB4_4_NV i32 #x8674)
+(bind-val GL_MAP2_VERTEX_ATTRIB5_4_NV i32 #x8675)
+(bind-val GL_MAP2_VERTEX_ATTRIB6_4_NV i32 #x8676)
+(bind-val GL_MAP2_VERTEX_ATTRIB7_4_NV i32 #x8677)
+(bind-val GL_MAP2_VERTEX_ATTRIB8_4_NV i32 #x8678)
+(bind-val GL_MAP2_VERTEX_ATTRIB9_4_NV i32 #x8679)
+(bind-val GL_MAP2_VERTEX_ATTRIB10_4_NV i32 #x867A)
+(bind-val GL_MAP2_VERTEX_ATTRIB11_4_NV i32 #x867B)
+(bind-val GL_MAP2_VERTEX_ATTRIB12_4_NV i32 #x867C)
+(bind-val GL_MAP2_VERTEX_ATTRIB13_4_NV i32 #x867D)
+(bind-val GL_MAP2_VERTEX_ATTRIB14_4_NV i32 #x867E)
+(bind-val GL_MAP2_VERTEX_ATTRIB15_4_NV i32 #x867F)
+;; #endif
+
+;; #if GL_SGI_color_matrix
+(bind-val GL_COLOR_MATRIX_SGI i32 #x80B1)
+(bind-val GL_COLOR_MATRIX_STACK_DEPTH_SGI i32 #x80B2)
+(bind-val GL_MAX_COLOR_MATRIX_STACK_DEPTH_SGI i32 #x80B3)
+(bind-val GL_POST_COLOR_MATRIX_RED_SCALE_SGI i32 #x80B4)
+(bind-val GL_POST_COLOR_MATRIX_GREEN_SCALE_SGI i32 #x80B5)
+(bind-val GL_POST_COLOR_MATRIX_BLUE_SCALE_SGI i32 #x80B6)
+(bind-val GL_POST_COLOR_MATRIX_ALPHA_SCALE_SGI i32 #x80B7)
+(bind-val GL_POST_COLOR_MATRIX_RED_BIAS_SGI i32 #x80B8)
+(bind-val GL_POST_COLOR_MATRIX_GREEN_BIAS_SGI i32 #x80B9)
+(bind-val GL_POST_COLOR_MATRIX_BLUE_BIAS_SGI i32 #x80BA)
+(bind-val GL_POST_COLOR_MATRIX_ALPHA_BIAS_SGI i32 #x80BB)
+;; #endif
+
+;; #if GL_SGI_color_table
+(bind-val GL_COLOR_TABLE_SGI i32 #x80D0)
+(bind-val GL_POST_CONVOLUTION_COLOR_TABLE_SGI i32 #x80D1)
+(bind-val GL_POST_COLOR_MATRIX_COLOR_TABLE_SGI i32 #x80D2)
+(bind-val GL_PROXY_COLOR_TABLE_SGI i32 #x80D3)
+(bind-val GL_PROXY_POST_CONVOLUTION_COLOR_TABLE_SGI i32 #x80D4)
+(bind-val GL_PROXY_POST_COLOR_MATRIX_COLOR_TABLE_SGI i32 #x80D5)
+(bind-val GL_COLOR_TABLE_SCALE_SGI i32 #x80D6)
+(bind-val GL_COLOR_TABLE_BIAS_SGI i32 #x80D7)
+(bind-val GL_COLOR_TABLE_FORMAT_SGI i32 #x80D8)
+(bind-val GL_COLOR_TABLE_WIDTH_SGI i32 #x80D9)
+(bind-val GL_COLOR_TABLE_RED_SIZE_SGI i32 #x80DA)
+(bind-val GL_COLOR_TABLE_GREEN_SIZE_SGI i32 #x80DB)
+(bind-val GL_COLOR_TABLE_BLUE_SIZE_SGI i32 #x80DC)
+(bind-val GL_COLOR_TABLE_ALPHA_SIZE_SGI i32 #x80DD)
+(bind-val GL_COLOR_TABLE_LUMINANCE_SIZE_SGI i32 #x80DE)
+(bind-val GL_COLOR_TABLE_INTENSITY_SIZE_SGI i32 #x80DF)
+;; #endif
+
+;; #if GL_SGIS_generate_mipmap
+(bind-val GL_GENERATE_MIPMAP_SGIS i32 #x8191)
+(bind-val GL_GENERATE_MIPMAP_HINT_SGIS i32 #x8192)
+;; #endif
+
+;; #if GL_SGIS_point_parameters
+(bind-val GL_POINT_SIZE_MIN_SGIS i32 #x8126)
+(bind-val GL_POINT_SIZE_MAX_SGIS i32 #x8127)
+(bind-val GL_POINT_FADE_THRESHOLD_SIZE_SGIS i32 #x8128)
+(bind-val GL_DISTANCE_ATTENUATION_SGIS i32 #x8129)
+;; #endif
+
+;; #if GL_SGIS_texture_edge_clamp
+(bind-val GL_CLAMP_TO_EDGE_SGIS i32 #x812F)
+;; #endif
+
+;; #if GL_SGIS_texture_border_clamp
+(bind-val GL_CLAMP_TO_BORDER_SGIS i32 #x812D)
+;; #endif
+
+;; #if GL_SGIS_texture_lod
+(bind-val GL_TEXTURE_MIN_LOD_SGIS i32 #x813A)
+(bind-val GL_TEXTURE_MAX_LOD_SGIS i32 #x813B)
+(bind-val GL_TEXTURE_BASE_LEVEL_SGIS i32 #x813C)
+(bind-val GL_TEXTURE_MAX_LEVEL_SGIS i32 #x813D)
+;; #endif
+
+;; #if GL_SGIX_depth_texture
+(bind-val GL_DEPTH_COMPONENT16_SGIX i32 #x81A5)
+(bind-val GL_DEPTH_COMPONENT24_SGIX i32 #x81A6)
+(bind-val GL_DEPTH_COMPONENT32_SGIX i32 #x81A7)
+;; #endif
+
+;; /*************************************************************/
+
+;; #if GL_ARB_color_buffer_float
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glClampColorARBProcPtr [void,GLenum,GLenum]*)
+;; #else
+(bind-lib libGL glClampColorARB [void,GLenum,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_draw_buffers
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glDrawBuffersARBProcPtr [void,GLsizei,GLenum*]*)
+;; #else
+(bind-lib libGL glDrawBuffersARB [void,GLsizei,GLenum*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_draw_elements_base_vertex
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glDrawElementsBaseVertexProcPtr [void,GLenum,GLsizei,GLenum,GLvoid*,GLint]*)
+(bind-alias glDrawRangeElementsBaseVertexProcPtr [void,GLenum,GLuint,GLuint,GLsizei,GLenum,GLvoid*,GLint]*)
+(bind-alias glDrawElementsInstancedBaseVertexProcPtr [void,GLenum,GLsizei,GLenum,GLvoid*,GLsizei,GLint]*)
+(bind-alias glMultiDrawElementsBaseVertexProcPtr [void,GLenum,GLsizei*,GLenum,GLvoid**,GLsizei,GLint*]*)
+;; #else
+(bind-lib libGL glDrawElementsBaseVertex [void,GLenum,GLsizei,GLenum,GLvoid*,GLint]*)
+(bind-lib libGL glDrawRangeElementsBaseVertex [void,GLenum,GLuint,GLuint,GLsizei,GLenum,GLvoid*,GLint]*)
+(bind-lib libGL glDrawElementsInstancedBaseVertex [void,GLenum,GLsizei,GLenum,GLvoid*,GLsizei,GLint]*)
+(bind-lib libGL glMultiDrawElementsBaseVertex [void,GLenum,GLsizei*,GLenum,GLvoid**,GLsizei,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_draw_instanced
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glDrawArraysInstancedARBProcPtr [void,GLenum,GLint,GLsizei,GLsizei]*)
+(bind-alias glDrawElementsInstancedARBProcPtr [void,GLenum,GLsizei,GLenum,GLvoid*,GLsizei]*)
+;; #else
+(bind-lib libGL glDrawArraysInstancedARB [void,GLenum,GLint,GLsizei,GLsizei]*)
+(bind-lib libGL glDrawElementsInstancedARB [void,GLenum,GLsizei,GLenum,GLvoid*,GLsizei]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_framebuffer_object
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glIsRenderbufferProcPtr [GLboolean,GLuint]*)
+(bind-alias glBindRenderbufferProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteRenderbuffersProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenRenderbuffersProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glRenderbufferStorageProcPtr [void,GLenum,GLenum,GLsizei,GLsizei]*)
+(bind-alias glGetRenderbufferParameterivProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glIsFramebufferProcPtr [GLboolean,GLuint]*)
+(bind-alias glBindFramebufferProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteFramebuffersProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenFramebuffersProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glCheckFramebufferStatusProcPtr [GLenum,GLenum]*)
+(bind-alias glFramebufferTexture1DProcPtr [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-alias glFramebufferTexture2DProcPtr [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-alias glFramebufferTexture3DProcPtr [void,GLenum,GLenum,GLenum,GLuint,GLint,GLint]*)
+(bind-alias glFramebufferRenderbufferProcPtr [void,GLenum,GLenum,GLenum,GLuint]*)
+(bind-alias glGetFramebufferAttachmentParameterivProcPtr [void,GLenum,GLenum,GLenum,GLint*]*)
+(bind-alias glGenerateMipmapProcPtr [void,GLenum]*)
+(bind-alias glBlitFramebufferProcPtr [void,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLbitfield,GLenum]*)
+(bind-alias glRenderbufferStorageMultisampleProcPtr [void,GLenum,GLsizei,GLenum,GLsizei,GLsizei]*)
+(bind-alias glFramebufferTextureLayerProcPtr [void,GLenum,GLenum,GLuint,GLint,GLint]*)
+;; #else
+(bind-lib libGL glIsRenderbuffer [GLboolean,GLuint]*)
+(bind-lib libGL glBindRenderbuffer [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteRenderbuffers [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenRenderbuffers [void,GLsizei,GLuint*]*)
+(bind-lib libGL glRenderbufferStorage [void,GLenum,GLenum,GLsizei,GLsizei]*)
+(bind-lib libGL glGetRenderbufferParameteriv [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glIsFramebuffer [GLboolean,GLuint]*)
+(bind-lib libGL glBindFramebuffer [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteFramebuffers [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenFramebuffers [void,GLsizei,GLuint*]*)
+(bind-lib libGL glCheckFramebufferStatus [GLenum,GLenum]*)
+(bind-lib libGL glFramebufferTexture1D [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-lib libGL glFramebufferTexture2D [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-lib libGL glFramebufferTexture3D [void,GLenum,GLenum,GLenum,GLuint,GLint,GLint]*)
+(bind-lib libGL glFramebufferRenderbuffer [void,GLenum,GLenum,GLenum,GLuint]*)
+(bind-lib libGL glGetFramebufferAttachmentParameteriv [void,GLenum,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGenerateMipmap [void,GLenum]*)
+(bind-lib libGL glBlitFramebuffer [void,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLbitfield,GLenum]*)
+(bind-lib libGL glRenderbufferStorageMultisample [void,GLenum,GLsizei,GLenum,GLsizei,GLsizei]*)
+(bind-lib libGL glFramebufferTextureLayer [void,GLenum,GLenum,GLuint,GLint,GLint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_instanced_arrays
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glVertexAttribDivisorARBProcPtr [void,GLuint,GLuint]*)
+;; #else
+(bind-lib libGL glVertexAttribDivisorARB [void,GLuint,GLuint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_multisample
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glSampleCoverageARBProcPtr [void,GLclampf,GLboolean]*)
+;; #else
+(bind-lib libGL glSampleCoverageARB [void,GLclampf,GLboolean]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_multitexture
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glActiveTextureARBProcPtr [void,GLenum]*)
+(bind-alias glClientActiveTextureARBProcPtr [void,GLenum]*)
+(bind-alias glMultiTexCoord1dARBProcPtr [void,GLenum,GLdouble]*)
+(bind-alias glMultiTexCoord1dvARBProcPtr [void,GLenum,GLdouble*]*)
+(bind-alias glMultiTexCoord1fARBProcPtr [void,GLenum,GLfloat]*)
+(bind-alias glMultiTexCoord1fvARBProcPtr [void,GLenum,GLfloat*]*)
+(bind-alias glMultiTexCoord1iARBProcPtr [void,GLenum,GLint]*)
+(bind-alias glMultiTexCoord1ivARBProcPtr [void,GLenum,GLint*]*)
+(bind-alias glMultiTexCoord1sARBProcPtr [void,GLenum,GLshort]*)
+(bind-alias glMultiTexCoord1svARBProcPtr [void,GLenum,GLshort*]*)
+(bind-alias glMultiTexCoord2dARBProcPtr [void,GLenum,GLdouble,GLdouble]*)
+(bind-alias glMultiTexCoord2dvARBProcPtr [void,GLenum,GLdouble*]*)
+(bind-alias glMultiTexCoord2fARBProcPtr [void,GLenum,GLfloat,GLfloat]*)
+(bind-alias glMultiTexCoord2fvARBProcPtr [void,GLenum,GLfloat*]*)
+(bind-alias glMultiTexCoord2iARBProcPtr [void,GLenum,GLint,GLint]*)
+(bind-alias glMultiTexCoord2ivARBProcPtr [void,GLenum,GLint*]*)
+(bind-alias glMultiTexCoord2sARBProcPtr [void,GLenum,GLshort,GLshort]*)
+(bind-alias glMultiTexCoord2svARBProcPtr [void,GLenum,GLshort*]*)
+(bind-alias glMultiTexCoord3dARBProcPtr [void,GLenum,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glMultiTexCoord3dvARBProcPtr [void,GLenum,GLdouble*]*)
+(bind-alias glMultiTexCoord3fARBProcPtr [void,GLenum,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glMultiTexCoord3fvARBProcPtr [void,GLenum,GLfloat*]*)
+(bind-alias glMultiTexCoord3iARBProcPtr [void,GLenum,GLint,GLint,GLint]*)
+(bind-alias glMultiTexCoord3ivARBProcPtr [void,GLenum,GLint*]*)
+(bind-alias glMultiTexCoord3sARBProcPtr [void,GLenum,GLshort,GLshort,GLshort]*)
+(bind-alias glMultiTexCoord3svARBProcPtr [void,GLenum,GLshort*]*)
+(bind-alias glMultiTexCoord4dARBProcPtr [void,GLenum,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glMultiTexCoord4dvARBProcPtr [void,GLenum,GLdouble*]*)
+(bind-alias glMultiTexCoord4fARBProcPtr [void,GLenum,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glMultiTexCoord4fvARBProcPtr [void,GLenum,GLfloat*]*)
+(bind-alias glMultiTexCoord4iARBProcPtr [void,GLenum,GLint,GLint,GLint,GLint]*)
+(bind-alias glMultiTexCoord4ivARBProcPtr [void,GLenum,GLint*]*)
+(bind-alias glMultiTexCoord4sARBProcPtr [void,GLenum,GLshort,GLshort,GLshort,GLshort]*)
+(bind-alias glMultiTexCoord4svARBProcPtr [void,GLenum,GLshort*]*)
+;; #else
+(bind-lib libGL glActiveTextureARB [void,GLenum]*)
+(bind-lib libGL glClientActiveTextureARB [void,GLenum]*)
+(bind-lib libGL glMultiTexCoord1dARB [void,GLenum,GLdouble]*)
+(bind-lib libGL glMultiTexCoord1dvARB [void,GLenum,GLdouble*]*)
+(bind-lib libGL glMultiTexCoord1fARB [void,GLenum,GLfloat]*)
+(bind-lib libGL glMultiTexCoord1fvARB [void,GLenum,GLfloat*]*)
+(bind-lib libGL glMultiTexCoord1iARB [void,GLenum,GLint]*)
+(bind-lib libGL glMultiTexCoord1ivARB [void,GLenum,GLint*]*)
+(bind-lib libGL glMultiTexCoord1sARB [void,GLenum,GLshort]*)
+(bind-lib libGL glMultiTexCoord1svARB [void,GLenum,GLshort*]*)
+(bind-lib libGL glMultiTexCoord2dARB [void,GLenum,GLdouble,GLdouble]*)
+(bind-lib libGL glMultiTexCoord2dvARB [void,GLenum,GLdouble*]*)
+(bind-lib libGL glMultiTexCoord2fARB [void,GLenum,GLfloat,GLfloat]*)
+(bind-lib libGL glMultiTexCoord2fvARB [void,GLenum,GLfloat*]*)
+(bind-lib libGL glMultiTexCoord2iARB [void,GLenum,GLint,GLint]*)
+(bind-lib libGL glMultiTexCoord2ivARB [void,GLenum,GLint*]*)
+(bind-lib libGL glMultiTexCoord2sARB [void,GLenum,GLshort,GLshort]*)
+(bind-lib libGL glMultiTexCoord2svARB [void,GLenum,GLshort*]*)
+(bind-lib libGL glMultiTexCoord3dARB [void,GLenum,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glMultiTexCoord3dvARB [void,GLenum,GLdouble*]*)
+(bind-lib libGL glMultiTexCoord3fARB [void,GLenum,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glMultiTexCoord3fvARB [void,GLenum,GLfloat*]*)
+(bind-lib libGL glMultiTexCoord3iARB [void,GLenum,GLint,GLint,GLint]*)
+(bind-lib libGL glMultiTexCoord3ivARB [void,GLenum,GLint*]*)
+(bind-lib libGL glMultiTexCoord3sARB [void,GLenum,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glMultiTexCoord3svARB [void,GLenum,GLshort*]*)
+(bind-lib libGL glMultiTexCoord4dARB [void,GLenum,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glMultiTexCoord4dvARB [void,GLenum,GLdouble*]*)
+(bind-lib libGL glMultiTexCoord4fARB [void,GLenum,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glMultiTexCoord4fvARB [void,GLenum,GLfloat*]*)
+(bind-lib libGL glMultiTexCoord4iARB [void,GLenum,GLint,GLint,GLint,GLint]*)
+(bind-lib libGL glMultiTexCoord4ivARB [void,GLenum,GLint*]*)
+(bind-lib libGL glMultiTexCoord4sARB [void,GLenum,GLshort,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glMultiTexCoord4svARB [void,GLenum,GLshort*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_occlusion_query
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glGenQueriesARBProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glDeleteQueriesARBProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glIsQueryARBProcPtr [GLboolean,GLuint]*)
+(bind-alias glBeginQueryARBProcPtr [void,GLenum,GLuint]*)
+(bind-alias glEndQueryARBProcPtr [void,GLenum]*)
+(bind-alias glGetQueryivARBProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glGetQueryObjectivARBProcPtr [void,GLuint,GLenum,GLint*]*)
+(bind-alias glGetQueryObjectuivARBProcPtr [void,GLuint,GLenum,GLuint*]*)
+;; #else
+(bind-lib libGL glGenQueriesARB [void,GLsizei,GLuint*]*)
+(bind-lib libGL glDeleteQueriesARB [void,GLsizei,GLuint*]*)
+(bind-lib libGL glIsQueryARB [GLboolean,GLuint]*)
+(bind-lib libGL glBeginQueryARB [void,GLenum,GLuint]*)
+(bind-lib libGL glEndQueryARB [void,GLenum]*)
+(bind-lib libGL glGetQueryivARB [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetQueryObjectivARB [void,GLuint,GLenum,GLint*]*)
+(bind-lib libGL glGetQueryObjectuivARB [void,GLuint,GLenum,GLuint*]*)
+;; #endif
+;; #endif
+
+;; #if GL_ARB_point_parameters
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glPointParameterfARBProcPtr [void,GLenum,GLfloat]*)
+(bind-alias glPointParameterfvARBProcPtr [void,GLenum,GLfloat*]*)
+;; #else
+(bind-lib libGL glPointParameterfARB [void,GLenum,GLfloat]*)
+(bind-lib libGL glPointParameterfvARB [void,GLenum,GLfloat*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_provoking_vertex
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glProvokingVertexProcPtr [void,GLenum]*)
+;; #else
+(bind-lib libGL glProvokingVertex [void,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_shader_objects
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glDeleteObjectARBProcPtr [void,GLhandleARB]*)
+(bind-alias glGetHandleARBProcPtr [GLhandleARB,GLenum]*)
+(bind-alias glDetachObjectARBProcPtr [void,GLhandleARB,GLhandleARB]*)
+(bind-alias glCreateShaderObjectARBProcPtr [GLhandleARB,GLenum]*)
+(bind-alias glShaderSourceARBProcPtr [void,GLhandleARB,GLsizei,GLcharARB**,GLint*]*)
+(bind-alias glCompileShaderARBProcPtr [void,GLhandleARB]*)
+(bind-alias glCreateProgramObjectARBProcPtr [GLhandleARB]*)
+(bind-alias glAttachObjectARBProcPtr [void,GLhandleARB,GLhandleARB]*)
+(bind-alias glLinkProgramARBProcPtr [void,GLhandleARB]*)
+(bind-alias glUseProgramObjectARBProcPtr [void,GLhandleARB]*)
+(bind-alias glValidateProgramARBProcPtr [void,GLhandleARB]*)
+(bind-alias glUniform1fARBProcPtr [void,GLint,GLfloat]*)
+(bind-alias glUniform2fARBProcPtr [void,GLint,GLfloat,GLfloat]*)
+(bind-alias glUniform3fARBProcPtr [void,GLint,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glUniform4fARBProcPtr [void,GLint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glUniform1iARBProcPtr [void,GLint,GLint]*)
+(bind-alias glUniform2iARBProcPtr [void,GLint,GLint,GLint]*)
+(bind-alias glUniform3iARBProcPtr [void,GLint,GLint,GLint,GLint]*)
+(bind-alias glUniform4iARBProcPtr [void,GLint,GLint,GLint,GLint,GLint]*)
+(bind-alias glUniform1fvARBProcPtr [void,GLint,GLsizei,GLfloat*]*)
+(bind-alias glUniform2fvARBProcPtr [void,GLint,GLsizei,GLfloat*]*)
+(bind-alias glUniform3fvARBProcPtr [void,GLint,GLsizei,GLfloat*]*)
+(bind-alias glUniform4fvARBProcPtr [void,GLint,GLsizei,GLfloat*]*)
+(bind-alias glUniform1ivARBProcPtr [void,GLint,GLsizei,GLint*]*)
+(bind-alias glUniform2ivARBProcPtr [void,GLint,GLsizei,GLint*]*)
+(bind-alias glUniform3ivARBProcPtr [void,GLint,GLsizei,GLint*]*)
+(bind-alias glUniform4ivARBProcPtr [void,GLint,GLsizei,GLint*]*)
+(bind-alias glUniformMatrix2fvARBProcPtr [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+(bind-alias glUniformMatrix3fvARBProcPtr [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+(bind-alias glUniformMatrix4fvARBProcPtr [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+(bind-alias glGetObjectParameterfvARBProcPtr [void,GLhandleARB,GLenum,GLfloat*]*)
+(bind-alias glGetObjectParameterivARBProcPtr [void,GLhandleARB,GLenum,GLint*]*)
+(bind-alias glGetInfoLogARBProcPtr [void,GLhandleARB,GLsizei,GLsizei*,GLcharARB*]*)
+(bind-alias glGetAttachedObjectsARBProcPtr [void,GLhandleARB,GLsizei,GLsizei*,GLhandleARB*]*)
+(bind-alias glGetUniformLocationARBProcPtr [GLint,GLhandleARB,GLcharARB*]*)
+(bind-alias glGetActiveUniformARBProcPtr [void,GLhandleARB,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLcharARB*]*)
+(bind-alias glGetUniformfvARBProcPtr [void,GLhandleARB,GLint,GLfloat*]*)
+(bind-alias glGetUniformivARBProcPtr [void,GLhandleARB,GLint,GLint*]*)
+(bind-alias glGetShaderSourceARBProcPtr [void,GLhandleARB,GLsizei,GLsizei*,GLcharARB*]*)
+;; #else
+(bind-lib libGL glDeleteObjectARB [void,GLhandleARB]*)
+(bind-lib libGL glGetHandleARB [GLhandleARB,GLenum]*)
+(bind-lib libGL glDetachObjectARB [void,GLhandleARB,GLhandleARB]*)
+(bind-lib libGL glCreateShaderObjectARB [GLhandleARB,GLenum]*)
+(bind-lib libGL glShaderSourceARB [void,GLhandleARB,GLsizei,GLcharARB**,GLint*]*)
+(bind-lib libGL glCompileShaderARB [void,GLhandleARB]*)
+(bind-lib libGL glCreateProgramObjectARB [GLhandleARB]*)
+(bind-lib libGL glAttachObjectARB [void,GLhandleARB,GLhandleARB]*)
+(bind-lib libGL glLinkProgramARB [void,GLhandleARB]*)
+(bind-lib libGL glUseProgramObjectARB [void,GLhandleARB]*)
+(bind-lib libGL glValidateProgramARB [void,GLhandleARB]*)
+(bind-lib libGL glUniform1fARB [void,GLint,GLfloat]*)
+(bind-lib libGL glUniform2fARB [void,GLint,GLfloat,GLfloat]*)
+(bind-lib libGL glUniform3fARB [void,GLint,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glUniform4fARB [void,GLint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glUniform1iARB [void,GLint,GLint]*)
+(bind-lib libGL glUniform2iARB [void,GLint,GLint,GLint]*)
+(bind-lib libGL glUniform3iARB [void,GLint,GLint,GLint,GLint]*)
+(bind-lib libGL glUniform4iARB [void,GLint,GLint,GLint,GLint,GLint]*)
+(bind-lib libGL glUniform1fvARB [void,GLint,GLsizei,GLfloat*]*)
+(bind-lib libGL glUniform2fvARB [void,GLint,GLsizei,GLfloat*]*)
+(bind-lib libGL glUniform3fvARB [void,GLint,GLsizei,GLfloat*]*)
+(bind-lib libGL glUniform4fvARB [void,GLint,GLsizei,GLfloat*]*)
+(bind-lib libGL glUniform1ivARB [void,GLint,GLsizei,GLint*]*)
+(bind-lib libGL glUniform2ivARB [void,GLint,GLsizei,GLint*]*)
+(bind-lib libGL glUniform3ivARB [void,GLint,GLsizei,GLint*]*)
+(bind-lib libGL glUniform4ivARB [void,GLint,GLsizei,GLint*]*)
+(bind-lib libGL glUniformMatrix2fvARB [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+(bind-lib libGL glUniformMatrix3fvARB [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+(bind-lib libGL glUniformMatrix4fvARB [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+(bind-lib libGL glGetObjectParameterfvARB [void,GLhandleARB,GLenum,GLfloat*]*)
+(bind-lib libGL glGetObjectParameterivARB [void,GLhandleARB,GLenum,GLint*]*)
+(bind-lib libGL glGetInfoLogARB [void,GLhandleARB,GLsizei,GLsizei*,GLcharARB*]*)
+(bind-lib libGL glGetAttachedObjectsARB [void,GLhandleARB,GLsizei,GLsizei*,GLhandleARB*]*)
+(bind-lib libGL glGetUniformLocationARB [GLint,GLhandleARB,GLcharARB*]*)
+(bind-lib libGL glGetActiveUniformARB [void,GLhandleARB,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLcharARB*]*)
+(bind-lib libGL glGetUniformfvARB [void,GLhandleARB,GLint,GLfloat*]*)
+(bind-lib libGL glGetUniformivARB [void,GLhandleARB,GLint,GLint*]*)
+(bind-lib libGL glGetShaderSourceARB [void,GLhandleARB,GLsizei,GLsizei*,GLcharARB*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_sync
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glFenceSyncProcPtr [GLsync,GLenum,GLbitfield]*)
+(bind-alias glIsSyncProcPtr [GLboolean,GLsync]*)
+(bind-alias glDeleteSyncProcPtr [void,GLsync]*)
+(bind-alias glClientWaitSyncProcPtr [GLenum,GLsync,GLbitfield,GLuint64]*)
+(bind-alias glWaitSyncProcPtr [void,GLsync,GLbitfield,GLuint64]*)
+(bind-alias glGetInteger64vProcPtr [void,GLenum,GLint64*]*)
+(bind-alias glGetSyncivProcPtr [void,GLsync,GLenum,GLsizei,GLsizei*,GLint*]*)
+;; #else
+(bind-lib libGL glFenceSync [GLsync,GLenum,GLbitfield]*)
+(bind-lib libGL glIsSync [GLboolean,GLsync]*)
+(bind-lib libGL glDeleteSync [void,GLsync]*)
+(bind-lib libGL glClientWaitSync [GLenum,GLsync,GLbitfield,GLuint64]*)
+(bind-lib libGL glWaitSync [void,GLsync,GLbitfield,GLuint64]*)
+(bind-lib libGL glGetInteger64v [void,GLenum,GLint64*]*)
+(bind-lib libGL glGetSynciv [void,GLsync,GLenum,GLsizei,GLsizei*,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_texture_compression
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glCompressedTexImage3DARBProcPtr [void,GLenum,GLint,GLenum,GLsizei,GLsizei,GLsizei,GLint,GLsizei,GLvoid*]*)
+(bind-alias glCompressedTexImage2DARBProcPtr [void,GLenum,GLint,GLenum,GLsizei,GLsizei,GLint,GLsizei,GLvoid*]*)
+(bind-alias glCompressedTexImage1DARBProcPtr [void,GLenum,GLint,GLenum,GLsizei,GLint,GLsizei,GLvoid*]*)
+(bind-alias glCompressedTexSubImage3DARBProcPtr [void,GLenum,GLint,GLint,GLint,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glCompressedTexSubImage2DARBProcPtr [void,GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glCompressedTexSubImage1DARBProcPtr [void,GLenum,GLint,GLint,GLsizei,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glGetCompressedTexImageARBProcPtr [void,GLenum,GLint,GLvoid*]*)
+;; #else
+(bind-lib libGL glCompressedTexImage3DARB [void,GLenum,GLint,GLenum,GLsizei,GLsizei,GLsizei,GLint,GLsizei,GLvoid*]*)
+(bind-lib libGL glCompressedTexImage2DARB [void,GLenum,GLint,GLenum,GLsizei,GLsizei,GLint,GLsizei,GLvoid*]*)
+(bind-lib libGL glCompressedTexImage1DARB [void,GLenum,GLint,GLenum,GLsizei,GLint,GLsizei,GLvoid*]*)
+(bind-lib libGL glCompressedTexSubImage3DARB [void,GLenum,GLint,GLint,GLint,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glCompressedTexSubImage2DARB [void,GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glCompressedTexSubImage1DARB [void,GLenum,GLint,GLint,GLsizei,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glGetCompressedTexImageARB [void,GLenum,GLint,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_transpose_matrix
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glLoadTransposeMatrixfARBProcPtr [void,GLfloat*]*)
+(bind-alias glLoadTransposeMatrixdARBProcPtr [void,GLdouble*]*)
+(bind-alias glMultTransposeMatrixfARBProcPtr [void,GLfloat*]*)
+(bind-alias glMultTransposeMatrixdARBProcPtr [void,GLdouble*]*)
+;; #else
+(bind-lib libGL glLoadTransposeMatrixfARB [void,GLfloat*]*)
+(bind-lib libGL glLoadTransposeMatrixdARB [void,GLdouble*]*)
+(bind-lib libGL glMultTransposeMatrixfARB [void,GLfloat*]*)
+(bind-lib libGL glMultTransposeMatrixdARB [void,GLdouble*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_vertex_blend
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glWeightbvARBProcPtr [void,GLint,GLbyte*]*)
+(bind-alias glWeightsvARBProcPtr [void,GLint,GLshort*]*)
+(bind-alias glWeightivARBProcPtr [void,GLint,GLint*]*)
+(bind-alias glWeightfvARBProcPtr [void,GLint,GLfloat*]*)
+(bind-alias glWeightdvARBProcPtr [void,GLint,GLdouble*]*)
+(bind-alias glWeightubvARBProcPtr [void,GLint,GLubyte*]*)
+(bind-alias glWeightusvARBProcPtr [void,GLint,GLushort*]*)
+(bind-alias glWeightuivARBProcPtr [void,GLint,GLuint*]*)
+(bind-alias glWeightPointerARBProcPtr [void,GLint,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glVertexBlendARBProcPtr [void,GLint]*)
+;; #else
+(bind-lib libGL glWeightbvARB [void,GLint,GLbyte*]*)
+(bind-lib libGL glWeightsvARB [void,GLint,GLshort*]*)
+(bind-lib libGL glWeightivARB [void,GLint,GLint*]*)
+(bind-lib libGL glWeightfvARB [void,GLint,GLfloat*]*)
+(bind-lib libGL glWeightdvARB [void,GLint,GLdouble*]*)
+(bind-lib libGL glWeightubvARB [void,GLint,GLubyte*]*)
+(bind-lib libGL glWeightusvARB [void,GLint,GLushort*]*)
+(bind-lib libGL glWeightuivARB [void,GLint,GLuint*]*)
+(bind-lib libGL glWeightPointerARB [void,GLint,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glVertexBlendARB [void,GLint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_vertex_buffer_object
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBindBufferARBProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteBuffersARBProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenBuffersARBProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glIsBufferARBProcPtr [GLboolean,GLuint]*)
+(bind-alias glBufferDataARBProcPtr [void,GLenum,GLsizeiptrARB,GLvoid*,GLenum]*)
+(bind-alias glBufferSubDataARBProcPtr [void,GLenum,GLintptrARB,GLsizeiptrARB,GLvoid*]*)
+(bind-alias glGetBufferSubDataARBProcPtr [void,GLenum,GLintptrARB,GLsizeiptrARB,GLvoid*]*)
+(bind-alias glMapBufferARBProcPtr [GLvoid*,GLenum,GLenum]*)
+(bind-alias glUnmapBufferARBProcPtr [GLboolean,GLenum]*)
+(bind-alias glGetBufferParameterivARBProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glGetBufferPointervARBProcPtr [void,GLenum,GLenum,GLvoid**]*)
+;; #else
+(bind-lib libGL glBindBufferARB [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteBuffersARB [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenBuffersARB [void,GLsizei,GLuint*]*)
+(bind-lib libGL glIsBufferARB [GLboolean,GLuint]*)
+(bind-lib libGL glBufferDataARB [void,GLenum,GLsizeiptrARB,GLvoid*,GLenum]*)
+(bind-lib libGL glBufferSubDataARB [void,GLenum,GLintptrARB,GLsizeiptrARB,GLvoid*]*)
+(bind-lib libGL glGetBufferSubDataARB [void,GLenum,GLintptrARB,GLsizeiptrARB,GLvoid*]*)
+(bind-lib libGL glMapBufferARB [GLvoid*,GLenum,GLenum]*)
+(bind-lib libGL glUnmapBufferARB [GLboolean,GLenum]*)
+(bind-lib libGL glGetBufferParameterivARB [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetBufferPointervARB [void,GLenum,GLenum,GLvoid**]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_vertex_program
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBindProgramARBProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteProgramsARBProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenProgramsARBProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glIsProgramARBProcPtr [GLboolean,GLuint]*)
+(bind-alias glProgramEnvParameter4dARBProcPtr [void,GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glProgramEnvParameter4dvARBProcPtr [void,GLenum,GLuint,GLdouble*]*)
+(bind-alias glProgramEnvParameter4fARBProcPtr [void,GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glProgramEnvParameter4fvARBProcPtr [void,GLenum,GLuint,GLfloat*]*)
+(bind-alias glProgramLocalParameter4dARBProcPtr [void,GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glProgramLocalParameter4dvARBProcPtr [void,GLenum,GLuint,GLdouble*]*)
+(bind-alias glProgramLocalParameter4fARBProcPtr [void,GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glProgramLocalParameter4fvARBProcPtr [void,GLenum,GLuint,GLfloat*]*)
+;; #if GL_EXT_gpu_program_parameters
+(bind-alias glProgramEnvParameters4fvEXTProcPtr [void,GLenum,GLuint,GLsizei,GLfloat*]*)
+(bind-alias glProgramLocalParameters4fvEXTProcPtr [void,GLenum,GLuint,GLsizei,GLfloat*]*)
+;; #endif
+(bind-alias glGetProgramEnvParameterdvARBProcPtr [void,GLenum,GLuint,GLdouble*]*)
+(bind-alias glGetProgramEnvParameterfvARBProcPtr [void,GLenum,GLuint,GLfloat*]*)
+(bind-alias glGetProgramLocalParameterdvARBProcPtr [void,GLenum,GLuint,GLdouble*]*)
+(bind-alias glGetProgramLocalParameterfvARBProcPtr [void,GLenum,GLuint,GLfloat*]*)
+(bind-alias glProgramStringARBProcPtr [void,GLenum,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glGetProgramStringARBProcPtr [void,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetProgramivARBProcPtr [void,GLenum,GLenum,GLint*]*)
+;; #else
+(bind-lib libGL glBindProgramARB [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteProgramsARB [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenProgramsARB [void,GLsizei,GLuint*]*)
+(bind-lib libGL glIsProgramARB [GLboolean,GLuint]*)
+(bind-lib libGL glProgramEnvParameter4dARB [void,GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glProgramEnvParameter4dvARB [void,GLenum,GLuint,GLdouble*]*)
+(bind-lib libGL glProgramEnvParameter4fARB [void,GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glProgramEnvParameter4fvARB [void,GLenum,GLuint,GLfloat*]*)
+(bind-lib libGL glProgramLocalParameter4dARB [void,GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glProgramLocalParameter4dvARB [void,GLenum,GLuint,GLdouble*]*)
+(bind-lib libGL glProgramLocalParameter4fARB [void,GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glProgramLocalParameter4fvARB [void,GLenum,GLuint,GLfloat*]*)
+(bind-lib libGL glGetProgramEnvParameterdvARB [void,GLenum,GLuint,GLdouble*]*)
+(bind-lib libGL glGetProgramEnvParameterfvARB [void,GLenum,GLuint,GLfloat*]*)
+;; #if GL_EXT_gpu_program_parameters
+(bind-lib libGL glProgramEnvParameters4fvEXT [void,GLenum,GLuint,GLsizei,GLfloat*]*)
+(bind-lib libGL glProgramLocalParameters4fvEXT [void,GLenum,GLuint,GLsizei,GLfloat*]*)
+;; #endif
+(bind-lib libGL glGetProgramLocalParameterdvARB [void,GLenum,GLuint,GLdouble*]*)
+(bind-lib libGL glGetProgramLocalParameterfvARB [void,GLenum,GLuint,GLfloat*]*)
+(bind-lib libGL glProgramStringARB [void,GLenum,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glGetProgramStringARB [void,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetProgramivARB [void,GLenum,GLenum,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_vertex_shader
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBindAttribLocationARBProcPtr [void,GLhandleARB,GLuint,GLcharARB*]*)
+(bind-alias glGetActiveAttribARBProcPtr [void,GLhandleARB,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLcharARB*]*)
+(bind-alias glGetAttribLocationARBProcPtr [GLint,GLhandleARB,GLcharARB*]*)
+;; #else
+(bind-lib libGL glBindAttribLocationARB [void,GLhandleARB,GLuint,GLcharARB*]*)
+(bind-lib libGL glGetActiveAttribARB [void,GLhandleARB,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLcharARB*]*)
+(bind-lib libGL glGetAttribLocationARB [GLint,GLhandleARB,GLcharARB*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_vertex_shader || GL_ARB_vertex_program
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glVertexAttrib1dARBProcPtr [void,GLuint,GLdouble]*)
+(bind-alias glVertexAttrib1dvARBProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib1fARBProcPtr [void,GLuint,GLfloat]*)
+(bind-alias glVertexAttrib1fvARBProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib1sARBProcPtr [void,GLuint,GLshort]*)
+(bind-alias glVertexAttrib1svARBProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib2dARBProcPtr [void,GLuint,GLdouble,GLdouble]*)
+(bind-alias glVertexAttrib2dvARBProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib2fARBProcPtr [void,GLuint,GLfloat,GLfloat]*)
+(bind-alias glVertexAttrib2fvARBProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib2sARBProcPtr [void,GLuint,GLshort,GLshort]*)
+(bind-alias glVertexAttrib2svARBProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib3dARBProcPtr [void,GLuint,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glVertexAttrib3dvARBProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib3fARBProcPtr [void,GLuint,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glVertexAttrib3fvARBProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib3sARBProcPtr [void,GLuint,GLshort,GLshort,GLshort]*)
+(bind-alias glVertexAttrib3svARBProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib4NbvARBProcPtr [void,GLuint,GLbyte*]*)
+(bind-alias glVertexAttrib4NivARBProcPtr [void,GLuint,GLint*]*)
+(bind-alias glVertexAttrib4NsvARBProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib4NubARBProcPtr [void,GLuint,GLubyte,GLubyte,GLubyte,GLubyte]*)
+(bind-alias glVertexAttrib4NubvARBProcPtr [void,GLuint,GLubyte*]*)
+(bind-alias glVertexAttrib4NuivARBProcPtr [void,GLuint,GLuint*]*)
+(bind-alias glVertexAttrib4NusvARBProcPtr [void,GLuint,GLushort*]*)
+(bind-alias glVertexAttrib4bvARBProcPtr [void,GLuint,GLbyte*]*)
+(bind-alias glVertexAttrib4dARBProcPtr [void,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glVertexAttrib4dvARBProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib4fARBProcPtr [void,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glVertexAttrib4fvARBProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib4ivARBProcPtr [void,GLuint,GLint*]*)
+(bind-alias glVertexAttrib4sARBProcPtr [void,GLuint,GLshort,GLshort,GLshort,GLshort]*)
+(bind-alias glVertexAttrib4svARBProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib4ubvARBProcPtr [void,GLuint,GLubyte*]*)
+(bind-alias glVertexAttrib4uivARBProcPtr [void,GLuint,GLuint*]*)
+(bind-alias glVertexAttrib4usvARBProcPtr [void,GLuint,GLushort*]*)
+(bind-alias glVertexAttribPointerARBProcPtr [void,GLuint,GLint,GLenum,GLboolean,GLsizei,GLvoid*]*)
+(bind-alias glDisableVertexAttribArrayARBProcPtr [void,GLuint]*)
+(bind-alias glEnableVertexAttribArrayARBProcPtr [void,GLuint]*)
+(bind-alias glGetVertexAttribPointervARBProcPtr [void,GLuint,GLenum,GLvoid**]*)
+(bind-alias glGetVertexAttribdvARBProcPtr [void,GLuint,GLenum,GLdouble*]*)
+(bind-alias glGetVertexAttribfvARBProcPtr [void,GLuint,GLenum,GLfloat*]*)
+(bind-alias glGetVertexAttribivARBProcPtr [void,GLuint,GLenum,GLint*]*)
+;; #else
+(bind-lib libGL glVertexAttrib1dARB [void,GLuint,GLdouble]*)
+(bind-lib libGL glVertexAttrib1dvARB [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib1fARB [void,GLuint,GLfloat]*)
+(bind-lib libGL glVertexAttrib1fvARB [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib1sARB [void,GLuint,GLshort]*)
+(bind-lib libGL glVertexAttrib1svARB [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib2dARB [void,GLuint,GLdouble,GLdouble]*)
+(bind-lib libGL glVertexAttrib2dvARB [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib2fARB [void,GLuint,GLfloat,GLfloat]*)
+(bind-lib libGL glVertexAttrib2fvARB [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib2sARB [void,GLuint,GLshort,GLshort]*)
+(bind-lib libGL glVertexAttrib2svARB [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib3dARB [void,GLuint,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glVertexAttrib3dvARB [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib3fARB [void,GLuint,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glVertexAttrib3fvARB [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib3sARB [void,GLuint,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glVertexAttrib3svARB [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib4NbvARB [void,GLuint,GLbyte*]*)
+(bind-lib libGL glVertexAttrib4NivARB [void,GLuint,GLint*]*)
+(bind-lib libGL glVertexAttrib4NsvARB [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib4NubARB [void,GLuint,GLubyte,GLubyte,GLubyte,GLubyte]*)
+(bind-lib libGL glVertexAttrib4NubvARB [void,GLuint,GLubyte*]*)
+(bind-lib libGL glVertexAttrib4NuivARB [void,GLuint,GLuint*]*)
+(bind-lib libGL glVertexAttrib4NusvARB [void,GLuint,GLushort*]*)
+(bind-lib libGL glVertexAttrib4bvARB [void,GLuint,GLbyte*]*)
+(bind-lib libGL glVertexAttrib4dARB [void,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glVertexAttrib4dvARB [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib4fARB [void,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glVertexAttrib4fvARB [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib4ivARB [void,GLuint,GLint*]*)
+(bind-lib libGL glVertexAttrib4sARB [void,GLuint,GLshort,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glVertexAttrib4svARB [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib4ubvARB [void,GLuint,GLubyte*]*)
+(bind-lib libGL glVertexAttrib4uivARB [void,GLuint,GLuint*]*)
+(bind-lib libGL glVertexAttrib4usvARB [void,GLuint,GLushort*]*)
+(bind-lib libGL glVertexAttribPointerARB [void,GLuint,GLint,GLenum,GLboolean,GLsizei,GLvoid*]*)
+(bind-lib libGL glDisableVertexAttribArrayARB [void,GLuint]*)
+(bind-lib libGL glEnableVertexAttribArrayARB [void,GLuint]*)
+(bind-lib libGL glGetVertexAttribPointervARB [void,GLuint,GLenum,GLvoid**]*)
+(bind-lib libGL glGetVertexAttribdvARB [void,GLuint,GLenum,GLdouble*]*)
+(bind-lib libGL glGetVertexAttribfvARB [void,GLuint,GLenum,GLfloat*]*)
+(bind-lib libGL glGetVertexAttribivARB [void,GLuint,GLenum,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ARB_window_pos
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glWindowPos2dARBProcPtr [void,GLdouble,GLdouble]*)
+(bind-alias glWindowPos2dvARBProcPtr [void,GLdouble*]*)
+(bind-alias glWindowPos2fARBProcPtr [void,GLfloat,GLfloat]*)
+(bind-alias glWindowPos2fvARBProcPtr [void,GLfloat*]*)
+(bind-alias glWindowPos2iARBProcPtr [void,GLint,GLint]*)
+(bind-alias glWindowPos2ivARBProcPtr [void,GLint*]*)
+(bind-alias glWindowPos2sARBProcPtr [void,GLshort,GLshort]*)
+(bind-alias glWindowPos2svARBProcPtr [void,GLshort*]*)
+(bind-alias glWindowPos3dARBProcPtr [void,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glWindowPos3dvARBProcPtr [void,GLdouble*]*)
+(bind-alias glWindowPos3fARBProcPtr [void,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glWindowPos3fvARBProcPtr [void,GLfloat*]*)
+(bind-alias glWindowPos3iARBProcPtr [void,GLint,GLint,GLint]*)
+(bind-alias glWindowPos3ivARBProcPtr [void,GLint*]*)
+(bind-alias glWindowPos3sARBProcPtr [void,GLshort,GLshort,GLshort]*)
+(bind-alias glWindowPos3svARBProcPtr [void,GLshort*]*)
+;; #else
+(bind-lib libGL glWindowPos2dARB [void,GLdouble,GLdouble]*)
+(bind-lib libGL glWindowPos2dvARB [void,GLdouble*]*)
+(bind-lib libGL glWindowPos2fARB [void,GLfloat,GLfloat]*)
+(bind-lib libGL glWindowPos2fvARB [void,GLfloat*]*)
+(bind-lib libGL glWindowPos2iARB [void,GLint,GLint]*)
+(bind-lib libGL glWindowPos2ivARB [void,GLint*]*)
+(bind-lib libGL glWindowPos2sARB [void,GLshort,GLshort]*)
+(bind-lib libGL glWindowPos2svARB [void,GLshort*]*)
+(bind-lib libGL glWindowPos3dARB [void,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glWindowPos3dvARB [void,GLdouble*]*)
+(bind-lib libGL glWindowPos3fARB [void,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glWindowPos3fvARB [void,GLfloat*]*)
+(bind-lib libGL glWindowPos3iARB [void,GLint,GLint,GLint]*)
+(bind-lib libGL glWindowPos3ivARB [void,GLint*]*)
+(bind-lib libGL glWindowPos3sARB [void,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glWindowPos3svARB [void,GLshort*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_bindable_uniform
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glUniformBufferEXTProcPtr [void,GLuint,GLint,GLuint]*)
+(bind-alias glGetUniformBufferSizeEXTProcPtr [GLint,GLuint,GLint]*)
+(bind-alias glGetUniformOffsetEXTProcPtr [GLintptr,GLuint,GLint]*)
+;; #else
+(bind-lib libGL glUniformBufferEXT [void,GLuint,GLint,GLuint]*)
+(bind-lib libGL glGetUniformBufferSizeEXT [GLint,GLuint,GLint]*)
+(bind-lib libGL glGetUniformOffsetEXT [GLintptr,GLuint,GLint]*)
+;; #endif
+;; #endif ;; /* GL_EXT_bindable_uniform */
+
+;; #if GL_EXT_blend_color
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBlendColorEXTProcPtr [void,GLclampf,GLclampf,GLclampf,GLclampf]*)
+;; #else
+(bind-lib libGL glBlendColorEXT [void,GLclampf,GLclampf,GLclampf,GLclampf]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_blend_equation_separate
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBlendEquationSeparateEXTProcPtr [void,GLenum,GLenum]*)
+;; #else
+(bind-lib libGL glBlendEquationSeparateEXT [void,GLenum,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_blend_func_separate
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBlendFuncSeparateEXTProcPtr [void,GLenum,GLenum,GLenum,GLenum]*)
+;; #else
+(bind-lib libGL glBlendFuncSeparateEXT [void,GLenum,GLenum,GLenum,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_blend_minmax
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBlendEquationEXTProcPtr [void,GLenum]*)
+;; #else
+(bind-lib libGL glBlendEquationEXT [void,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_color_subtable
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glColorSubTableEXTProcPtr [void,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glCopyColorSubTableEXTProcPtr [void,GLenum,GLsizei,GLint,GLint,GLsizei]*)
+;; #else
+(bind-lib libGL glColorSubTableEXT [void,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glCopyColorSubTableEXT [void,GLenum,GLsizei,GLint,GLint,GLsizei]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_compiled_vertex_array
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glLockArraysEXTProcPtr [void,GLint,GLsizei]*)
+(bind-alias glUnlockArraysEXTProcPtr [void]*)
+;; #else
+(bind-lib libGL glLockArraysEXT [void,GLint,GLsizei]*)
+(bind-lib libGL glUnlockArraysEXT [void]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_convolution
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glConvolutionFilter1DEXTProcPtr [void,GLenum,GLenum,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glConvolutionFilter2DEXTProcPtr [void,GLenum,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glConvolutionParameterfEXTProcPtr [void,GLenum,GLenum,GLfloat]*)
+(bind-alias glConvolutionParameterfvEXTProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glConvolutionParameteriEXTProcPtr [void,GLenum,GLenum,GLint]*)
+(bind-alias glConvolutionParameterivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glCopyConvolutionFilter1DEXTProcPtr [void,GLenum,GLenum,GLint,GLint,GLsizei]*)
+(bind-alias glCopyConvolutionFilter2DEXTProcPtr [void,GLenum,GLenum,GLint,GLint,GLsizei,GLsizei]*)
+(bind-alias glGetConvolutionFilterEXTProcPtr [void,GLenum,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetConvolutionParameterfvEXTProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetConvolutionParameterivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glGetSeparableFilterEXTProcPtr [void,GLenum,GLenum,GLenum,GLvoid*,GLvoid*,GLvoid*]*)
+(bind-alias glSeparableFilter2DEXTProcPtr [void,GLenum,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*,GLvoid*]*)
+;; #else
+(bind-lib libGL glConvolutionFilter1DEXT [void,GLenum,GLenum,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glConvolutionFilter2DEXT [void,GLenum,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glConvolutionParameterfEXT [void,GLenum,GLenum,GLfloat]*)
+(bind-lib libGL glConvolutionParameterfvEXT [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glConvolutionParameteriEXT [void,GLenum,GLenum,GLint]*)
+(bind-lib libGL glConvolutionParameterivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glCopyConvolutionFilter1DEXT [void,GLenum,GLenum,GLint,GLint,GLsizei]*)
+(bind-lib libGL glCopyConvolutionFilter2DEXT [void,GLenum,GLenum,GLint,GLint,GLsizei,GLsizei]*)
+(bind-lib libGL glGetConvolutionFilterEXT [void,GLenum,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetConvolutionParameterfvEXT [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetConvolutionParameterivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetSeparableFilterEXT [void,GLenum,GLenum,GLenum,GLvoid*,GLvoid*,GLvoid*]*)
+(bind-lib libGL glSeparableFilter2DEXT [void,GLenum,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_copy_texture
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glCopyTexImage1DEXTProcPtr [void,GLenum,GLint,GLenum,GLint,GLint,GLsizei,GLint]*)
+(bind-alias glCopyTexImage2DEXTProcPtr [void,GLenum,GLint,GLenum,GLint,GLint,GLsizei,GLsizei,GLint]*)
+(bind-alias glCopyTexSubImage1DEXTProcPtr [void,GLenum,GLint,GLint,GLint,GLint,GLsizei]*)
+(bind-alias glCopyTexSubImage2DEXTProcPtr [void,GLenum,GLint,GLint,GLint,GLint,GLint,GLsizei,GLsizei]*)
+(bind-alias glCopyTexSubImage3DEXTProcPtr [void,GLenum,GLint,GLint,GLint,GLint,GLint,GLint,GLsizei,GLsizei]*)
+;; #else
+(bind-lib libGL glCopyTexImage1DEXT [void,GLenum,GLint,GLenum,GLint,GLint,GLsizei,GLint]*)
+(bind-lib libGL glCopyTexImage2DEXT [void,GLenum,GLint,GLenum,GLint,GLint,GLsizei,GLsizei,GLint]*)
+(bind-lib libGL glCopyTexSubImage1DEXT [void,GLenum,GLint,GLint,GLint,GLint,GLsizei]*)
+(bind-lib libGL glCopyTexSubImage2DEXT [void,GLenum,GLint,GLint,GLint,GLint,GLint,GLsizei,GLsizei]*)
+(bind-lib libGL glCopyTexSubImage3DEXT [void,GLenum,GLint,GLint,GLint,GLint,GLint,GLint,GLsizei,GLsizei]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_debug_label
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glLabelObjectEXTProcPtr [void,GLenum,GLuint,GLsizei,GLchar*]*)
+(bind-alias glGetObjectLabelEXTProcPtr [void,GLenum,GLuint,GLsizei,GLsizei*,GLchar*]*)
+;; #else
+(bind-lib libGL glLabelObjectEXT [void,GLenum,GLuint,GLsizei,GLchar*]*)
+(bind-lib libGL glGetObjectLabelEXT [void,GLenum,GLuint,GLsizei,GLsizei*,GLchar*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_debug_marker
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glInsertEventMarkerEXTProcPtr [void,GLsizei,i8*]*)
+(bind-alias glPushGroupMarkerEXTProcPtr [void,GLsizei,i8*]*)
+(bind-alias glPopGroupMarkerEXTProcPtr [void]*)
+;; #else
+(bind-lib libGL glInsertEventMarkerEXT [void,GLsizei,i8*]*)
+(bind-lib libGL glPushGroupMarkerEXT [void,GLsizei,i8*]*)
+(bind-lib libGL glPopGroupMarkerEXT [void]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_depth_bounds_test
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glDepthBoundsEXTProcPtr [void,GLclampd,GLclampd]*)
+;; #else
+(bind-lib libGL glDepthBoundsEXT [void,GLclampd,GLclampd]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_draw_buffers2
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glColorMaskIndexedEXTProcPtr [void,GLuint,GLboolean,GLboolean,GLboolean,GLboolean]*)
+(bind-alias glEnableIndexedEXTProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDisableIndexedEXTProcPtr [void,GLenum,GLuint]*)
+(bind-alias glIsEnabledIndexedEXTProcPtr [GLboolean,GLenum,GLuint]*)
+;; #else
+(bind-lib libGL glColorMaskIndexedEXT [void,GLuint,GLboolean,GLboolean,GLboolean,GLboolean]*)
+(bind-lib libGL glEnableIndexedEXT [void,GLenum,GLuint]*)
+(bind-lib libGL glDisableIndexedEXT [void,GLenum,GLuint]*)
+(bind-lib libGL glIsEnabledIndexedEXT [GLboolean,GLenum,GLuint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_draw_range_elements
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glDrawRangeElementsEXTProcPtr [void,GLenum,GLuint,GLuint,GLsizei,GLenum,GLvoid*]*)
+;; #else
+(bind-lib libGL glDrawRangeElementsEXT [void,GLenum,GLuint,GLuint,GLsizei,GLenum,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_fog_coord
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glFogCoordfEXTProcPtr [void,GLfloat]*)
+(bind-alias glFogCoordfvEXTProcPtr [void,GLfloat*]*)
+(bind-alias glFogCoorddEXTProcPtr [void,GLdouble]*)
+(bind-alias glFogCoorddvEXTProcPtr [void,GLdouble*]*)
+(bind-alias glFogCoordPointerEXTProcPtr [void,GLenum,GLsizei,GLvoid*]*)
+;; #else
+(bind-lib libGL glFogCoordfEXT [void,GLfloat]*)
+(bind-lib libGL glFogCoordfvEXT [void,GLfloat*]*)
+(bind-lib libGL glFogCoorddEXT [void,GLdouble]*)
+(bind-lib libGL glFogCoorddvEXT [void,GLdouble*]*)
+(bind-lib libGL glFogCoordPointerEXT [void,GLenum,GLsizei,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_framebuffer_blit
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBlitFramebufferEXTProcPtr [void,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLbitfield,GLenum]*)
+;; #else
+(bind-lib libGL glBlitFramebufferEXT [void,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLint,GLbitfield,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_framebuffer_multisample
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glRenderbufferStorageMultisampleEXTProcPtr [void,GLenum,GLsizei,GLenum,GLsizei,GLsizei]*)
+;; #else
+(bind-lib libGL glRenderbufferStorageMultisampleEXT [void,GLenum,GLsizei,GLenum,GLsizei,GLsizei]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_framebuffer_object
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glIsRenderbufferEXTProcPtr [GLboolean,GLuint]*)
+(bind-alias glBindRenderbufferEXTProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteRenderbuffersEXTProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenRenderbuffersEXTProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glRenderbufferStorageEXTProcPtr [void,GLenum,GLenum,GLsizei,GLsizei]*)
+(bind-alias glGetRenderbufferParameterivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glIsFramebufferEXTProcPtr [GLboolean,GLuint]*)
+(bind-alias glBindFramebufferEXTProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteFramebuffersEXTProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenFramebuffersEXTProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glCheckFramebufferStatusEXTProcPtr [GLenum,GLenum]*)
+(bind-alias glFramebufferTexture1DEXTProcPtr [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-alias glFramebufferTexture2DEXTProcPtr [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-alias glFramebufferTexture3DEXTProcPtr [void,GLenum,GLenum,GLenum,GLuint,GLint,GLint]*)
+(bind-alias glFramebufferRenderbufferEXTProcPtr [void,GLenum,GLenum,GLenum,GLuint]*)
+(bind-alias glGetFramebufferAttachmentParameterivEXTProcPtr [void,GLenum,GLenum,GLenum,GLint*]*)
+(bind-alias glGenerateMipmapEXTProcPtr [void,GLenum]*)
+;; #else
+(bind-lib libGL glIsRenderbufferEXT [GLboolean,GLuint]*)
+(bind-lib libGL glBindRenderbufferEXT [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteRenderbuffersEXT [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenRenderbuffersEXT [void,GLsizei,GLuint*]*)
+(bind-lib libGL glRenderbufferStorageEXT [void,GLenum,GLenum,GLsizei,GLsizei]*)
+(bind-lib libGL glGetRenderbufferParameterivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glIsFramebufferEXT [GLboolean,GLuint]*)
+(bind-lib libGL glBindFramebufferEXT [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteFramebuffersEXT [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenFramebuffersEXT [void,GLsizei,GLuint*]*)
+(bind-lib libGL glCheckFramebufferStatusEXT [GLenum,GLenum]*)
+(bind-lib libGL glFramebufferTexture1DEXT [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-lib libGL glFramebufferTexture2DEXT [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-lib libGL glFramebufferTexture3DEXT [void,GLenum,GLenum,GLenum,GLuint,GLint,GLint]*)
+(bind-lib libGL glFramebufferRenderbufferEXT [void,GLenum,GLenum,GLenum,GLuint]*)
+(bind-lib libGL glGetFramebufferAttachmentParameterivEXT [void,GLenum,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGenerateMipmapEXT [void,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_geometry_shader4
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glProgramParameteriEXTProcPtr [void,GLuint,GLenum,GLint]*)
+(bind-alias glFramebufferTextureEXTProcPtr [void,GLenum,GLenum,GLuint,GLint]*)
+(bind-alias glFramebufferTextureFaceEXTProcPtr [void,GLenum,GLenum,GLuint,GLint,GLenum]*)
+;; #else
+(bind-lib libGL glProgramParameteriEXT [void,GLuint,GLenum,GLint]*)
+(bind-lib libGL glFramebufferTextureEXT [void,GLenum,GLenum,GLuint,GLint]*)
+(bind-lib libGL glFramebufferTextureFaceEXT [void,GLenum,GLenum,GLuint,GLint,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_geometry_shader4 || GL_EXT_texture_array
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glFramebufferTextureLayerEXTProcPtr [void,GLenum,GLenum,GLuint,GLint,GLint]*)
+;; #else
+(bind-lib libGL glFramebufferTextureLayerEXT [void,GLenum,GLenum,GLuint,GLint,GLint]*)
+;; #endif
+;; #endif
+
+;; #if GL_EXT_gpu_shader4
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glVertexAttribI1iEXTProcPtr [void,GLuint,GLint]*)
+(bind-alias glVertexAttribI2iEXTProcPtr [void,GLuint,GLint,GLint]*)
+(bind-alias glVertexAttribI3iEXTProcPtr [void,GLuint,GLint,GLint,GLint]*)
+(bind-alias glVertexAttribI4iEXTProcPtr [void,GLuint,GLint,GLint,GLint,GLint]*)
+(bind-alias glVertexAttribI1uiEXTProcPtr [void,GLuint,GLuint]*)
+(bind-alias glVertexAttribI2uiEXTProcPtr [void,GLuint,GLuint,GLuint]*)
+(bind-alias glVertexAttribI3uiEXTProcPtr [void,GLuint,GLuint,GLuint,GLuint]*)
+(bind-alias glVertexAttribI4uiEXTProcPtr [void,GLuint,GLuint,GLuint,GLuint,GLuint]*)
+(bind-alias glVertexAttribI1ivEXTProcPtr [void,GLuint,GLint*]*)
+(bind-alias glVertexAttribI2ivEXTProcPtr [void,GLuint,GLint*]*)
+(bind-alias glVertexAttribI3ivEXTProcPtr [void,GLuint,GLint*]*)
+(bind-alias glVertexAttribI4ivEXTProcPtr [void,GLuint,GLint*]*)
+(bind-alias glVertexAttribI1uivEXTProcPtr [void,GLuint,GLuint*]*)
+(bind-alias glVertexAttribI2uivEXTProcPtr [void,GLuint,GLuint*]*)
+(bind-alias glVertexAttribI3uivEXTProcPtr [void,GLuint,GLuint*]*)
+(bind-alias glVertexAttribI4uivEXTProcPtr [void,GLuint,GLuint*]*)
+(bind-alias glVertexAttribI4bvEXTProcPtr [void,GLuint,GLbyte*]*)
+(bind-alias glVertexAttribI4svEXTProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttribI4ubvEXTProcPtr [void,GLuint,GLubyte*]*)
+(bind-alias glVertexAttribI4usvEXTProcPtr [void,GLuint,GLushort*]*)
+(bind-alias glVertexAttribIPointerEXTProcPtr [void,GLuint,GLint,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glGetVertexAttribIivEXTProcPtr [void,GLuint,GLenum,GLint*]*)
+(bind-alias glGetVertexAttribIuivEXTProcPtr [void,GLuint,GLenum,GLuint*]*)
+(bind-alias glUniform1uiEXTProcPtr [void,GLint,GLuint]*)
+(bind-alias glUniform2uiEXTProcPtr [void,GLint,GLuint,GLuint]*)
+(bind-alias glUniform3uiEXTProcPtr [void,GLint,GLuint,GLuint,GLuint]*)
+(bind-alias glUniform4uiEXTProcPtr [void,GLint,GLuint,GLuint,GLuint,GLuint]*)
+(bind-alias glUniform1uivEXTProcPtr [void,GLint,GLsizei,GLuint*]*)
+(bind-alias glUniform2uivEXTProcPtr [void,GLint,GLsizei,GLuint*]*)
+(bind-alias glUniform3uivEXTProcPtr [void,GLint,GLsizei,GLuint*]*)
+(bind-alias glUniform4uivEXTProcPtr [void,GLint,GLsizei,GLuint*]*)
+(bind-alias glGetUniformuivEXTProcPtr [void,GLuint,GLint,GLuint*]*)
+(bind-alias glBindFragDataLocationEXTProcPtr [void,GLuint,GLuint,GLchar*]*)
+(bind-alias glGetFragDataLocationEXTProcPtr [GLint,GLuint,GLchar*]*)
+;; #else
+(bind-lib libGL glVertexAttribI1iEXT [void,GLuint,GLint]*)
+(bind-lib libGL glVertexAttribI2iEXT [void,GLuint,GLint,GLint]*)
+(bind-lib libGL glVertexAttribI3iEXT [void,GLuint,GLint,GLint,GLint]*)
+(bind-lib libGL glVertexAttribI4iEXT [void,GLuint,GLint,GLint,GLint,GLint]*)
+(bind-lib libGL glVertexAttribI1uiEXT [void,GLuint,GLuint]*)
+(bind-lib libGL glVertexAttribI2uiEXT [void,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glVertexAttribI3uiEXT [void,GLuint,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glVertexAttribI4uiEXT [void,GLuint,GLuint,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glVertexAttribI1ivEXT [void,GLuint,GLint*]*)
+(bind-lib libGL glVertexAttribI2ivEXT [void,GLuint,GLint*]*)
+(bind-lib libGL glVertexAttribI3ivEXT [void,GLuint,GLint*]*)
+(bind-lib libGL glVertexAttribI4ivEXT [void,GLuint,GLint*]*)
+(bind-lib libGL glVertexAttribI1uivEXT [void,GLuint,GLuint*]*)
+(bind-lib libGL glVertexAttribI2uivEXT [void,GLuint,GLuint*]*)
+(bind-lib libGL glVertexAttribI3uivEXT [void,GLuint,GLuint*]*)
+(bind-lib libGL glVertexAttribI4uivEXT [void,GLuint,GLuint*]*)
+(bind-lib libGL glVertexAttribI4bvEXT [void,GLuint,GLbyte*]*)
+(bind-lib libGL glVertexAttribI4svEXT [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttribI4ubvEXT [void,GLuint,GLubyte*]*)
+(bind-lib libGL glVertexAttribI4usvEXT [void,GLuint,GLushort*]*)
+(bind-lib libGL glVertexAttribIPointerEXT [void,GLuint,GLint,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glGetVertexAttribIivEXT [void,GLuint,GLenum,GLint*]*)
+(bind-lib libGL glGetVertexAttribIuivEXT [void,GLuint,GLenum,GLuint*]*)
+(bind-lib libGL glUniform1uiEXT [void,GLint,GLuint]*)
+(bind-lib libGL glUniform2uiEXT [void,GLint,GLuint,GLuint]*)
+(bind-lib libGL glUniform3uiEXT [void,GLint,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glUniform4uiEXT [void,GLint,GLuint,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glUniform1uivEXT [void,GLint,GLsizei,GLuint*]*)
+(bind-lib libGL glUniform2uivEXT [void,GLint,GLsizei,GLuint*]*)
+(bind-lib libGL glUniform3uivEXT [void,GLint,GLsizei,GLuint*]*)
+(bind-lib libGL glUniform4uivEXT [void,GLint,GLsizei,GLuint*]*)
+(bind-lib libGL glGetUniformuivEXT [void,GLuint,GLint,GLuint*]*)
+(bind-lib libGL glBindFragDataLocationEXT [void,GLuint,GLuint,GLchar*]*)
+(bind-lib libGL glGetFragDataLocationEXT [GLint,GLuint,GLchar*]*)
+;; #endif
+;; #endif ;; /* GL_EXT_gpu_shader4 */
+
+;; #if GL_EXT_histogram
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glGetHistogramEXTProcPtr [void,GLenum,GLboolean,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetHistogramParameterfvEXTProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetHistogramParameterivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glGetMinmaxEXTProcPtr [void,GLenum,GLboolean,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetMinmaxParameterfvEXTProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetMinmaxParameterivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glHistogramEXTProcPtr [void,GLenum,GLsizei,GLenum,GLboolean]*)
+(bind-alias glMinmaxEXTProcPtr [void,GLenum,GLenum,GLboolean]*)
+(bind-alias glResetHistogramEXTProcPtr [void,GLenum]*)
+(bind-alias glResetMinmaxEXTProcPtr [void,GLenum]*)
+;; #else
+(bind-lib libGL glGetHistogramEXT [void,GLenum,GLboolean,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetHistogramParameterfvEXT [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetHistogramParameterivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetMinmaxEXT [void,GLenum,GLboolean,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetMinmaxParameterfvEXT [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetMinmaxParameterivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glHistogramEXT [void,GLenum,GLsizei,GLenum,GLboolean]*)
+(bind-lib libGL glMinmaxEXT [void,GLenum,GLenum,GLboolean]*)
+(bind-lib libGL glResetHistogramEXT [void,GLenum]*)
+(bind-lib libGL glResetMinmaxEXT [void,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_multi_draw_arrays
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glMultiDrawArraysEXTProcPtr [void,GLenum,GLint*,GLsizei*,GLsizei]*)
+(bind-alias glMultiDrawElementsEXTProcPtr [void,GLenum,GLsizei*,GLenum,GLvoid**,GLsizei]*)
+;; #else
+(bind-lib libGL glMultiDrawArraysEXT [void,GLenum,GLint*,GLsizei*,GLsizei]*)
+(bind-lib libGL glMultiDrawElementsEXT [void,GLenum,GLsizei*,GLenum,GLvoid**,GLsizei]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_paletted_texture
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glColorTableEXTProcPtr [void,GLenum,GLenum,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glColorSubTableEXTProcPtr [void,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetColorTableEXTProcPtr [void,GLenum,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetColorTableParameterivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glGetColorTableParameterfvEXTProcPtr [void,GLenum,GLenum,GLfloat*]*)
+;; #else
+(bind-lib libGL glColorTableEXT [void,GLenum,GLenum,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glColorSubTableEXT [void,GLenum,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetColorTableEXT [void,GLenum,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetColorTableParameterivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetColorTableParameterfvEXT [void,GLenum,GLenum,GLfloat*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_polygon_offset
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glPolygonOffsetEXTProcPtr [void,GLfloat,GLfloat]*)
+;; #else
+(bind-lib libGL glPolygonOffsetEXT [void,GLfloat,GLfloat]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_provoking_vertex
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glProvokingVertexEXTProcPtr [void,GLenum]*)
+;; #else
+(bind-lib libGL glProvokingVertexEXT [void,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_secondary_color
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glSecondaryColor3bEXTProcPtr [void,GLbyte,GLbyte,GLbyte]*)
+(bind-alias glSecondaryColor3bvEXTProcPtr [void,GLbyte*]*)
+(bind-alias glSecondaryColor3dEXTProcPtr [void,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glSecondaryColor3dvEXTProcPtr [void,GLdouble*]*)
+(bind-alias glSecondaryColor3fEXTProcPtr [void,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glSecondaryColor3fvEXTProcPtr [void,GLfloat*]*)
+(bind-alias glSecondaryColor3iEXTProcPtr [void,GLint,GLint,GLint]*)
+(bind-alias glSecondaryColor3ivEXTProcPtr [void,GLint*]*)
+(bind-alias glSecondaryColor3sEXTProcPtr [void,GLshort,GLshort,GLshort]*)
+(bind-alias glSecondaryColor3svEXTProcPtr [void,GLshort*]*)
+(bind-alias glSecondaryColor3ubEXTProcPtr [void,GLubyte,GLubyte,GLubyte]*)
+(bind-alias glSecondaryColor3ubvEXTProcPtr [void,GLubyte*]*)
+(bind-alias glSecondaryColor3uiEXTProcPtr [void,GLuint,GLuint,GLuint]*)
+(bind-alias glSecondaryColor3uivEXTProcPtr [void,GLuint*]*)
+(bind-alias glSecondaryColor3usEXTProcPtr [void,GLushort,GLushort,GLushort]*)
+(bind-alias glSecondaryColor3usvEXTProcPtr [void,GLushort*]*)
+(bind-alias glSecondaryColorPointerEXTProcPtr [void,GLint,GLenum,GLsizei,GLvoid*]*)
+;; #else
+(bind-lib libGL glSecondaryColor3bEXT [void,GLbyte,GLbyte,GLbyte]*)
+(bind-lib libGL glSecondaryColor3bvEXT [void,GLbyte*]*)
+(bind-lib libGL glSecondaryColor3dEXT [void,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glSecondaryColor3dvEXT [void,GLdouble*]*)
+(bind-lib libGL glSecondaryColor3fEXT [void,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glSecondaryColor3fvEXT [void,GLfloat*]*)
+(bind-lib libGL glSecondaryColor3iEXT [void,GLint,GLint,GLint]*)
+(bind-lib libGL glSecondaryColor3ivEXT [void,GLint*]*)
+(bind-lib libGL glSecondaryColor3sEXT [void,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glSecondaryColor3svEXT [void,GLshort*]*)
+(bind-lib libGL glSecondaryColor3ubEXT [void,GLubyte,GLubyte,GLubyte]*)
+(bind-lib libGL glSecondaryColor3ubvEXT [void,GLubyte*]*)
+(bind-lib libGL glSecondaryColor3uiEXT [void,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glSecondaryColor3uivEXT [void,GLuint*]*)
+(bind-lib libGL glSecondaryColor3usEXT [void,GLushort,GLushort,GLushort]*)
+(bind-lib libGL glSecondaryColor3usvEXT [void,GLushort*]*)
+(bind-lib libGL glSecondaryColorPointerEXT [void,GLint,GLenum,GLsizei,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_stencil_two_side
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glActiveStencilFaceEXTProcPtr [void,GLenum]*)
+;; #else
+(bind-lib libGL glActiveStencilFaceEXT [void,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_subtexture
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glTexSubImage1DEXTProcPtr [void,GLenum,GLint,GLint,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glTexSubImage2DEXTProcPtr [void,GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+;; #else
+(bind-lib libGL glTexSubImage1DEXT [void,GLenum,GLint,GLint,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glTexSubImage2DEXT [void,GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_texture3D
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glTexImage3DEXTProcPtr [void,GLenum,GLint,GLenum,GLsizei,GLsizei,GLsizei,GLint,GLenum,GLenum,GLvoid*]*)
+(bind-alias glTexSubImage3DEXTProcPtr [void,GLenum,GLint,GLint,GLint,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+;; #else
+(bind-lib libGL glTexImage3DEXT [void,GLenum,GLint,GLenum,GLsizei,GLsizei,GLsizei,GLint,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glTexSubImage3DEXT [void,GLenum,GLint,GLint,GLint,GLint,GLsizei,GLsizei,GLsizei,GLenum,GLenum,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_texture_integer
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glClearColorIiEXTProcPtr [void,GLint,GLint,GLint,GLint]*)
+(bind-alias glClearColorIuiEXTProcPtr [void,GLuint,GLuint,GLuint,GLuint]*)
+(bind-alias glTexParameterIivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glTexParameterIuivEXTProcPtr [void,GLenum,GLenum,GLuint*]*)
+(bind-alias glGetTexParameterIivEXTProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glGetTexParameterIuivEXTProcPtr [void,GLenum,GLenum,GLuint*]*)
+;; #else
+(bind-lib libGL glClearColorIiEXT [void,GLint,GLint,GLint,GLint]*)
+(bind-lib libGL glClearColorIuiEXT [void,GLuint,GLuint,GLuint,GLuint]*)
+(bind-lib libGL glTexParameterIivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glTexParameterIuivEXT [void,GLenum,GLenum,GLuint*]*)
+(bind-lib libGL glGetTexParameterIivEXT [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetTexParameterIuivEXT [void,GLenum,GLenum,GLuint*]*)
+;; #endif
+;; #endif ;; /* GL_EXT_texture_integer */
+
+;; #if GL_EXT_texture_object
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glAreTexturesResidentEXTProcPtr [GLboolean,GLsizei,GLuint*,GLboolean*]*)
+(bind-alias glBindTextureEXTProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteTexturesEXTProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenTexturesEXTProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glIsTextureEXTProcPtr [GLboolean,GLuint]*)
+(bind-alias glPrioritizeTexturesEXTProcPtr [void,GLsizei,GLuint*,GLclampf*]*)
+;; #else
+(bind-lib libGL glAreTexturesResidentEXT [GLboolean,GLsizei,GLuint*,GLboolean*]*)
+(bind-lib libGL glBindTextureEXT [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteTexturesEXT [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenTexturesEXT [void,GLsizei,GLuint*]*)
+(bind-lib libGL glIsTextureEXT [GLboolean,GLuint]*)
+(bind-lib libGL glPrioritizeTexturesEXT [void,GLsizei,GLuint*,GLclampf*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_timer_query
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glGetQueryObjecti64vEXTProcPtr [void,GLuint,GLenum,GLint64EXT*]*)
+(bind-alias glGetQueryObjectui64vEXTProcPtr [void,GLuint,GLenum,GLuint64EXT*]*)
+;; #else
+(bind-lib libGL glGetQueryObjecti64vEXT [void,GLuint,GLenum,GLint64EXT*]*)
+(bind-lib libGL glGetQueryObjectui64vEXT [void,GLuint,GLenum,GLuint64EXT*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_EXT_transform_feedback
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBindBufferRangeEXTProcPtr [void,GLenum,GLuint,GLuint,GLintptr,GLsizeiptr]*)
+(bind-alias glBindBufferOffsetEXTProcPtr [void,GLenum,GLuint,GLuint,GLintptr]*)
+(bind-alias glBindBufferBaseEXTProcPtr [void,GLenum,GLuint,GLuint]*)
+(bind-alias glBeginTransformFeedbackEXTProcPtr [void,GLenum]*)
+(bind-alias glEndTransformFeedbackEXTProcPtr [void]*)
+(bind-alias glTransformFeedbackVaryingsEXTProcPtr [void,GLuint,GLsizei,GLchar**,GLenum]*)
+(bind-alias glGetTransformFeedbackVaryingEXTProcPtr [void,GLuint,GLuint,GLsizei,GLsizei*,GLsizei*,GLenum*,GLchar*]*)
+;; #else
+(bind-lib libGL glBindBufferRangeEXT [void,GLenum,GLuint,GLuint,GLintptr,GLsizeiptr]*)
+(bind-lib libGL glBindBufferOffsetEXT [void,GLenum,GLuint,GLuint,GLintptr]*)
+(bind-lib libGL glBindBufferBaseEXT [void,GLenum,GLuint,GLuint]*)
+(bind-lib libGL glBeginTransformFeedbackEXT [void,GLenum]*)
+(bind-lib libGL glEndTransformFeedbackEXT [void]*)
+(bind-lib libGL glTransformFeedbackVaryingsEXT [void,GLuint,GLsizei,GLchar**,GLenum]*)
+(bind-lib libGL glGetTransformFeedbackVaryingEXT [void,GLuint,GLuint,GLsizei,GLsizei*,GLsizei*,GLenum*,GLchar*]*)
+;; #endif
+;; #endif ;; /* GL_EXT_transform_feedback */
+
+;; #if GL_EXT_transform_feedback || GL_EXT_draw_buffers2
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glGetIntegerIndexedvEXTProcPtr [void,GLenum,GLint,GLint*]*)
+(bind-alias glGetBooleanIndexedvEXTProcPtr [void,GLenum,GLint,GLboolean*]*)
+;; #else
+(bind-lib libGL glGetIntegerIndexedvEXT [void,GLenum,GLuint,GLint*]*)
+(bind-lib libGL glGetBooleanIndexedvEXT [void,GLenum,GLuint,GLboolean*]*)
+;; #endif
+;; #endif ;; /* GL_EXT_transform_feedback || GL_EXT_draw_buffers2 */
+
+;; #if GL_EXT_vertex_array
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glArrayElementEXTProcPtr [void,GLint]*)
+(bind-alias glColorPointerEXTProcPtr [void,GLint,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-alias glDrawArraysEXTProcPtr [void,GLenum,GLint,GLsizei]*)
+(bind-alias glEdgeFlagPointerEXTProcPtr [void,GLsizei,GLsizei,GLvoid*]*)
+(bind-alias glGetPointervEXTProcPtr [void,GLenum,GLvoid**]*)
+(bind-alias glIndexPointerEXTProcPtr [void,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-alias glNormalPointerEXTProcPtr [void,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-alias glTexCoordPointerEXTProcPtr [void,GLint,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-alias glVertexPointerEXTProcPtr [void,GLint,GLenum,GLsizei,GLsizei,GLvoid*]*)
+;; #else
+(bind-lib libGL glArrayElementEXT [void,GLint]*)
+(bind-lib libGL glColorPointerEXT [void,GLint,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-lib libGL glDrawArraysEXT [void,GLenum,GLint,GLsizei]*)
+(bind-lib libGL glEdgeFlagPointerEXT [void,GLsizei,GLsizei,GLvoid*]*)
+(bind-lib libGL glGetPointervEXT [void,GLenum,GLvoid**]*)
+(bind-lib libGL glIndexPointerEXT [void,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-lib libGL glNormalPointerEXT [void,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-lib libGL glTexCoordPointerEXT [void,GLint,GLenum,GLsizei,GLsizei,GLvoid*]*)
+(bind-lib libGL glVertexPointerEXT [void,GLint,GLenum,GLsizei,GLsizei,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_element_array
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glElementPointerAPPLEProcPtr [void,GLenum,GLvoid*]*)
+(bind-alias glDrawElementArrayAPPLEProcPtr [void,GLenum,GLint,GLsizei]*)
+(bind-alias glDrawRangeElementArrayAPPLEProcPtr [void,GLenum,GLuint,GLuint,GLint,GLsizei]*)
+(bind-alias glMultiDrawElementArrayAPPLEProcPtr [void,GLenum,GLint*,GLsizei*,GLsizei]*)
+(bind-alias glMultiDrawRangeElementArrayAPPLEProcPtr [void,GLenum,GLuint,GLuint,GLint*,GLsizei*,GLsizei]*)
+;; #else
+(bind-lib libGL glElementPointerAPPLE [void,GLenum,GLvoid*]*)
+(bind-lib libGL glDrawElementArrayAPPLE [void,GLenum,GLint,GLsizei]*)
+(bind-lib libGL glDrawRangeElementArrayAPPLE [void,GLenum,GLuint,GLuint,GLint,GLsizei]*)
+(bind-lib libGL glMultiDrawElementArrayAPPLE [void,GLenum,GLint*,GLsizei*,GLsizei]*)
+(bind-lib libGL glMultiDrawRangeElementArrayAPPLE [void,GLenum,GLuint,GLuint,GLint*,GLsizei*,GLsizei]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_fence
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glGenFencesAPPLEProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glDeleteFencesAPPLEProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glSetFenceAPPLEProcPtr [void,GLuint]*)
+(bind-alias glIsFenceAPPLEProcPtr [GLboolean,GLuint]*)
+(bind-alias glTestFenceAPPLEProcPtr [GLboolean,GLuint]*)
+(bind-alias glFinishFenceAPPLEProcPtr [void,GLuint]*)
+(bind-alias glTestObjectAPPLEProcPtr [GLboolean,GLenum,GLuint]*)
+(bind-alias glFinishObjectAPPLEProcPtr [void,GLenum,GLuint]*)
+;; #else
+(bind-lib libGL glGenFencesAPPLE [void,GLsizei,GLuint*]*)
+(bind-lib libGL glDeleteFencesAPPLE [void,GLsizei,GLuint*]*)
+(bind-lib libGL glSetFenceAPPLE [void,GLuint]*)
+(bind-lib libGL glIsFenceAPPLE [GLboolean,GLuint]*)
+(bind-lib libGL glTestFenceAPPLE [GLboolean,GLuint]*)
+(bind-lib libGL glFinishFenceAPPLE [void,GLuint]*)
+(bind-lib libGL glTestObjectAPPLE [GLboolean,GLenum,GLuint]*)
+(bind-lib libGL glFinishObjectAPPLE [void,GLenum,GLuint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_flush_buffer_range
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBufferParameteriAPPLEProcPtr [void,GLenum,GLenum,GLint]*)
+(bind-alias glFlushMappedBufferRangeAPPLEProcPtr [void,GLenum,GLintptr,GLsizeiptr]*)
+;; #else
+(bind-lib libGL glBufferParameteriAPPLE [void,GLenum,GLenum,GLint]*)
+(bind-lib libGL glFlushMappedBufferRangeAPPLE [void,GLenum,GLintptr,GLsizeiptr]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_flush_render
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glFlushRenderAPPLEProcPtr [void]*)
+(bind-alias glFinishRenderAPPLEProcPtr [void]*)
+(bind-alias glSwapAPPLEProcPtr [void]*)
+;; #else
+(bind-lib libGL glFlushRenderAPPLE [void]*)
+(bind-lib libGL glFinishRenderAPPLE [void]*)
+(bind-lib libGL glSwapAPPLE [void]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_object_purgeable
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glObjectPurgeableAPPLEProcPtr [GLenum,GLenum,GLuint,GLenum]*)
+(bind-alias glObjectUnpurgeableAPPLEProcPtr [GLenum,GLenum,GLuint,GLenum]*)
+(bind-alias glGetObjectParameterivAPPLEProcPtr [void,GLenum,GLuint,GLenum,GLint*]*)
+;; #else
+(bind-lib libGL glObjectPurgeableAPPLE [GLenum,GLenum,GLuint,GLenum]*)
+(bind-lib libGL glObjectUnpurgeableAPPLE [GLenum,GLenum,GLuint,GLenum]*)
+(bind-lib libGL glGetObjectParameterivAPPLE [void,GLenum,GLuint,GLenum,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_texture_range
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glTextureRangeAPPLEProcPtr [void,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glGetTexParameterPointervAPPLEProcPtr [void,GLenum,GLenum,GLvoid**]*)
+;; #else
+(bind-lib libGL glTextureRangeAPPLE [void,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glGetTexParameterPointervAPPLE [void,GLenum,GLenum,GLvoid**]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_vertex_array_object
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBindVertexArrayAPPLEProcPtr [void,GLuint]*)
+(bind-alias glDeleteVertexArraysAPPLEProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGenVertexArraysAPPLEProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glIsVertexArrayAPPLEProcPtr [GLboolean,GLuint]*)
+;; #else
+(bind-lib libGL glBindVertexArrayAPPLE [void,GLuint]*)
+(bind-lib libGL glDeleteVertexArraysAPPLE [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGenVertexArraysAPPLE [void,GLsizei,GLuint*]*)
+(bind-lib libGL glIsVertexArrayAPPLE [GLboolean,GLuint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_vertex_array_range
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glVertexArrayRangeAPPLEProcPtr [void,GLsizei,GLvoid*]*)
+(bind-alias glFlushVertexArrayRangeAPPLEProcPtr [void,GLsizei,GLvoid*]*)
+(bind-alias glVertexArrayParameteriAPPLEProcPtr [void,GLenum,GLint]*)
+;; #else
+(bind-lib libGL glVertexArrayRangeAPPLE [void,GLsizei,GLvoid*]*)
+(bind-lib libGL glFlushVertexArrayRangeAPPLE [void,GLsizei,GLvoid*]*)
+(bind-lib libGL glVertexArrayParameteriAPPLE [void,GLenum,GLint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_APPLE_vertex_point_size
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glPointSizePointerAPPLEProcPtr [void,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glVertexPointSizefAPPLEProcPtr [void,GLfloat]*)
+;; #else
+(bind-lib libGL glPointSizePointerAPPLE [void,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glVertexPointSizefAPPLE [void,GLfloat]*)
+;; #endif
+;; #endif
+
+;; #if GL_APPLE_vertex_program_evaluators
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glEnableVertexAttribAPPLEProcPtr [void,GLuint,GLenum]*)
+(bind-alias glDisableVertexAttribAPPLEProcPtr [void,GLuint,GLenum]*)
+(bind-alias glIsVertexAttribEnabledAPPLEProcPtr [GLboolean,GLuint,GLenum]*)
+(bind-alias glMapVertexAttrib1dAPPLEProcPtr [void,GLuint,GLuint,GLdouble,GLdouble,GLint,GLint,GLdouble*]*)
+(bind-alias glMapVertexAttrib1fAPPLEProcPtr [void,GLuint,GLuint,GLfloat,GLfloat,GLint,GLint,GLfloat*]*)
+(bind-alias glMapVertexAttrib2dAPPLEProcPtr [void,GLuint,GLuint,GLdouble,GLdouble,GLint,GLint,GLdouble,GLdouble,GLint,GLint,GLdouble*]*)
+(bind-alias glMapVertexAttrib2fAPPLEProcPtr [void,GLuint,GLuint,GLfloat,GLfloat,GLint,GLint,GLfloat,GLfloat,GLint,GLint,GLfloat*]*)
+;; #else
+(bind-lib libGL glEnableVertexAttribAPPLE [void,GLuint,GLenum]*)
+(bind-lib libGL glDisableVertexAttribAPPLE [void,GLuint,GLenum]*)
+(bind-lib libGL glIsVertexAttribEnabledAPPLE [GLboolean,GLuint,GLenum]*)
+(bind-lib libGL glMapVertexAttrib1dAPPLE [void,GLuint,GLuint,GLdouble,GLdouble,GLint,GLint,GLdouble*]*)
+(bind-lib libGL glMapVertexAttrib1fAPPLE [void,GLuint,GLuint,GLfloat,GLfloat,GLint,GLint,GLfloat*]*)
+(bind-lib libGL glMapVertexAttrib2dAPPLE [void,GLuint,GLuint,GLdouble,GLdouble,GLint,GLint,GLdouble,GLdouble,GLint,GLint,GLdouble*]*)
+(bind-lib libGL glMapVertexAttrib2fAPPLE [void,GLuint,GLuint,GLfloat,GLfloat,GLint,GLint,GLfloat,GLfloat,GLint,GLint,GLfloat*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ATI_blend_equation_separate
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBlendEquationSeparateATIProcPtr [void,GLenum,GLenum]*)
+;; #else
+(bind-lib libGL glBlendEquationSeparateATI [void,GLenum,GLenum]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ATI_pn_triangles
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glPNTrianglesiATIProcPtr [void,GLenum,GLint]*)
+(bind-alias glPNTrianglesfATIProcPtr [void,GLenum,GLfloat]*)
+;; #else
+(bind-lib libGL glPNTrianglesiATI [void,GLenum,GLint]*)
+(bind-lib libGL glPNTrianglesfATI [void,GLenum,GLfloat]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ATI_separate_stencil
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glStencilOpSeparateATIProcPtr [void,GLenum,GLenum,GLenum,GLenum]*)
+(bind-alias glStencilFuncSeparateATIProcPtr [void,GLenum,GLenum,GLint,GLuint]*)
+;; #else
+(bind-lib libGL glStencilOpSeparateATI [void,GLenum,GLenum,GLenum,GLenum]*)
+(bind-lib libGL glStencilFuncSeparateATI [void,GLenum,GLenum,GLint,GLuint]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_ATIX_pn_triangles
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glPNTrianglesiATIXProcPtr [void,GLenum,GLint]*)
+(bind-alias glPNTrianglesfATIXProcPtr [void,GLenum,GLfloat]*)
+;; #else
+(bind-lib libGL glPNTrianglesiATIX [void,GLenum,GLint]*)
+(bind-lib libGL glPNTrianglesfATIX [void,GLenum,GLfloat]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_NV_conditional_render
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBeginConditionalRenderNVProcPtr [void,GLuint,GLenum]*)
+(bind-alias glEndConditionalRenderNVProcPtr [void]*)
+;; #else
+(bind-lib libGL glBeginConditionalRenderNV [void,GLuint,GLenum]*)
+(bind-lib libGL glEndConditionalRenderNV [void]*)
+;; #endif
+;; #endif
+
+;; #if GL_NV_point_sprite
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glPointParameteriNVProcPtr [void,GLenum,GLint]*)
+(bind-alias glPointParameterivNVProcPtr [void,GLenum,GLint*]*)
+;; #else
+(bind-lib libGL glPointParameteriNV [void,GLenum,GLint]*)
+(bind-lib libGL glPointParameterivNV [void,GLenum,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_NV_register_combiners
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glCombinerParameterfvNVProcPtr [void,GLenum,GLfloat*]*)
+(bind-alias glCombinerParameterfNVProcPtr [void,GLenum,GLfloat]*)
+(bind-alias glCombinerParameterivNVProcPtr [void,GLenum,GLint*]*)
+(bind-alias glCombinerParameteriNVProcPtr [void,GLenum,GLint]*)
+(bind-alias glCombinerInputNVProcPtr [void,GLenum,GLenum,GLenum,GLenum,GLenum,GLenum]*)
+(bind-alias glCombinerOutputNVProcPtr [void,GLenum,GLenum,GLenum,GLenum,GLenum,GLenum,GLenum,GLboolean,GLboolean,GLboolean]*)
+(bind-alias glFinalCombinerInputNVProcPtr [void,GLenum,GLenum,GLenum,GLenum]*)
+(bind-alias glGetCombinerInputParameterfvNVProcPtr [void,GLenum,GLenum,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetCombinerInputParameterivNVProcPtr [void,GLenum,GLenum,GLenum,GLenum,GLint*]*)
+(bind-alias glGetCombinerOutputParameterfvNVProcPtr [void,GLenum,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetCombinerOutputParameterivNVProcPtr [void,GLenum,GLenum,GLenum,GLint*]*)
+(bind-alias glGetFinalCombinerInputParameterfvNVProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetFinalCombinerInputParameterivNVProcPtr [void,GLenum,GLenum,GLint*]*)
+;; #else
+(bind-lib libGL glCombinerParameterfvNV [void,GLenum,GLfloat*]*)
+(bind-lib libGL glCombinerParameterfNV [void,GLenum,GLfloat]*)
+(bind-lib libGL glCombinerParameterivNV [void,GLenum,GLint*]*)
+(bind-lib libGL glCombinerParameteriNV [void,GLenum,GLint]*)
+(bind-lib libGL glCombinerInputNV [void,GLenum,GLenum,GLenum,GLenum,GLenum,GLenum]*)
+(bind-lib libGL glCombinerOutputNV [void,GLenum,GLenum,GLenum,GLenum,GLenum,GLenum,GLenum,GLboolean,GLboolean,GLboolean]*)
+(bind-lib libGL glFinalCombinerInputNV [void,GLenum,GLenum,GLenum,GLenum]*)
+(bind-lib libGL glGetCombinerInputParameterfvNV [void,GLenum,GLenum,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetCombinerInputParameterivNV [void,GLenum,GLenum,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetCombinerOutputParameterfvNV [void,GLenum,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetCombinerOutputParameterivNV [void,GLenum,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glGetFinalCombinerInputParameterfvNV [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetFinalCombinerInputParameterivNV [void,GLenum,GLenum,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_NV_register_combiners2
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glCombinerStageParameterfvNVProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetCombinerStageParameterfvNVProcPtr [void,GLenum,GLenum,GLfloat*]*)
+;; #else
+(bind-lib libGL glCombinerStageParameterfvNV [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetCombinerStageParameterfvNV [void,GLenum,GLenum,GLfloat*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_NV_texture_barrier
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glTextureBarrierNVProcPtr [void]*)
+;; #else
+(bind-lib libGL glTextureBarrierNV [void]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_NV_vertex_array_range
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glFlushVertexArrayRangeNVProcPtr [void]*)
+(bind-alias glVertexArrayRangeNVProcPtr [void,GLsizei,GLvoid*]*)
+;; #else
+(bind-lib libGL glFlushVertexArrayRangeNV [void]*)
+(bind-lib libGL glVertexArrayRangeNV [void,GLsizei,GLvoid*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_NV_vertex_program
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glBindProgramNVProcPtr [void,GLenum,GLuint]*)
+(bind-alias glDeleteProgramsNVProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glExecuteProgramNVProcPtr [void,GLenum,GLuint,GLfloat*]*)
+(bind-alias glGenProgramsNVProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glAreProgramsResidentNVProcPtr [GLboolean,GLsizei,GLuint*,GLboolean*]*)
+(bind-alias glRequestResidentProgramsNVProcPtr [void,GLsizei,GLuint*]*)
+(bind-alias glGetProgramParameterfvNVProcPtr [void,GLenum,GLuint,GLenum,GLfloat*]*)
+(bind-alias glGetProgramParameterdvNVProcPtr [void,GLenum,GLuint,GLenum,GLdouble*]*)
+(bind-alias glGetProgramivNVProcPtr [void,GLuint,GLenum,GLint*]*)
+(bind-alias glGetProgramStringNVProcPtr [void,GLuint,GLenum,GLubyte*]*)
+(bind-alias glGetTrackMatrixivNVProcPtr [void,GLenum,GLuint,GLenum,GLint*]*)
+(bind-alias glGetVertexAttribdvNVProcPtr [void,GLuint,GLenum,GLdouble*]*)
+(bind-alias glGetVertexAttribfvNVProcPtr [void,GLuint,GLenum,GLfloat*]*)
+(bind-alias glGetVertexAttribivNVProcPtr [void,GLuint,GLenum,GLint*]*)
+(bind-alias glGetVertexAttribPointervNVProcPtr [void,GLuint,GLenum,GLvoid**]*)
+(bind-alias glIsProgramNVProcPtr [GLboolean,GLuint]*)
+(bind-alias glLoadProgramNVProcPtr [void,GLenum,GLuint,GLsizei,GLubyte*]*)
+(bind-alias glProgramParameter4fNVProcPtr [void,GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glProgramParameter4dNVProcPtr [void,GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glProgramParameter4dvNVProcPtr [void,GLenum,GLuint,GLdouble*]*)
+(bind-alias glProgramParameter4fvNVProcPtr [void,GLenum,GLuint,GLfloat*]*)
+(bind-alias glProgramParameters4dvNVProcPtr [void,GLenum,GLuint,GLuint,GLdouble*]*)
+(bind-alias glProgramParameters4fvNVProcPtr [void,GLenum,GLuint,GLuint,GLfloat*]*)
+(bind-alias glTrackMatrixNVProcPtr [void,GLenum,GLuint,GLenum,GLenum]*)
+(bind-alias glVertexAttribPointerNVProcPtr [void,GLuint,GLint,GLenum,GLsizei,GLvoid*]*)
+(bind-alias glVertexAttrib1sNVProcPtr [void,GLuint,GLshort]*)
+(bind-alias glVertexAttrib1fNVProcPtr [void,GLuint,GLfloat]*)
+(bind-alias glVertexAttrib1dNVProcPtr [void,GLuint,GLdouble]*)
+(bind-alias glVertexAttrib2sNVProcPtr [void,GLuint,GLshort,GLshort]*)
+(bind-alias glVertexAttrib2fNVProcPtr [void,GLuint,GLfloat,GLfloat]*)
+(bind-alias glVertexAttrib2dNVProcPtr [void,GLuint,GLdouble,GLdouble]*)
+(bind-alias glVertexAttrib3sNVProcPtr [void,GLuint,GLshort,GLshort,GLshort]*)
+(bind-alias glVertexAttrib3fNVProcPtr [void,GLuint,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glVertexAttrib3dNVProcPtr [void,GLuint,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glVertexAttrib4sNVProcPtr [void,GLuint,GLshort,GLshort,GLshort,GLshort]*)
+(bind-alias glVertexAttrib4fNVProcPtr [void,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-alias glVertexAttrib4dNVProcPtr [void,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-alias glVertexAttrib4ubNVProcPtr [void,GLuint,GLubyte,GLubyte,GLubyte,GLubyte]*)
+(bind-alias glVertexAttrib1svNVProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib1fvNVProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib1dvNVProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib2svNVProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib2fvNVProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib2dvNVProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib3svNVProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib3fvNVProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib3dvNVProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib4svNVProcPtr [void,GLuint,GLshort*]*)
+(bind-alias glVertexAttrib4fvNVProcPtr [void,GLuint,GLfloat*]*)
+(bind-alias glVertexAttrib4dvNVProcPtr [void,GLuint,GLdouble*]*)
+(bind-alias glVertexAttrib4ubvNVProcPtr [void,GLuint,GLubyte*]*)
+(bind-alias glVertexAttribs1svNVProcPtr [void,GLuint,GLsizei,GLshort*]*)
+(bind-alias glVertexAttribs1fvNVProcPtr [void,GLuint,GLsizei,GLfloat*]*)
+(bind-alias glVertexAttribs1dvNVProcPtr [void,GLuint,GLsizei,GLdouble*]*)
+(bind-alias glVertexAttribs2svNVProcPtr [void,GLuint,GLsizei,GLshort*]*)
+(bind-alias glVertexAttribs2fvNVProcPtr [void,GLuint,GLsizei,GLfloat*]*)
+(bind-alias glVertexAttribs2dvNVProcPtr [void,GLuint,GLsizei,GLdouble*]*)
+(bind-alias glVertexAttribs3svNVProcPtr [void,GLuint,GLsizei,GLshort*]*)
+(bind-alias glVertexAttribs3fvNVProcPtr [void,GLuint,GLsizei,GLfloat*]*)
+(bind-alias glVertexAttribs3dvNVProcPtr [void,GLuint,GLsizei,GLdouble*]*)
+(bind-alias glVertexAttribs4svNVProcPtr [void,GLuint,GLsizei,GLshort*]*)
+(bind-alias glVertexAttribs4fvNVProcPtr [void,GLuint,GLsizei,GLfloat*]*)
+(bind-alias glVertexAttribs4dvNVProcPtr [void,GLuint,GLsizei,GLdouble*]*)
+(bind-alias glVertexAttribs4ubvNVProcPtr [void,GLuint,GLsizei,GLubyte*]*)
+;; #else
+(bind-lib libGL glBindProgramNV [void,GLenum,GLuint]*)
+(bind-lib libGL glDeleteProgramsNV [void,GLsizei,GLuint*]*)
+(bind-lib libGL glExecuteProgramNV [void,GLenum,GLuint,GLfloat*]*)
+(bind-lib libGL glGenProgramsNV [void,GLsizei,GLuint*]*)
+(bind-lib libGL glAreProgramsResidentNV [GLboolean,GLsizei,GLuint*,GLboolean*]*)
+(bind-lib libGL glRequestResidentProgramsNV [void,GLsizei,GLuint*]*)
+(bind-lib libGL glGetProgramParameterfvNV [void,GLenum,GLuint,GLenum,GLfloat*]*)
+(bind-lib libGL glGetProgramParameterdvNV [void,GLenum,GLuint,GLenum,GLdouble*]*)
+(bind-lib libGL glGetProgramivNV [void,GLuint,GLenum,GLint*]*)
+(bind-lib libGL glGetProgramStringNV [void,GLuint,GLenum,GLubyte*]*)
+(bind-lib libGL glGetTrackMatrixivNV [void,GLenum,GLuint,GLenum,GLint*]*)
+(bind-lib libGL glGetVertexAttribdvNV [void,GLuint,GLenum,GLdouble*]*)
+(bind-lib libGL glGetVertexAttribfvNV [void,GLuint,GLenum,GLfloat*]*)
+(bind-lib libGL glGetVertexAttribivNV [void,GLuint,GLenum,GLint*]*)
+(bind-lib libGL glGetVertexAttribPointervNV [void,GLuint,GLenum,GLvoid**]*)
+(bind-lib libGL glIsProgramNV [GLboolean,GLuint]*)
+(bind-lib libGL glLoadProgramNV [void,GLenum,GLuint,GLsizei,GLubyte*]*)
+(bind-lib libGL glProgramParameter4fNV [void,GLenum,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glProgramParameter4dNV [void,GLenum,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glProgramParameter4dvNV [void,GLenum,GLuint,GLdouble*]*)
+(bind-lib libGL glProgramParameter4fvNV [void,GLenum,GLuint,GLfloat*]*)
+(bind-lib libGL glProgramParameters4dvNV [void,GLenum,GLuint,GLuint,GLdouble*]*)
+(bind-lib libGL glProgramParameters4fvNV [void,GLenum,GLuint,GLuint,GLfloat*]*)
+(bind-lib libGL glTrackMatrixNV [void,GLenum,GLuint,GLenum,GLenum]*)
+(bind-lib libGL glVertexAttribPointerNV [void,GLuint,GLint,GLenum,GLsizei,GLvoid*]*)
+(bind-lib libGL glVertexAttrib1sNV [void,GLuint,GLshort]*)
+(bind-lib libGL glVertexAttrib1fNV [void,GLuint,GLfloat]*)
+(bind-lib libGL glVertexAttrib1dNV [void,GLuint,GLdouble]*)
+(bind-lib libGL glVertexAttrib2sNV [void,GLuint,GLshort,GLshort]*)
+(bind-lib libGL glVertexAttrib2fNV [void,GLuint,GLfloat,GLfloat]*)
+(bind-lib libGL glVertexAttrib2dNV [void,GLuint,GLdouble,GLdouble]*)
+(bind-lib libGL glVertexAttrib3sNV [void,GLuint,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glVertexAttrib3fNV [void,GLuint,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glVertexAttrib3dNV [void,GLuint,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glVertexAttrib4sNV [void,GLuint,GLshort,GLshort,GLshort,GLshort]*)
+(bind-lib libGL glVertexAttrib4fNV [void,GLuint,GLfloat,GLfloat,GLfloat,GLfloat]*)
+(bind-lib libGL glVertexAttrib4dNV [void,GLuint,GLdouble,GLdouble,GLdouble,GLdouble]*)
+(bind-lib libGL glVertexAttrib4ubNV [void,GLuint,GLubyte,GLubyte,GLubyte,GLubyte]*)
+(bind-lib libGL glVertexAttrib1svNV [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib1fvNV [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib1dvNV [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib2svNV [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib2fvNV [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib2dvNV [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib3svNV [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib3fvNV [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib3dvNV [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib4svNV [void,GLuint,GLshort*]*)
+(bind-lib libGL glVertexAttrib4fvNV [void,GLuint,GLfloat*]*)
+(bind-lib libGL glVertexAttrib4dvNV [void,GLuint,GLdouble*]*)
+(bind-lib libGL glVertexAttrib4ubvNV [void,GLuint,GLubyte*]*)
+(bind-lib libGL glVertexAttribs1svNV [void,GLuint,GLsizei,GLshort*]*)
+(bind-lib libGL glVertexAttribs1fvNV [void,GLuint,GLsizei,GLfloat*]*)
+(bind-lib libGL glVertexAttribs1dvNV [void,GLuint,GLsizei,GLdouble*]*)
+(bind-lib libGL glVertexAttribs2svNV [void,GLuint,GLsizei,GLshort*]*)
+(bind-lib libGL glVertexAttribs2fvNV [void,GLuint,GLsizei,GLfloat*]*)
+(bind-lib libGL glVertexAttribs2dvNV [void,GLuint,GLsizei,GLdouble*]*)
+(bind-lib libGL glVertexAttribs3svNV [void,GLuint,GLsizei,GLshort*]*)
+(bind-lib libGL glVertexAttribs3fvNV [void,GLuint,GLsizei,GLfloat*]*)
+(bind-lib libGL glVertexAttribs3dvNV [void,GLuint,GLsizei,GLdouble*]*)
+(bind-lib libGL glVertexAttribs4svNV [void,GLuint,GLsizei,GLshort*]*)
+(bind-lib libGL glVertexAttribs4fvNV [void,GLuint,GLsizei,GLfloat*]*)
+(bind-lib libGL glVertexAttribs4dvNV [void,GLuint,GLsizei,GLdouble*]*)
+(bind-lib libGL glVertexAttribs4ubvNV [void,GLuint,GLsizei,GLubyte*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
+
+;; #if GL_SGI_color_table
+;; #ifdef GL_GLEXT_FUNCTION_POINTERS
+(bind-alias glColorTableSGIProcPtr [void,GLenum,GLenum,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-alias glColorTableParameterfvSGIProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glColorTableParameterivSGIProcPtr [void,GLenum,GLenum,GLint*]*)
+(bind-alias glCopyColorTableSGIProcPtr [void,GLenum,GLenum,GLint,GLint,GLsizei]*)
+(bind-alias glGetColorTableSGIProcPtr [void,GLenum,GLenum,GLenum,GLvoid*]*)
+(bind-alias glGetColorTableParameterfvSGIProcPtr [void,GLenum,GLenum,GLfloat*]*)
+(bind-alias glGetColorTableParameterivSGIProcPtr [void,GLenum,GLenum,GLint*]*)
+;; #else
+(bind-lib libGL glColorTableSGI [void,GLenum,GLenum,GLsizei,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glColorTableParameterfvSGI [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glColorTableParameterivSGI [void,GLenum,GLenum,GLint*]*)
+(bind-lib libGL glCopyColorTableSGI [void,GLenum,GLenum,GLint,GLint,GLsizei]*)
+(bind-lib libGL glGetColorTableSGI [void,GLenum,GLenum,GLenum,GLvoid*]*)
+(bind-lib libGL glGetColorTableParameterfvSGI [void,GLenum,GLenum,GLfloat*]*)
+(bind-lib libGL glGetColorTableParameterivSGI [void,GLenum,GLenum,GLint*]*)
+;; #endif ;; /* GL_GLEXT_FUNCTION_POINTERS */
+;; #endif
