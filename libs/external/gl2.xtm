@@ -1,4 +1,4 @@
-;;; opengl2.xtm -- OpenGL 2.0 bindings for Extempore
+;;; gl2.xtm -- OpenGL 2.0 bindings for Extempore
 
 ;; Author: Ben Swift
 ;; Keywords: extempore

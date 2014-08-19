@@ -11,7 +11,7 @@
 ;;; Code:
 
 ;; (sys:load "libs/xtm.xtm")
-(sys:load "libs/external/opengl.xtm")
+(sys:load "libs/external/gl2.xtm")
 
 (define libglfw3
   (let ((platform (sys:platform)))

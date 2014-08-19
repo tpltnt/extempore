@@ -19,9 +19,9 @@
 (sys:load "libs/std.xtm")
 (sys:precomp:insert-sexp '(sys:load "libs/std.xtm"))
 (sys:load "libs/core/std.xtm")
-(sys:load "libs/opengl2.xtm")
-(sys:precomp:insert-sexp '(sys:load "libs/opengl2.xtm"))
-(sys:load "libs/external/opengl2.xtm")
+(sys:load "libs/gl2.xtm")
+(sys:precomp:insert-sexp '(sys:load "libs/gl2.xtm"))
+(sys:load "libs/external/gl2.xtm")
 (set! *sys:precomp:suppress-precomp* #f)
 
 ;; load soil library
