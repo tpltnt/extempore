@@ -2123,24 +2123,27 @@ If you don't want to be prompted for this name each time, set the
 ;; (extempore-parser-parse-all-c-args "")
 ;; (extempore-parser-parse-all-c-args "float part[], float q[], float qm, int nop, int idimp, int nxv, int nyv")
 
-(defun extempore-parser-process-function-prototypes (libname)
-  (interactive "slibname: ")
-  (while (re-search-forward "extern" nil t)
-    (beginning-of-line)
-    (kill-line)
-    (let ((line (current-kill 0)))
-      (string-match "extern \\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]*(\\(.*\\))" line)
-      (let* ((return-type (match-string 1 line))
-             (function-name (match-string 2 line))
-             (arg-string (match-string 3 line))
-             (function-name-pointer-prefix (extempore-parser-extract-pointer-string function-name)))
-        (insert (format "(bind-lib %s %s [%s%s]*)"
-                        libname
-                        (if function-name-pointer-prefix
-                            (substring function-name (length function-name-pointer-prefix))
-                          function-name)
-                        (concat return-type function-name-pointer-prefix)
-                        (extempore-parser-parse-all-c-args arg-string)))))))
+;; TODO this only handles one-line prototypes at present
+(defun extempore-parser-process-function-prototypes (libname ignore-tokens)
+  (interactive
+   (list (read-from-minibuffer "libname: ")
+         (read-from-minibuffer "tokens to ignore: " "extern")))
+  (while (re-search-forward (format "^%s?[ ]?\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(.*\\))"
+                                    (regexp-opt (split-string ignore-tokens " " t)))
+                            nil
+                            t)
+    (let* ((return-type (match-string 1))
+           (function-name (match-string 2))
+           (arg-string (match-string 3))
+           (function-name-pointer-prefix (extempore-parser-extract-pointer-string function-name)))
+      (kill-whole-line)
+      (insert (format "(bind-lib %s %s [%s%s]*)\n"
+                      libname
+                      (if function-name-pointer-prefix
+                          (substring function-name (length function-name-pointer-prefix))
+                        function-name)
+                      (concat return-type function-name-pointer-prefix)
+                      (extempore-parser-parse-all-c-args arg-string))))))
 
 (provide 'extempore)
 
