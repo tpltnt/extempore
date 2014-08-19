@@ -2391,5 +2391,42 @@
 (bind-lib libGL glUniformMatrix3x4fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 (bind-lib libGL glUniformMatrix4x3fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 
+;; gl print
+(bind-func gl_print_error
+  (let ((err GL_NO_ERROR))
+    (lambda ()
+      (set! err (glGetError))
+      ;; (if (<> err GL_NO_ERROR)
+      ;;     (ascii_text_color 0 1 10))
+      (cond
+       ((= err GL_INVALID_ENUM)
+        (printf "OpenGL Error: invalid ENUM: %d\n" err))
+       ((= err GL_INVALID_VALUE)
+        (printf "OpenGL Error: Invalid Value: %d\n" err))
+       ((= err GL_INVALID_OPERATION)
+        (printf "OpenGL Error: Invalid Operation: %d\n" err))
+       ((= err GL_STACK_OVERFLOW)
+        (printf "OpenGL Error: Stack Underflow: %d\n" err))
+       ((= err GL_STACK_UNDERFLOW)
+        (printf "OpenGL Error: Stack Overflow: %d\n" err))
+       ((= err GL_OUT_OF_MEMORY)
+        (printf "OpenGL Error: Out Of Memory: %d\n" err))
+       ;; this enum requires an OpenGL extension (see glext.xtm)
+       ;; ((= err GL_INVALID_FRAMEBUFFER_OPERATION)
+       ;;  (printf "OpenGL Error: Invalid Framebuffer Operation: %d\n" err))
+       ((= err GL_TABLE_TOO_LARGE)
+        (printf "OpenGL Error: Table Too Large: %d\n" err))
+       ((= err GL_NO_ERROR)
+        ;; do nothing
+        (i64toi32 1))
+       (else
+        ;; do nothing
+        (printf "OpenGL Error: %d\n" err)))
+      ;; (if (<> err GL_NO_ERROR)
+      ;;     (begin
+      ;;       (ascii_text_color 0 7 10)
+      ;;       (printf "")))
+      void)))
+
 (sys:precomp:insert-footer "xtmgl2")
 (define *xtmlib-gl2-loaded* #t)

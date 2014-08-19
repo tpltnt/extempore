@@ -26,6 +26,24 @@
 
 (sys:precomp:insert-header "xtmshaders")
 
+;; define the necessary extensions - libGL must be already loaded
+;; (e.g. by gl2.xtm)
+(bind-val GL_TEXTURE_RECTANGLE_ARB i32 #x84F5)
+(bind-val GL_FRAMEBUFFER i32 #x8D40)
+(bind-val GL_COLOR_ATTACHMENT0 i32 #x8CE0)
+(bind-val GL_RENDERBUFFER i32 #x8D41)
+(bind-val GL_FRAMEBUFFER_COMPLETE i32 #x8CD5)
+(bind-val GL_DEPTH_ATTACHMENT i32 #x8D00)
+
+(bind-lib libGL glBindFramebuffer [void,GLenum,GLuint]*)
+(bind-lib libGL glCheckFramebufferStatus [GLenum,GLenum]*)
+(bind-lib libGL glFramebufferTexture2D [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-lib libGL glGenFramebuffers [void,GLsizei,GLuint*]*)
+(bind-lib libGL glFramebufferRenderbuffer [void,GLenum,GLenum,GLenum,GLuint]*)
+(bind-lib libGL glRenderbufferStorage [void,GLenum,GLenum,GLsizei,GLsizei]*)
+(bind-lib libGL glBindRenderbuffer [void,GLenum,GLuint]*)
+(bind-lib libGL glGenRenderbuffers [void,GLsizei,GLuint*]*)
+
 ;; draw a quad
 ;; tw and th are framebuffer width and height
 (bind-func gl_draw_shader_quad
