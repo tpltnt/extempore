@@ -11,6 +11,19 @@
 
 ;; Constants
 
+(sys:load "libs/opengl2.xtm")
+(sys:load-preload-check 'opengl2)
+(define *xtmlib-opengl2-loaded* #f)
+
+;; first make sure that math.xtm is loaded
+(set! *sys:precomp:suppress-precomp* #t)
+(sys:load "libs/std.xtm")
+(sys:precomp:insert-sexp '(sys:load "libs/std.xtm"))
+(sys:load "libs/core/std.xtm")
+(set! *sys:precomp:suppress-precomp* #f)
+
+(sys:precomp:insert-header "xtmopengl2")
+
 (sys:precomp:set-dylib-name-info
  'libGL
  (cond ((string=? (sys:platform) "Linux")
@@ -44,7 +57,7 @@
 ;; gltypes.h
 
 (bind-alias GLenum i32) ;; unsigned int
-(bind-alias GLboolean i8) ;; unsigned char
+(bind-alias GLboolean i32) ;; unsigned char - in code.ir this was "i8 zeroext""
 (bind-alias GLbitfield i32) ;; unsigned int
 (bind-alias GLbyte i8) ;; signed char
 (bind-alias GLshort i16)
@@ -2345,6 +2358,7 @@
 (bind-lib libGL glUniform4iv [void,GLint,GLsizei,GLint*]*)
 (bind-lib libGL glUniformMatrix2fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 (bind-lib libGL glUniformMatrix3fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+;; declare void @glUniformMatrix4fv(i32, i32, i8 zeroext, float*)
 (bind-lib libGL glUniformMatrix4fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 (bind-lib libGL glIsShader [GLboolean,GLuint]*)
 (bind-lib libGL glIsProgram [GLboolean,GLuint]*)
@@ -2370,3 +2384,6 @@
 (bind-lib libGL glUniformMatrix4x2fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 (bind-lib libGL glUniformMatrix3x4fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
 (bind-lib libGL glUniformMatrix4x3fv [void,GLint,GLsizei,GLboolean,GLfloat*]*)
+
+(sys:precomp:insert-footer "xtmopengl2")
+(define *xtmlib-opengl2-loaded* #t)

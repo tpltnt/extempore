@@ -19,6 +19,9 @@
 (sys:load "libs/std.xtm")
 (sys:precomp:insert-sexp '(sys:load "libs/std.xtm"))
 (sys:load "libs/core/std.xtm")
+(sys:load "libs/opengl2.xtm")
+(sys:precomp:insert-sexp '(sys:load "libs/opengl2.xtm"))
+(sys:load "libs/external/opengl2.xtm")
 (set! *sys:precomp:suppress-precomp* #f)
 
 ;; load soil library
@@ -98,15 +101,6 @@
       (if (= texid 0)
 	  (printf "Error loading: %s\n" path))
       texid)))
-
-(bind-val GL_RED i32 6403)
-(bind-val GL_UNSIGNED_SHORT i32 5123)
-;; (bind-val GL_SHORT i32 5122)
-(bind-val GL_2_BYTES i32 5127)
-;;(bind-val GL_3_BYTES i32 5128)
-(bind-val GL_4_BYTES i32 5129)
-(bind-val GL_BGRA i32 32993)
-
 
 ;; get texture height
 ;; for TEXTURE_2D only!
