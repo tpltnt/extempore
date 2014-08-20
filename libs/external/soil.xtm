@@ -29,8 +29,7 @@
 
 ;; set up the extensions
 
-(if (not (llvm:get-globalvar "GL_TEXTURE_RECTANGLE_ARB"))
-    (bind-val GL_TEXTURE_RECTANGLE_ARB i32 #x84F5))
+(bind-val GL_TEXTURE_RECTANGLE_ARB i32 #x84F5)
 
 ;; set up the current dylib name and path (for precompilation)
 (sys:precomp:set-dylib-name-info

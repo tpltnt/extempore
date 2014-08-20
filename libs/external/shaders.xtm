@@ -29,8 +29,7 @@
 ;; define the necessary extensions - libGL must be already loaded
 ;; (e.g. by gl2.xtm)
 
-(if (not (llvm:get-globalvar "GL_TEXTURE_RECTANGLE_ARB"))
-    (bind-val GL_TEXTURE_RECTANGLE_ARB i32 #x84F5))
+(bind-val GL_TEXTURE_RECTANGLE_ARB i32 #x84F5)
 (bind-val GL_FRAMEBUFFER i32 #x8D40)
 (bind-val GL_COLOR_ATTACHMENT0 i32 #x8CE0)
 (bind-val GL_RENDERBUFFER i32 #x8D41)
