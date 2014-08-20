@@ -10,10 +10,16 @@
 
 ;;; Code:
 
-(define ctx (gl:make-ctx ":0" #f 0.0 0.0 1024.0 768.0))
+(define width 1024.0)
+(define height 768.0)
+(bind-val width float 1024.0)
+(bind-val height float 768.0)
+(define fullscreen #f)
+
+(define ctx (gl:make-ctx ":0" fullscreen 0.0 0.0 width height))
 
 ;; (sys:load "libs/xtm.xtm")
-(sys:load "libs/shaders.xtm")
+(sys:load "libs/external/soil.xtm")
 (sys:load "libs/external/shaders.xtm")
 (sys:load "libs/external/particles_vbo.xtm")
 
