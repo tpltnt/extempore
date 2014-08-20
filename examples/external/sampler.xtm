@@ -17,9 +17,6 @@
 ;; sampler works.
 
 
-;; try to load xtm.xtm
-;; (sys:load "libs/xtm.xtm")
-;; else fall through
 (sys:load "libs/external/instruments_ext.xtm")
 
 ;; Now define the sampler instrument and DSP callback function (in

@@ -18,7 +18,6 @@
 
 (define ctx (gl:make-ctx ":0" fullscreen 0.0 0.0 width height))
 
-;; (sys:load "libs/xtm.xtm")
 (sys:load "libs/external/soil.xtm")
 (sys:load "libs/external/shaders.xtm")
 (sys:load "libs/external/particles_vbo.xtm")

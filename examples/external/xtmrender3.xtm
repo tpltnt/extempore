@@ -53,9 +53,7 @@
 ;; setup opengl
 (define glctx (gl:make-ctx ":0.0" fullscreen 0.0 0.0 width height))
 
-;; first try to load from prebuilt stdlib
-;; (sys:load "libs/xtm.xtm")
-;; failing that compile on-the-fly
+;; load in the required libraries
 (sys:load "libs/core/math.xtm")
 (sys:load "libs/external/gl2.xtm")
 (sys:load "libs/external/shaders.xtm")
