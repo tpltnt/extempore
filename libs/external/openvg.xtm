@@ -505,6 +505,11 @@
   (lambda (w h)
     (xtm_vg_create_contexti32 (real->integer w)
                               (real->integer h))))
+(sys:precomp:insert-sexp
+ '(define xtm-vg-create-context
+    (lambda (w h)
+      (xtm_vg_create_contexti32 (real->integer w)
+                                (real->integer h)))))
 
 (bind-func xtm_vg_reset_matrices
   (lambda ()
