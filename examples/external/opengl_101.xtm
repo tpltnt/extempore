@@ -8,6 +8,9 @@
 ;;
 
 ;;; Code:
+
+(sys:load "libs/external/gl2.xtm")
+
 (define glctx (gl:make-ctx ":0.0" #f 0.0 0.0 1024.0 768.0))
 
 ;; a trivial opengl draw loop
@@ -20,12 +23,12 @@
       (let ((i:double 0.0))
 	(dotimes (i 1000.0)
 	  (glTranslated (/ i 2000.0) 0.0 0.0)
-	  (glColor3d (/ i 1500.0) 0.0 1.0)
+	  (glColor3d 1.0 (/ i 1500.0) (/ (- 1000. i) 500.0))
 	  (glRotated degree (/ i 200000.0) 0.5 0.0)
 	  (glBegin GL_QUADS)
 	  (glVertex2d 0.0 0.0)
-	  (glVertex2d size 0.0)
-	  (glVertex2d size size)
+	  (glVertex2d (* -5. size) 0.0)
+	  (glVertex2d size (* 2. size))
 	  (glVertex2d 0.0 size)       
 	  (glEnd))))))
 
