@@ -2046,9 +2046,10 @@ If you don't want to be prompted for this name each time, set the
 (defun extempore-parser-handle-c-comments ()
   (interactive)
   (while (re-search-forward "/\\*" nil t)
-    (let ((comment-begin (- (point) 2)))
-      (re-search-forward "\\*/" nil t)
-      (comment-region comment-begin (point)))))
+    (if (not (looking-back ";;.*" (line-beginning-position)))
+        (let ((comment-begin (- (point) 2)))
+          (re-search-forward "\\*/" nil t)
+          (comment-region comment-begin (point))))))
 
 (defun extempore-parser-remove-ifdef-guards ()
   (interactive)
@@ -2198,9 +2199,11 @@ If you don't want to be prompted for this name each time, set the
   (while (re-search-forward "^typedef " nil t)
     (if (not (looking-back ";;.*" (line-beginning-position)))
         (progn (kill-region (match-beginning 0) (line-end-position))
-               (let ((typedef-string (replace-regexp-in-string ";" "" (substring (current-kill 0) 8))))
+               (let* ((typedef-string (replace-regexp-in-string ";" "" (substring (current-kill 0) 8)))
+                      (newdef (car (reverse (split-string typedef-string " " t))))
+                      (ptr-string (extempore-parser-extract-pointer-string newdef)))
                  (insert (format "(bind-alias %s %s)"
-                                 (car (reverse (split-string typedef-string " " t)))
+                                 (substring newdef (length ptr-string))
                                  (extempore-parser-type-from-function-arg typedef-string))))))))
 
 (provide 'extempore)
