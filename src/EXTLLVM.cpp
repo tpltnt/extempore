@@ -482,11 +482,12 @@ void* llvm_zone_malloc(llvm_zone_t* zone, uint64_t size)
     {
 
 #if EXTENSIBLE_ZONES // if extensible_zones is true then extend zone size by zone->size
-    ascii_text_color(0,3,10);      
-    printf("Warning ");
-    ascii_text_color(0,9,10);
-    if(size > zone->size) zone->size = size*3;
-    printf("zone:%p size:%lld is full ... extending\n",zone,zone->size);
+    if(size > zone->size) zone->size = size;
+    zone->size = zone->size * 2; // keep doubling zone size for each new allocation  
+    // ascii_text_color(0,3,10);      
+    // printf("Warning ");
+    // ascii_text_color(0,9,10);
+    // printf("zone:%p size:%lld is full ... extending\n",zone,zone->size);
     llvm_zone_t* newzone = llvm_zone_create(zone->size);
     void* tmp = newzone->memory;
     newzone->memories = zone->memories;
@@ -562,6 +563,21 @@ bool llvm_zone_copy_ptr(void* ptr1, void* ptr2)
     //printf("zone_copy_ptr: %p,%p,%lld,%lld\n",ptr2,ptr1,size1,size2);
     memcpy(ptr2, ptr1, size1);
     return 0;		
+}
+
+bool llvm_ptr_in_zone(llvm_zone_t* zone, void* ptr)
+{
+    if( (ptr >= zone->memory) && (ptr < ((char*)zone->memory)+zone->size) ) return true;
+    while(zone->memories != NULL) {
+      zone = zone->memories;
+      if( (ptr >= zone->memory) && (ptr < ((char*)zone->memory)+zone->size) ) return true;
+    }
+    return false;
+}
+
+bool llvm_ptr_in_current_zone(void* ptr)
+{
+  return llvm_ptr_in_zone(llvm_peek_zone_stack(),ptr);
 }
 
 
@@ -1381,7 +1397,7 @@ namespace extemp {
 	
     EXTLLVM EXTLLVM::SINGLETON;
     int64_t EXTLLVM::LLVM_COUNT = 0l;
-    bool EXTLLVM::OPTIMIZE_COMPILES = 0;
+    bool EXTLLVM::OPTIMIZE_COMPILES = 1;
     bool EXTLLVM::VERIFY_COMPILES = 1;
 	
     EXTLLVM::EXTLLVM()
@@ -1442,10 +1458,11 @@ namespace extemp {
 	    //EE = llvm::EngineBuilder(M).create();
 	    PM = new llvm::PassManager();
 	    //PM->add(new llvm::TargetData(*EE->getTargetData()));
-            PM->add(new llvm::DataLayout(*(EE->getDataLayout())));
+      PM->add(new llvm::DataLayout(*(EE->getDataLayout())));
 
-            // promote allocs to register
-            PM->add(llvm::createPromoteMemoryToRegisterPass());
+      PM->add(llvm::createBasicAliasAnalysisPass());   //new   
+      // promote allocs to register
+      PM->add(llvm::createPromoteMemoryToRegisterPass());
 	    // Do simple "peephole" optimizations and bit-twiddling optzns.
 	    PM->add(llvm::createInstructionCombiningPass());
 	    // Reassociate expressions.
@@ -1460,6 +1477,9 @@ namespace extemp {
 	    PM->add(llvm::createIndVarSimplifyPass());
 	    // Simplify the control flow graph (deleting unreachable blocks, etc).
 	    PM->add(llvm::createCFGSimplificationPass());
+      // 
+	    PM->add(llvm::createPromoteMemoryToRegisterPass());
+
 
 	    //llvm::PerformTailCallOpt = true;
 	    //llvm::GuaranteedTailCallOpt = true;
@@ -1611,6 +1631,10 @@ namespace extemp {
 	    EE->updateGlobalMapping(gv,(void*)&llvm_zone_ptr_set_size);
 	    gv = M->getNamedValue(std::string("llvm_zone_ptr_size"));
 	    EE->updateGlobalMapping(gv,(void*)&llvm_zone_ptr_size);
+	    gv = M->getNamedValue(std::string("llvm_ptr_in_zone"));
+	    EE->updateGlobalMapping(gv,(void*)&llvm_ptr_in_zone);
+	    gv = M->getNamedValue(std::string("llvm_ptr_in_current_zone"));
+	    EE->updateGlobalMapping(gv,(void*)&llvm_ptr_in_current_zone);
 	    gv = M->getNamedValue(std::string("llvm_memset"));
 	    EE->updateGlobalMapping(gv,(void*)&llvm_memset);
 	    gv = M->getNamedValue(std::string("extitoa"));
