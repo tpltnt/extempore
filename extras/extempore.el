@@ -2053,22 +2053,25 @@ If you don't want to be prompted for this name each time, set the
 
 (defun extempore-parser-remove-ifdef-guards ()
   (interactive)
-  (while (re-search-forward (regexp-opt (list "#if" "#ifdef" "#ifndef" "#else" "#end" "#endif")) nil t)
-    (save-excursion
-      (beginning-of-line)
-      (comment-dwim-line))))
+  (while (re-search-forward (regexp-opt (list "#if" "#ifdef" "#ifndef" "#else" "#elif" "#end" "#endif")) nil t)
+    (if (not (looking-back ";;.*" (line-beginning-position)))
+        (save-excursion
+          (beginning-of-line)
+          (insert ";; ")))))
 
 ;; #define
 
 (defun extempore-parser-translate-define (define-line)
   (let ((parsed-def (cl-remove-if (lambda (s) (string= s "#define"))
                                   (split-string define-line " " t))))
-    (format "(bind-val %s i32 %s)"
-            (car parsed-def)
-            (let ((val-string (cadr parsed-def)))
-              (if (string-match "^0x" val-string)
-                  (concat "#" (substring val-string 1))
-                val-string)))))
+    (if (= (length parsed-def) 1)
+        (concat ";; " define-line)
+      (format "(bind-val %s i32 %s)"
+              (car parsed-def)
+              (let ((val-string (cadr parsed-def)))
+                (if (string-match "^0x" val-string)
+                    (concat "#" (substring val-string 1))
+                  val-string))))))
 
 (defun extempore-parser-process-defines ()
   (interactive)
