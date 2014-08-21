@@ -30,7 +30,11 @@
 (bind-alias CGLContextObj i8*)      ;;  _CGLContextObject
 (bind-alias CGLPixelFormatObj i8*)  ;;  _CGLPixelFormatObject
 (bind-alias CGLRendererInfoObj i8*) ;;  _CGLRendererInfoObject
-(bind-alias CGLPBufferObj i8*)      ;;  _CGLPBufferObject
+(bind-alias CGLPBufferObj i8*)      ;;  _CGLPBufferObject OPENGL_DEPRECATED(10_3, 10_7);
+;; (bind-type CGLContextObj <i8*>)      ;;  _CGLContextObject
+;; (bind-type CGLPixelFormatObj <i8*>)  ;;  _CGLPixelFormatObject
+;; (bind-type CGLRendererInfoObj <i8*>) ;;  _CGLRendererInfoObject
+;; (bind-type CGLPBufferObj <i8*>)      ;;  _CGLPBufferObject OPENGL_DEPRECATED(10_3, 10_7);
 
 ;; /*
 ;; ** Attribute names for CGLChoosePixelFormat and CGLDescribePixelFormat.
@@ -386,13 +390,31 @@
 ;; */
 (bind-lib libGL CGLErrorString [i8*,CGLError]*)
 
-;; Extempore context creation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OpenGL context creation ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; pixel format objects
 
 (bind-func xtgl_choose_pixel_format
   (lambda (attribs:CGLPixelFormatAttribute* pix:CGLPixelFormatObj* npix:GLint*)
     (let ((err (CGLChoosePixelFormat attribs pix npix)))
+      (println "Created pixel")
       (if (<> err 0)
-          (printf "%s\n" (CGLErrorString err)))
+          (printf "Error choosing pixel format: %s\n"
+                  (CGLErrorString err)))
+      err)))
+
+(bind-func xtgl_release_pixel_format
+  (lambda (pix:CGLPixelFormatObj)
+    (CGLReleasePixelFormat pix)))
+
+(bind-func xtgl_describe_pixel_format
+  (lambda (pix:CGLPixelFormatObj pix_num:GLint attrib:CGLPixelFormatAttribute value:GLint*)
+    (let ((err (CGLDescribePixelFormat pix pix_num attrib value)))
+      (if (<> err 0)
+          (printf "Error describing pixel format: %s\n"
+                  (CGLErrorString err)))
       err)))
 
 (bind-func xtgl_create_compatibility_pixel_format
@@ -418,35 +440,137 @@
               0)
       (let ((err (CGLChoosePixelFormat attribs pix npix)))
         (if (<> err 0)
-            (printf "%s\n" (CGLErrorString err)))
+            (printf "Error creating compatibility pixel format: %s\n"
+                    (CGLErrorString err)))
         err))))
 
-(bind-func xtgl_create_canvas
+(bind-func xtgl_create_core_pixel_format
+  (lambda (pix:CGLPixelFormatObj*)
+    (let ((attribs:CGLPixelFormatAttribute* (salloc 32))
+          (npix:i32* (salloc)))
+      (pfill! attribs
+              kCGLPFAOpenGLProfile kCGLOGLPVersion_GL4_Core
+              kCGLPFADoubleBuffer
+              kCGLPFAAccelerated
+              ;; end pixel format attribs array
+              0)
+      (let ((err (CGLChoosePixelFormat attribs pix npix)))
+        (if (<> err 0)
+            (printf "Error creating compatibility pixel format: %s\n"
+                    (CGLErrorString err)))
+        err))))
+
+(bind-func xtgl_virtual_screen_count
+  (lambda (pix:CGLPixelFormatObj)
+    (let ((value:GLint* (salloc))
+          (err (CGLDescribePixelFormat pix 0 kCGLPFAVirtualScreenCount value)))
+      (if (<> err 0)
+          (printf "Error in vurtual screen count: %s\n"
+                  (CGLErrorString err))
+          (printf "virtual screen count: %d\n" (pref value 0)))
+      err)))
+
+;; context creation
+
+(bind-func xtgl_create_context
   (lambda (pix:CGLPixelFormatObj share:CGLContextObj ctx:CGLContextObj*)
     (let ((err (CGLCreateContext pix share ctx)))
       (if (<> err 0)
-          (printf "%s\n" (CGLErrorString err)))
+          (printf "Error creating context: %s\n"
+                  (CGLErrorString err)))
       err)))
 
-(bind-func xtgl_create_canvas_compatibility_profile
-  (lambda (ctx:CGLContextObj*)
-    (let ((pix:CGLPixelFormatObj* null)
+(bind-func xtgl_destroy_context
+  (lambda (ctx:CGLContextObj)
+    (let ((err (CGLDestroyContext ctx)))
+      (if (<> err 0)
+          (printf "Error destroying context: %s\n"
+                  (CGLErrorString err)))
+      err)))
+
+;; global context object pointer
+(bind-val XTGL_CONTEXT CGLContextObj)
+
+;; this sets the global XTGL_CONTEXT
+(bind-func xtgl_create_context_core_profile
+  (lambda ()
+    (let ((ctx:CGLContextObj* (alloc))
+          (pix:CGLPixelFormatObj* (salloc))
+          (err:CGLError 0))
+      (set! err (xtgl_create_core_pixel_format pix))
+      (if (and (= err 0) (not (null? pix)))
+          (begin (set! err (xtgl_create_context (pref pix 0) null ctx))
+                 (if (= err 0)
+                     (set! XTGL_CONTEXT (pref ctx 0)))))
+      err)))
+
+;; this sets the global XTGL_CONTEXT
+(bind-func xtgl_create_context_core_profile
+  (lambda ()
+    (let ((ctx:CGLContextObj* (alloc))
+          (pix:CGLPixelFormatObj* (salloc))
           (err:CGLError 0))
       (set! err (xtgl_create_compatibility_pixel_format pix))
       (if (and (= err 0) (not (null? pix)))
-          (set! err (xtgl_create_canvas (pref pix 0) null ctx)))
+          (begin (set! err (xtgl_create_context (pref pix 0) null ctx))
+                 (if (= err 0)
+                     (set! XTGL_CONTEXT (pref ctx 0)))))
       err)))
 
-(bind-val XTGL_CONTEXT CGLContextObj*) ;; TODO should this be a
-                                       ;; pointer? See example code
+;;;;;;;;;;;;;
+;; testing ;;
+;;;;;;;;;;;;;
 
-;; (bind-val XTGL_PIXEL_FORMAT CGLPixelFormatObj)
+;; (xtgl_create_context_core_profile)
 
-(bind-func xtgl_main
+(bind-func xtgl_print_context_pointer
   (lambda ()
-    (xtgl_create_canvas_compatibility_profile XTGL_CONTEXT)))
+    (printf "XTGL_CONTEXT: %p\n" XTGL_CONTEXT)))
 
-(xtgl_main)
+;; (xtgl_print_driver_info)
+
+;; hacky OSX stuff
+
+;; load the dylib               
+(define Cocoa (sys:load-dylib "/System/Library/Frameworks/Cocoa.framework/Cocoa"))
+
+(bind-alias id i8*)
+(bind-alias BOOL i8)
+
+(bind-lib Cocoa objc_msgSend [id,i8*,i8*])
+(bind-lib Cocoa objc_getClass [id,i8*])
+(bind-lib Cocoa sel_getUid [id,i8*])
+
+(bind-alias CGFloat double) ;; on 64-bit
+(bind-alias NSUInteger i64) ;; on 64-bit
+
+(bind-type CGPoint <CGFloat,CGFloat>) ;; <x,y>
+(bind-type CGSize <CGFloat,CGFloat>) ;; <width,height>
+(bind-type CGRect <CGPoint,CGSize>) ;; <origin,size>
+
+(bind-val NSBorderlessWindowMask enum 0)
+(bind-val NSTitledWindowMask enum 1) ;; 1 << 0
+(bind-val NSClosableWindowMask enum 2) ;; 1 << 1
+(bind-val NSMiniaturizableWindowMask enum 4) ;; 1 << 2
+(bind-val NSResizableWindowMask enum 1 << 8) ;; 1 << 3
+(bind-val NSTexturedBackgroundWindowMask enum 128)
+
+(bind-val NSBackingStoreBuffered enum 2)
+
+(bind-func xtgl_create_window
+  (lambda ()
+    (let ((window (objc_msgSend (objc_getClass "NSWindow")
+                                (sel_getUid "alloc")))
+          (style_mask (+ NSTitledWindowMask
+                         NSClosableWindowMask
+                         NSMiniaturizableWindowMask)))
+      (printf "window: %p\n" window)
+      void)))
+
+;; (xtgl_create_window) ;; this works!
+
+ ;; self->window = objc_msgSend(objc_getClass("NSWindow"), sel_getUid("alloc"));
+ ;; self->window = objc_msgSend(self->window, sel_getUid("initWithContentRect:styleMask:backing:defer:"), (struct CGRect) { 0, 0, 320, 480 }, blah...);
 
 ;; ;; guff starts here
 ;; (bind-func xtm_dlsym
