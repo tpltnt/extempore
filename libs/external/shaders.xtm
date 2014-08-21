@@ -397,7 +397,7 @@
 ;; asumming always GL_ARRAY_BUFFER at the moment
 ;; type is one of GL_DYNAMIC_DRAW, GL_STATIC_DRAW, GL_STREAM_DRAW etc..
 (bind-func create_vbo
-  (lambda (size:i32 data:i8* type:i32)
+  (lambda (size:GLintptr data:i8* type:i32)
     (let ((vbo:E_vbo* (halloc))
 	  (vboid:i32* (salloc)))
       (glGenBuffers 1 vboid)

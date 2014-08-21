@@ -78,8 +78,12 @@
 (bind-alias GLdouble double)
 (bind-alias GLclampd double)
 
-(bind-alias GLintptr i64) ;; long
-(bind-alias GLsizeiptr i64) ;; long
+;; on OSX these are longs, which should be i64! but they seem to works
+;; as i32, and some code in shaders.xtm relies on them being i32. here
+;; be dragons!
+(bind-alias GLintptr i32)
+(bind-alias GLsizeiptr i32)
+
 (bind-alias GLchar i8)
 
 ;; gl.h
