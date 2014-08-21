@@ -2428,6 +2428,13 @@
       ;;       (printf "")))
       void)))
 
+(bind-func xtgl_print_driver_info
+  (lambda ()
+    (printf "--------------------------\n")
+    (printf "OpenGL Driver:\nVendor:%s\nRenderer:%s\nVersion:%s\n" (glGetString GL_VENDOR) (glGetString GL_RENDERER) (glGetString GL_VERSION))
+    (printf "--------------------------\n")
+    void))
+
 ;; load platform-appropriate OpenGL Extempore library
 
 ;; (case (string->symbol (sys:platform))
