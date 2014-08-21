@@ -12,7 +12,7 @@
 
 ;; CGLTypes.h 
 
-(sys:load "libs/external/gl2.xtm")
+;; (sys:load "libs/external/gl2.xtm")
 
 (sys:load-preload-check 'gl-osx)
 (define *xtmlib-gl-osx-loaded* #f)
@@ -21,7 +21,7 @@
         (not libGL))
     (begin (print-with-colors 'red 'default #t
                                   (print "Error"))
-           (print ": libGL (the OSX OpenGL framework) is not loaded, cannot load platform-specific OpenGL library.\n")
+           (print ": the OSX OpenGL framework (i.e. libGL) is not loaded, cannot load platform-specific OpenGL extensions.\n")
            (error)))
 
 ;; /*
