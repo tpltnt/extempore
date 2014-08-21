@@ -78,8 +78,8 @@
 (bind-alias GLdouble double)
 (bind-alias GLclampd double)
 
-(bind-alias GLintptr i32)
-(bind-alias GLsizeiptr i32)
+(bind-alias GLintptr i64) ;; long
+(bind-alias GLsizeiptr i64) ;; long
 (bind-alias GLchar i8)
 
 ;; gl.h
