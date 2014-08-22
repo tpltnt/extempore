@@ -2239,7 +2239,7 @@
     (glfwMakeContextCurrent window)))
 
 (bind-func xtgl_swap_buffers
-  (lambda (window:GLFWwindow*)
+  (lambda (window)
     (glfwSwapBuffers window)))
 
 (bind-func xtgl_poll_events
