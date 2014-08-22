@@ -380,7 +380,7 @@
 ;;  *
 ;;  *  @ingroup monitor
 ;;  */
-(bind-alias GLFWmonitor i8*)
+(bind-alias GLFWmonitor i8)
 
 ;; /*! @brief Opaque window object.
 ;;  *
@@ -388,7 +388,7 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWwindow i8*)
+(bind-alias GLFWwindow i8)
 
 ;; /*! @brief The function signature for error callbacks.
 ;;  *
@@ -2121,23 +2121,23 @@
 ;;                         (printf "unknown error.\n")))))
 ;;       res)))
 
-(bind-func glfw_init
+(bind-func xtgl_init
   (lambda ()
     (let ((res (glfwInit)))
       (if (= res 1)
-          (printf "GLFW Initialised.\n")
-          (printf "Error initialising GLFW.\n"))
+          (printf "Extempore OpenGL context initialised.\n")
+          (printf "Error initialising Extempore OpenGL context.\n"))
       res)))
 
-(bind-func glfw_terminate
+(bind-func xtgl_terminate
   (lambda ()
     (glfwTerminate)))
 
-(bind-func glfw_print_version_string
-  (lambda ()
-    (printf "%s\n" (glfwGetVersionString))))
+;; (bind-func xtgl_print_version_string
+;;   (lambda ()
+;;     (printf "%s\n" (glfwGetVersionString))))
 
-(bind-func glfw_create_fullscreen_window
+(bind-func xtgl_create_fullscreen_window
   (lambda ()
     (let ((monitor (glfwGetPrimaryMonitor))
           (vidmode (glfwGetVideoMode monitor))
@@ -2148,37 +2148,37 @@
                         monitor
                         null))))
 
-(bind-func glfw_create_window
+(bind-func xtgl_create_window
   (lambda (width height)
     (glfwCreateWindow width height
                       "Extempore OpenGL Window"
                       null
                       null)))
 
-(bind-func glfw_window_should_close
+(bind-func xtgl_window_should_close
   (lambda (window)
     (glfwWindowShouldClose window)))
 
-(bind-func glfw_make_context_current
+(bind-func xtgl_make_context_current
   (lambda (window)
     (glfwMakeContextCurrent window)))
 
-(bind-func glfw_destroy_window
+(bind-func xtgl_destroy_window
   (lambda (window:GLFWwindow*)
     (if (not (null? window))
         (glfwDestroyWindow window)
         (println "Error: Window pointer is NULL."))
     void))
 
-(bind-func glfw_swap_buffers
+(bind-func xtgl_swap_buffers
   (lambda (window:GLFWwindow*)
     (glfwSwapBuffers window)))
 
-(bind-func glfw_poll_events
+(bind-func xtgl_poll_events
   (lambda ()
     (glfwPollEvents)))
 
-(bind-func glfw_print_video_mode_details
+(bind-func xtgl_print_video_mode_details
   (lambda (vidmode:GLFWvidmode*)
     (printf "      width: %i\n     height: %i\n    redBits: %i\n  greenBits: %i\n   blueBits: %i\nrefreshRate: %i\n"
             (tref vidmode 0)
@@ -2188,16 +2188,16 @@
             (tref vidmode 4)
             (tref vidmode 5))))
 
-(bind-func glfw_print_primary_monitor_details
+(bind-func xtgl_print_primary_monitor_details
   (lambda ()
     (let ((monitor (glfwGetPrimaryMonitor)))
       (if (not (null? monitor))
-          (glfw_print_video_mode_details (glfwGetVideoMode monitor))
+          (xtgl_print_video_mode_details (glfwGetVideoMode monitor))
           (printf "Error: Monitor pointer is NULL.\n")))))
 
 ;; platform-specific stuff
 
-(bind-func glfw_set_osx_core_profile
+(bind-func xtgl_set_osx_core_profile
   (lambda ()
     (glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR 3)
     (glfwWindowHint GLFW_CONTEXT_VERSION_MINOR 2)
