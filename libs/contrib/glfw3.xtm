@@ -2,7 +2,7 @@
 
 ;; Author: Ben Swift
 ;; Keywords: extempore
-;; Required dylibs: libglfw, libGLEW
+;; Required dylibs: libglfw3
 
 ;;; Commentary:
 
@@ -762,7 +762,7 @@
 ;;  *
 ;;  *  @ingroup init
 ;;  */
-(bind-lib glfw3 glfwGetVersionString [i8*]*)
+(bind-lib libglfw3 glfwGetVersionString [i8*]*)
 
 ;; /*! @brief Sets the error callback.
 ;;  *
@@ -854,7 +854,7 @@
 ;;  *
 ;;  *  @ingroup monitor
 ;;  */
-(bind-lib libglfw3 glfwGetMonitorPhysicalSize [void,GLFWmonitor*,int*,int*]*)
+(bind-lib libglfw3 glfwGetMonitorPhysicalSize [void,GLFWmonitor*,i32*,i32*]*)
 
 ;; /*! @brief Returns the name of the specified monitor.
 ;;  *
@@ -912,7 +912,7 @@
 ;;  *
 ;;  *  @ingroup monitor
 ;;  */
-GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count);
+(bind-lib libglfw3 glfwGetVideoModes [GLFWvidmode*,GLFWmonitor*,i32*]*)
 
 ;; /*! @brief Returns the current mode of the specified monitor.
 ;;  *
@@ -930,7 +930,7 @@ GLFWAPI const GLFWvidmode* glfwGetVideoModes(GLFWmonitor* monitor, int* count);
 ;;  *
 ;;  *  @ingroup monitor
 ;;  */
-GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor);
+(bind-lib libglfw3 glfwGetVideoMode [GLFWvidmode*,GLFWmonitor*]*)
 
 ;; /*! @brief Generates a gamma ramp and sets it for the specified monitor.
 ;;  *
@@ -956,7 +956,7 @@ GLFWAPI const GLFWvidmode* glfwGetVideoMode(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup monitor
 ;;  */
-GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
+(bind-lib libglfw3 glfwGetGammaRamp [GLFWgammaramp*,GLFWmonitor*]*)
 
 ;; /*! @brief Sets the current gamma ramp for the specified monitor.
 ;;  *
@@ -1072,7 +1072,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwCreateWindow [GLFWwindow*,i32,i32,char*,GLFWmonitor*,GLFWwindow*]*)
+(bind-lib libglfw3 glfwCreateWindow [GLFWwindow*,i32,i32,i8*,GLFWmonitor*,GLFWwindow*]*)
 
 ;; /*! @brief Destroys the specified window and its context.
 ;;  *
@@ -1107,7 +1107,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwWindowShouldClose [int,GLFWwindow*]*)
+(bind-lib libglfw3 glfwWindowShouldClose [i32,GLFWwindow*]*)
 
 ;; /*! @brief Sets the close flag of the specified window.
 ;;  *
@@ -1136,7 +1136,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwSetWindowTitle [void,GLFWwindow*,char*]*)
+(bind-lib libglfw3 glfwSetWindowTitle [void,GLFWwindow*,i8*]*)
 
 ;; /*! @brief Retrieves the position of the client area of the specified window.
 ;;  *
@@ -1153,7 +1153,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwGetWindowPos [void,GLFWwindow*,int*,int*]*)
+(bind-lib libglfw3 glfwGetWindowPos [void,GLFWwindow*,i32*,i32*]*)
 
 ;; /*! @brief Sets the position of the client area of the specified window.
 ;;  *
@@ -1199,7 +1199,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwGetWindowSize [void,GLFWwindow*,int*,int*]*)
+(bind-lib libglfw3 glfwGetWindowSize [void,GLFWwindow*,i32*,i32*]*)
 
 ;; /*! @brief Sets the size of the client area of the specified window.
 ;;  *
@@ -1241,7 +1241,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwGetFramebufferSize [void,GLFWwindow*,int*,int*]*)
+(bind-lib libglfw3 glfwGetFramebufferSize [void,GLFWwindow*,i32*,i32*]*)
 
 ;; /*! @brief Iconifies the specified window.
 ;;  *
@@ -1333,7 +1333,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwGetWindowAttrib [int,GLFWwindow*,i32]*)
+(bind-lib libglfw3 glfwGetWindowAttrib [i32,GLFWwindow*,i32]*)
 
 ;; /*! @brief Sets the user pointer of the specified window.
 ;;  *
@@ -1348,7 +1348,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-lib libglfw3 glfwSetWindowUserPointer [void,GLFWwindow*,void*]*)
+(bind-lib libglfw3 glfwSetWindowUserPointer [void,GLFWwindow*,i8*]*)
 
 ;; /*! @brief Returns the user pointer of the specified window.
 ;;  *
@@ -1570,7 +1570,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-lib libglfw3 glfwGetInputMode [int,GLFWwindow*,i32]*)
+(bind-lib libglfw3 glfwGetInputMode [i32,GLFWwindow*,i32]*)
 
 ;; /*! @brief Sets an input option for the specified window.
 ;;  *  @param[in] window The window whose input mode to set.
@@ -1634,7 +1634,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-lib libglfw3 glfwGetKey [int,GLFWwindow*,i32]*)
+(bind-lib libglfw3 glfwGetKey [i32,GLFWwindow*,i32]*)
 
 ;; /*! @brief Returns the last reported state of a mouse button for the specified
 ;;  *  window.
@@ -1652,7 +1652,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-lib libglfw3 glfwGetMouseButton [int,GLFWwindow*,i32]*)
+(bind-lib libglfw3 glfwGetMouseButton [i32,GLFWwindow*,i32]*)
 
 ;; /*! @brief Retrieves the last reported cursor position, relative to the client
 ;;  *  area of the window.
@@ -1840,7 +1840,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-lib libglfw3 glfwJoystickPresent [int,i32]*)
+(bind-lib libglfw3 glfwJoystickPresent [i32,i32]*)
 
 ;; /*! @brief Returns the values of all axes of the specified joystick.
 ;;  *
@@ -1859,7 +1859,7 @@ GLFWAPI const GLFWgammaramp* glfwGetGammaRamp(GLFWmonitor* monitor);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-GLFWAPI const float* glfwGetJoystickAxes(int joy, int* count);
+(bind-lib libglfw3 glfwGetJoystickAxes [float*,i32,i32*]*)
 
 ;; /*! @brief Returns the state of all buttons of the specified joystick.
 ;;  *
@@ -1878,7 +1878,7 @@ GLFWAPI const float* glfwGetJoystickAxes(int joy, int* count);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-GLFWAPI const unsigned char* glfwGetJoystickButtons(int joy, int* count);
+(bind-lib libglfw3 glfwGetJoystickButtons [i8*,i32,i32*]*)
 
 ;; /*! @brief Returns the name of the specified joystick.
 ;;  *
@@ -1896,7 +1896,7 @@ GLFWAPI const unsigned char* glfwGetJoystickButtons(int joy, int* count);
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-GLFWAPI const char* glfwGetJoystickName(int joy);
+(bind-lib libglfw3 glfwGetJoystickName [i8*,i32]*)
 
 ;; /*! @brief Sets the clipboard to the specified string.
 ;;  *
@@ -1913,7 +1913,7 @@ GLFWAPI const char* glfwGetJoystickName(int joy);
 ;;  *
 ;;  *  @ingroup clipboard
 ;;  */
-(bind-lib libglfw3 glfwSetClipboardString [void,GLFWwindow*,char*]*)
+(bind-lib libglfw3 glfwSetClipboardString [void,GLFWwindow*,i8*]*)
 
 ;; /*! @brief Retrieves the contents of the clipboard as a string.
 ;;  *
@@ -1936,7 +1936,7 @@ GLFWAPI const char* glfwGetJoystickName(int joy);
 ;;  *
 ;;  *  @ingroup clipboard
 ;;  */
-GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window);
+(bind-lib libglfw3 glfwGetClipboardString [i8*,GLFWwindow*]*)
 
 ;; /*! @brief Returns the value of the GLFW timer.
 ;;  *
@@ -2078,7 +2078,7 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window);
 ;;  *
 ;;  *  @ingroup context
 ;;  */
-(bind-lib libglfw3 glfwExtensionSupported [int,char*]*)
+(bind-lib libglfw3 glfwExtensionSupported [i32,i8*]*)
 
 ;; /*! @brief Returns the address of the specified function for the current
 ;;  *  context.
@@ -2099,26 +2099,27 @@ GLFWAPI const char* glfwGetClipboardString(GLFWwindow* window);
 ;;  *
 ;;  *  @ingroup context
 ;;  */
-(bind-lib libglfw3 glfwGetProcAddress [GLFWglproc,char*]*)
+(bind-lib libglfw3 glfwGetProcAddress [GLFWglproc,i8*]*)
+
 
 ;; xtlang helper functions
 
-(bind-func glew_init
-  (lambda (experimental_p:i8)
-    (set! glewExperimental experimental_p)
-    (let ((res (glewInit)))
-      (if (= res GLEW_OK)
-          (printf "GLEW Initialised.\n")
-          (begin (printf "Error initialising GLEW: ")
-                 (cond ((= res GLEW_ERROR_NO_GL_VERSION)
-                        (printf "no GL version.\n"))
-                       ((= res GLEW_ERROR_GL_VERSION_10_ONLY)
-                        (printf "need at least OpenGL 1.1\n"))
-                       ((= res GLEW_ERROR_GLX_VERSION_11_ONLY)
-                        (printf "need at least GLX 1.2.\n"))
-                       (else
-                        (printf "unknown error.\n")))))
-      res)))
+;; (bind-func glew_init
+;;   (lambda (experimental_p:i8)
+;;     (set! glewExperimental experimental_p)
+;;     (let ((res (glewInit)))
+;;       (if (= res GLEW_OK)
+;;           (printf "GLEW Initialised.\n")
+;;           (begin (printf "Error initialising GLEW: ")
+;;                  (cond ((= res GLEW_ERROR_NO_GL_VERSION)
+;;                         (printf "no GL version.\n"))
+;;                        ((= res GLEW_ERROR_GL_VERSION_10_ONLY)
+;;                         (printf "need at least OpenGL 1.1\n"))
+;;                        ((= res GLEW_ERROR_GLX_VERSION_11_ONLY)
+;;                         (printf "need at least GLX 1.2.\n"))
+;;                        (else
+;;                         (printf "unknown error.\n")))))
+;;       res)))
 
 (bind-func glfw_init
   (lambda ()

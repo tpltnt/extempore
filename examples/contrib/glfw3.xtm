@@ -1,0 +1,15 @@
+(sys:load "libs/contrib/glfw3.xtm")
+
+(glfw_init)
+(glfw_set_osx_core_profile)
+
+(define width 1920.0)
+(define height 1080.0)
+(bind-val width float 1920.0)
+(bind-val height float 1080.0)
+(define fullscreen #t)
+
+
+(define *gl-window* (glfw_create_window 1920 1080))
+
+(glfw_make_context_current *gl-window*)
