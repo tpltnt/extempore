@@ -2163,7 +2163,7 @@ If you don't want to be prompted for this name each time, set the
   (interactive
    (list (read-from-minibuffer "libname: ")
          (read-from-minibuffer "tokens to ignore: ")))
-  (while (re-search-forward (format "^%s?[ ]?\\(?:const \\|extern \\)\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
+  (while (re-search-forward (format "^%s?[ ]?\\(?:const \\|unsigned \\|extern \\)*\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
                                     (regexp-opt (split-string ignore-tokens " " t)))
                             nil
                             t)
@@ -2176,10 +2176,9 @@ If you don't want to be prompted for this name each time, set the
           (kill-region prototype-beginning (line-end-position))
           (insert (format "(bind-lib %s %s [%s%s]*)"
                           libname
-                          (if function-name-pointer-prefix
-                              (substring function-name (length function-name-pointer-prefix))
-                            function-name)
-                          (concat return-type function-name-pointer-prefix)
+                          (substring function-name (length function-name-pointer-prefix))
+                          (extempore-parser-map-c-type-to-xtlang-type
+                           (concat return-type function-name-pointer-prefix))
                           arg-string))))))
 
 ;; typedef
