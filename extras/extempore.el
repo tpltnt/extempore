@@ -2115,9 +2115,13 @@ If you don't want to be prompted for this name each time, set the
                       ("int64_t" . "i64")
                       ("uint64_t" . "i64")
                       ("float" . "float")
-                      ("double" . "double"))))
-    (or (cdr-safe (assoc c-type type-alist))
-        c-type)))
+                      ("double" . "double")))
+        (pointer-string (extempore-parser-extract-pointer-string c-type))
+        (base-type (replace-regexp-in-string
+                    "[[]]" "" (replace-regexp-in-string "[*]" "" c-type))))
+    (concat (or (cdr-safe (assoc base-type type-alist))
+                base-type)
+            pointer-string)))
 
 (defun extempore-parser-type-from-function-arg (arg-str)
   (let ((elements (cl-remove-if (lambda (s) (member s (list "const" "struct")))
@@ -2153,6 +2157,7 @@ If you don't want to be prompted for this name each time, set the
 ;; (extempore-parser-parse-all-c-args "")
 ;; (extempore-parser-parse-all-c-args "float part[], float q[], float qm, int nop, int idimp, int nxv, int nyv")
 ;; (extempore-parser-parse-all-c-args "unsigned short GLhalfARB")
+;; (extempore-parser-parse-all-c-args "GLFWmonitor* monitor, int* count")
 
 (defun extempore-parser-process-function-prototypes (libname ignore-tokens)
   (interactive
