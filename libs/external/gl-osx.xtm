@@ -24,6 +24,79 @@
            (print ": the OSX OpenGL framework (i.e. libGL) is not loaded, cannot load platform-specific OpenGL extensions.\n")
            (error)))
 
+;; bind-gl-extension: copypasta'd from bind-lib
+
+;; OSX
+
+
+(bind-val xtgl_get_proc_address [i8*,i8*]*)
+
+(bind-func create_xtgl_get_proc_address
+  (lambda (libGL_ptr:i8*)
+    (set! xtgl_get_proc_address
+          (lambda (name:i8*)
+            (if (not (null? libGL_ptr))
+                (dlsym libGL_ptr name)
+                null)))))
+
+(create_xtgl_get_proc_address libGL)
+
+(bind-func test
+  (lambda ()    
+    (printf "ptr: %p\n" (xtgl_get_proc_address "glBindFramebuffer"))))
+
+
+;; ;; GLX
+
+;; (bind-lib libGL glXGetProcAddressARB [i8*,i8*]*)
+
+;; (bind-func xtgl_get_proc_address
+;;   (lambda (name:i8*)
+;;     (glXGetProcAddressARB name)))
+
+;; ;; wgl
+
+;; (bind-lib libGL wglGetProcAddress [i8*,i8*]*)
+
+;; (bind-func xtgl_get_proc_address
+;;   (lambda (name:i8*)
+;;     (wglGetProcAddressARB name)))
+
+
+(define-macro (bind-gl-extension library extension-name type . args)
+  `(__dynamic-bind-gl-extension ',library ',extension-name ',type ,@(map (lambda (k) `(quote ,k)) args)))
+
+(define __dynamic-bind-gl-extension
+  (lambda (library extension-name type . args)
+    (let* ((ctype (cdr (impc:ir:get-type-from-pretty-str (symbol->string type))))
+           (calling_convention (if (null? args) "ccc" (symbol->string (car args))))
+           (ircode (string-append "declare "
+                                  calling_convention
+                                  " "
+                                   (impc:ir:get-type-str (car ctype))
+                                   " @"
+                                   (symbol->string extension-name)
+                                   "("
+                                   (if (null? (cdr ctype))
+                                       ""
+                                       (apply string-append
+                                              (impc:ir:get-type-str (cadr ctype))
+                                              (map (lambda (v)
+                                                     (string-append "," (impc:ir:get-type-str v)))
+                                                   (cddr ctype))))
+                                   ") nounwind")))
+      (println ircode)
+      (if (and (llvm:compile ircode)
+               (llvm:bind-global-var (symbol->string extension-name)
+                                     (xtgl_get_proc_address (symbol->string extension-name))))
+          (impc:compiler:print-lib-binding-details-to-log library extension-name type)
+	  (impc:compiler:print-compiler-error (string-append "could not bind!" (symbol->string extension-name)))))))
+
+
+
+
+
+
 ;; /*
 ;; ** CGL opaque data.
 ;; */
