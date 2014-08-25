@@ -1,4 +1,4 @@
-(sys:load "libs/core/math.xtm")
+;; (sys:load "libs/core/math.xtm")
 (sys:load "libs/contrib/glfw3.xtm")
 
 (xtgl_init)
@@ -9,8 +9,12 @@
 (bind-val height float 480.0)
 (define fullscreen #t)
 
-;; (define *xtgl-window* (xtgl_create_window_with_size_compat (real->integer width) (real->integer height)))
-(define *xtgl-window* (xtgl_create_window_fullscreen_core))
+(define *xtgl-window* (xtgl_create_window_with_size_compat (real->integer width) (real->integer height)))
+
+(callback (+ (now) (* 10 *second*)) (lambda () (xtgl_destroy_window *xtgl-window*)))
+(define *xtgl-window* (xtgl_create_window_fullscreen_compat))
+
+(xtgl_print_driver_info)
 
 (bind-func xtgl_print_window_details
   (lambda (window)
@@ -56,7 +60,8 @@
                       'xtgl-loop
                       next-time 
                       delta-t)))
-        (println "shutting down."))))
+        (begin (println "shutting down.")
+               (xtgl_destroy_window *xtgl-window*)))))
 
 (xtgl-loop (now) 1/2)
 
