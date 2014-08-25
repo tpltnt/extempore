@@ -2445,13 +2445,15 @@
 
 ;; load platform-appropriate OpenGL Extempore library
 
-;; (case (string->symbol (sys:platform))
-;;   ('OSX (sys:load "libs/external/gl-osx.xtm"))
-;;   ('Linux (sys:load "libs/external/gl-linux.xtm"))
-;;   ('Windows (sys:load "libs/external/gl-windows.xtm"))
-;;   (else (begin (print-with-colors 'red 'default #t
-;;                                   (print "Error"))
-;;                (print ": unknown platform, cannot load platform-specific OpenGL library.\n"))))
+(case (string->symbol (sys:platform))
+  ('OSX (sys:load "libs/external/gl-osx.xtm"))
+  ('Linux (sys:load "libs/external/gl-linux.xtm"))
+  ('Windows (sys:load "libs/external/gl-win.xtm"))
+  (else (begin (print-with-colors 'red 'default #t
+                                  (print "Error"))
+               (print ": unknown platform, cannot load platform-specific ")
+               (print-with-colors 'blue 'default #f (print "OpenGL"))
+               (print " library.\n"))))
 
 (sys:precomp:insert-footer "xtmgl2")
 (define *xtmlib-gl2-loaded* #t)

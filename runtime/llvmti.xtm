@@ -6286,6 +6286,38 @@
           (impc:compiler:print-lib-binding-details-to-log library symname type)
 	  (impc:compiler:print-compiler-error (string-append "could not bind!" (symbol->string symname)))))))
 
+;; this is like bind-lib, but specifically for OpenGL extensions. It's
+;; necessary because you have to get the function pointer at runtime
+;; from the GL driver. See libs/external/gl-{osx,linux,win}.xtm for details
+
+(define-macro (bind-gl-extension extension-name type . args)
+  `(__dynamic-bind-gl-extension ',extension-name ',type ,@(map (lambda (k) `(quote ,k)) args)))
+
+(define __dynamic-bind-gl-extension
+  (lambda (extension-name type . args)
+    (let* ((ctype (cdr (impc:ir:get-type-from-pretty-str (symbol->string type))))
+           (calling_convention (if (null? args) "ccc" (symbol->string (car args))))
+           (ircode (string-append "declare "
+                                  calling_convention
+                                  " "
+                                   (impc:ir:get-type-str (car ctype))
+                                   " @"
+                                   (symbol->string extension-name)
+                                   "("
+                                   (if (null? (cdr ctype))
+                                       ""
+                                       (apply string-append
+                                              (impc:ir:get-type-str (cadr ctype))
+                                              (map (lambda (v)
+                                                     (string-append "," (impc:ir:get-type-str v)))
+                                                   (cddr ctype))))
+                                   ") nounwind")))
+      (if (and (llvm:compile ircode)
+               (llvm:bind-global-var (symbol->string extension-name)
+                                     (xtgl_get_proc_address (symbol->string extension-name))))
+          (impc:compiler:print-lib-binding-details-to-log 'libGL extension-name type)
+	  (impc:compiler:print-compiler-error (string-append "could not bind Open GL extension: " (symbol->string extension-name)))))))
+
 (define-macro (remove-func symname)
   `(begin 
      (llvm:remove-globalvar ,(string-append (symbol->string symname) "_var"))

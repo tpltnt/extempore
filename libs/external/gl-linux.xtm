@@ -1,0 +1,31 @@
+;;; gl-linux.xtm -- A Linux (GLX) platform-specific OpenGL library
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libGL
+
+;;; Commentary:
+
+;; 
+
+;;; Code:
+
+(sys:load-preload-check 'gl-linux)
+(define *xtmlib-gl-linux-loaded* #f)
+
+(if (or (not (defined? 'libGL))
+        (not libGL))
+    (begin (print-with-colors 'red 'default #t
+                                  (print "Error"))
+           (print ": the OpenGL shared library (i.e. libGL) is not loaded, cannot load platform-specific OpenGL extensions.\n")
+           (error)))
+
+;; GLX
+
+(bind-lib libGL glXGetProcAddressARB [i8*,i8*]*)
+
+(bind-func xtgl_get_proc_address
+  (lambda (name:i8*)
+    (glXGetProcAddressARB name)))
+
+(define *xtmlib-gl-linux-loaded* #t)

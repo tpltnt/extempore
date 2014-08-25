@@ -1,0 +1,30 @@
+;;; gl-win.xtm -- Windows (WGL) platform-specific OpenGL library
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libGL
+
+;;; Commentary:
+
+;; 
+
+;;; Code:
+
+(sys:load-preload-check 'gl-win)
+(define *xtmlib-gl-win-loaded* #f)
+
+(if (or (not (defined? 'libGL))
+        (not libGL))
+    (begin (print-with-colors 'red 'default #t
+                                  (print "Error"))
+           (print ": the OpenGL DLL (i.e. libGL) is not loaded, cannot load platform-specific OpenGL extensions.\n")
+           (error)))
+
+;; this is the key function: it's different on the different platforms
+(bind-lib libGL wglGetProcAddress [i8*,i8*]*)
+
+(bind-func xtgl_get_proc_address
+  (lambda (name:i8*)
+    (wglGetProcAddressARB name)))
+
+(define *xtmlib-gl-win-loaded* #t)
