@@ -467,6 +467,10 @@
                        (string-append "(bind-lib "
                                       symname  " "
                                       type-str ")\n"))
+                      ((string=? lead-string "GLExt:")
+                       (string-append "(bind-gl-extension "
+                                      symname  " "
+                                      type-str ")\n"))
                       ((string=? lead-string "Compiled:")
                        (if (assoc-strcmp symname *sys:precomp:func-defs-in-mod*)
                            ""
@@ -547,6 +551,24 @@
           (print-with-colors *impc:compiler:pretty-print-type-color* 'default #f  (print type))
           (print  " bound from ")
           (print-with-colors *impc:compiler:pretty-print-code-color* 'default #f  (print libname))
+          (println)))))
+
+(define impc:compiler:print-gl-ext-binding-details-to-log
+  (lambda (extension-name type)
+    ;; don't write the header stuff for other precompiled xtm libs -
+    ;; assume a header file already exists in that case
+    (impc:precomp:write-binding-details-to-file "GLExt:"
+                                                (atom->string extension-name)
+                                                (atom->string type))
+    (if (equal? *impc:compiler:message:level* 'high)
+        (begin
+          (print "OpenGLEx:  ")
+          (print-with-colors *impc:compiler:pretty-print-name-color* 'default #t (print extension-name))
+          (print " >>> ")
+          (print-with-colors *impc:compiler:pretty-print-type-color* 'default #f  (print type))
+          (print  " bound ")
+          (print-with-colors *impc:compiler:pretty-print-code-color* 'default #f  (print "OpenGL"))
+          (print " extension")
           (println)))))
 
 (define impc:compiler:print-polying-details-to-log
