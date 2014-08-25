@@ -254,6 +254,8 @@ int main(int argc, char** argv)
 
 #ifdef TARGET_OS_MAC
     [[NSApplication sharedApplication] run];
+    [[NSApplication sharedApplication] setActivationPolicy:NSApplicationActivationPolicyRegular];
+    
 #else
     while(1) {
 #ifdef TARGET_OS_WINDOWS
