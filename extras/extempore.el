@@ -429,7 +429,7 @@ See `run-hooks'."
         (regexp-opt extempore-xtlang-names 'symbols)
         '(1 font-lock-function-name-face))
        ;; bind-type/alias
-       '("(\\(bind-\\(type\\|alias\\)\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]+\\))"
+       '("(\\(bind-\\(type\\|alias\\|gl-extension\\)\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]+\\))"
          (1 font-lock-keyword-face)
          (3 font-lock-function-name-face)
          (4 font-lock-type-face t))
