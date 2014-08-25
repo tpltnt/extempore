@@ -36,14 +36,14 @@
 (bind-val GL_FRAMEBUFFER_COMPLETE i32 #x8CD5)
 (bind-val GL_DEPTH_ATTACHMENT i32 #x8D00)
 
-(bind-lib libGL glBindFramebuffer [void,GLenum,GLuint]*)
-(bind-lib libGL glCheckFramebufferStatus [GLenum,GLenum]*)
-(bind-lib libGL glFramebufferTexture2D [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
-(bind-lib libGL glGenFramebuffers [void,GLsizei,GLuint*]*)
-(bind-lib libGL glFramebufferRenderbuffer [void,GLenum,GLenum,GLenum,GLuint]*)
-(bind-lib libGL glRenderbufferStorage [void,GLenum,GLenum,GLsizei,GLsizei]*)
-(bind-lib libGL glBindRenderbuffer [void,GLenum,GLuint]*)
-(bind-lib libGL glGenRenderbuffers [void,GLsizei,GLuint*]*)
+(bind-gl-extension glBindFramebuffer [void,GLenum,GLuint]*)
+(bind-gl-extension glCheckFramebufferStatus [GLenum,GLenum]*)
+(bind-gl-extension glFramebufferTexture2D [void,GLenum,GLenum,GLenum,GLuint,GLint]*)
+(bind-gl-extension glGenFramebuffers [void,GLsizei,GLuint*]*)
+(bind-gl-extension glFramebufferRenderbuffer [void,GLenum,GLenum,GLenum,GLuint]*)
+(bind-gl-extension glRenderbufferStorage [void,GLenum,GLenum,GLsizei,GLsizei]*)
+(bind-gl-extension glBindRenderbuffer [void,GLenum,GLuint]*)
+(bind-gl-extension glGenRenderbuffers [void,GLsizei,GLuint*]*)
 
 ;; draw a quad
 ;; tw and th are framebuffer width and height
