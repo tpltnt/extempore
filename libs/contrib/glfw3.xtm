@@ -16,7 +16,7 @@
   (let ((platform (sys:platform)))
     (cond ((string=? platform "Linux") (sys:open-dylib "libglfw3.so"))
           ((string=? platform "Windows") (sys:open-dylib "libglfw3.dll"))
-          ((string=? platform "OSX") (sys:open-dylib "libglfw3.dylib"))
+          ((string=? platform "OSX") (sys:open-dylib "libglfw.3.0.dylib"))
           (else (print "Unknown platform: " platform)))))
 
 ;; /*************************************************************************
