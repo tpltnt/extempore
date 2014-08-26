@@ -13,9 +13,9 @@ PLATFORM_LIBS += -lportaudio
 endif
 
 ifdef EXT_BUILD_GENERIC
-PLATFORM_LIBS += -Wl,-Bstatic -lpcre -Wl,-Bdynamic -lGL -lX11
+PLATFORM_LIBS += -Wl,-Bstatic -lpcre -Wl,-Bdynamic -lX11
 else
-PLATFORM_LIBS += -lpcre -lGL -lX11
+PLATFORM_LIBS += -lpcre -lX11
 endif
 
 PLATFORM_CXXFLAGS := -g -fPIC -O3

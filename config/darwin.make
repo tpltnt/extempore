@@ -2,9 +2,7 @@ OSX_FRAMEWORKS := \
 	-framework Cocoa \
 	-framework CoreAudio \
         -framework AudioToolbox \
-        -framework AudioUnit \
-	-framework GLUT \
-	-framework OpenGL \
+        -framework AudioUnit
 
 PLATFORM_LIBS := -lpcre
 
@@ -25,6 +23,6 @@ ifdef EXT_BUILD_GENERIC
 PLATFORM_CXXFLAGS += -mtune=generic -mmacosx-version-min=10.6
 endif
 
-PLATFORM_DEFINES := -DTARGET_OS_MAC -DUSE_GLUT
+PLATFORM_DEFINES := -DTARGET_OS_MAC
 PLATFORM_CXX := g++
 PLATFORM_LD := g++

@@ -1,4 +1,4 @@
-PLATFORM_LIBS := -lm -lpcre -lglfw -lportaudio
+PLATFORM_LIBS := -lm -lpcre -lportaudio
 
 PLATFORM_CXXFLAGS :=
 PLATFORM_LDFLAGS := --verbose -L/usr/local/lib
