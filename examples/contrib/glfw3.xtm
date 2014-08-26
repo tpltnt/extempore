@@ -1,7 +1,8 @@
 ;; (sys:load "libs/core/math.xtm")
 (sys:load "libs/contrib/glfw3.xtm")
 
-(xtgl_init)
+(if (<> (xtgl_init) 0)
+    (error "Error initialising GLFW."))
 
 (define width 640.0)
 (define height 480.0)
@@ -10,13 +11,42 @@
 (define fullscreen #t)
 
 (define *xtgl-window* (xtgl_create_window_with_size_compat (real->integer width) (real->integer height)))
-
 ;; (callback (+ (now) (* 10 *second*)) (lambda () (xtgl_destroy_window *xtgl-window*)))
 ;; (define *xtgl-window* (xtgl_create_window_fullscreen_compat))
 
+;; TODO should check if window pointer is null here.
+
 (xtgl_make_context_current *xtgl-window*)
 
-(xtgl_print_driver_info)
+(bind-func glfw_key_callback
+  (lambda (window:GLFWwindow* key:i32 scancode:i32 action:i32 mods:i32)
+    (if (and (= key GLFW_KEY_ESCAPE)
+             (= action GLFW_PRESS))
+        (glfwSetWindowShouldClose window GL_TRUE))
+    void))
+
+(bind-func set_key_callback
+  (lambda (window:GLFWwindow*)
+    (glfwSetKeyCallback window (llvm_get_function_ptr "glfw_key_callback_native"))))
+
+(define xtgl-loop
+  (lambda (time delta-t)
+    (if (= (xtgl_window_should_close *xtgl-window*) 0)
+        (begin
+          (xtgl_swap_buffers *xtgl-window*)
+          (xtgl_poll_events)
+          (let ((next-time (max (+ time (* *second* delta-t)) (now))))
+            (callback next-time
+                      'xtgl-loop
+                      next-time 
+                      delta-t)))
+        (begin (println "shutting down.")
+               (xtgl_destroy_window *xtgl-window*)))))
+
+(xtgl-loop (now) 1/2)
+
+;; finally, when we're done...
+(xtgl_terminate)
 
 (bind-func xtgl_print_window_details
   (lambda (window)
@@ -44,28 +74,12 @@
         (println "Error: window is NULL."))))
 
 
+
 (xtgl_make_context_current *xtgl-window*)
 
 (xtgl_print_primary_monitor_details)
 
 (xtgl_print_driver_info)
-
-(define xtgl-loop
-  (lambda (time delta-t)
-    (if (= (xtgl_window_should_close *xtgl-window*) 0)
-        (begin
-          (println 'time: time)
-          (xtgl_swap_buffers *xtgl-window*)
-          (xtgl_poll_events)
-          (let ((next-time (max (+ time (* *second* delta-t)) (now))))
-            (callback next-time
-                      'xtgl-loop
-                      next-time 
-                      delta-t)))
-        (begin (println "shutting down.")
-               (xtgl_destroy_window *xtgl-window*)))))
-
-(xtgl-loop (now) 1/2)
 
 (bind-val XTGL_WINDOW GLFWwindow*)
 
@@ -90,6 +104,7 @@
 
 (xtgl_loop (now) 1/2)
 
+(println '*xtgl-window*: *xtgl-window*)
 
 (xtgl_destroy_window *xtgl-window*)
-(xtgl_terminate)
+
