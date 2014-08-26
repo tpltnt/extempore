@@ -2163,8 +2163,10 @@ If you don't want to be prompted for this name each time, set the
   (interactive
    (list (read-from-minibuffer "libname: ")
          (read-from-minibuffer "tokens to ignore: ")))
-  (while (re-search-forward (format "^%s?[ ]?\\(?:const \\|unsigned \\|extern \\)*\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
-                                    (regexp-opt (split-string ignore-tokens " " t)))
+  (while (re-search-forward (format "^%s[ ]?\\(?:const \\|unsigned \\|extern \\)*\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
+                                    (if (string= ignore-tokens "")
+                                        ""
+                                      (concat (regexp-opt (split-string ignore-tokens " " t) "?"))))
                             nil
                             t)
     (if (not (looking-back ";;.*" (line-beginning-position)))
