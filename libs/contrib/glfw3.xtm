@@ -401,7 +401,8 @@
 ;;  *
 ;;  *  @ingroup error
 ;;  */
-(bind-alias GLFWerrorfun [void,i32,i8*]*)
+(bind-alias GLFWerrorfun i8*)
+;; (bind-alias GLFWerrorfun [void,i32,i8*]*)
 
 ;; /*! @brief The function signature for window position callbacks.
 ;;  *
@@ -417,7 +418,8 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWwindowposfun [void,GLFWwindow*,i32,i32]*)
+(bind-alias GLFWwindowposfun i8*)
+;; (bind-alias GLFWwindowposfun [void,GLFWwindow*,i32,i32]*)
 
 ;; /*! @brief The function signature for window resize callbacks.
 ;;  *
@@ -431,6 +433,7 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
+(bind-alias GLFWwindowsizefun i8*)
 (bind-alias GLFWwindowsizefun [void,GLFWwindow*,i32,i32]*)
 
 ;; /*! @brief The function signature for window close callbacks.
@@ -443,7 +446,8 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWwindowclosefun [void,GLFWwindow*]*)
+(bind-alias GLFWwindowclosefun i8*)
+;; (bind-alias GLFWwindowclosefun [void,GLFWwindow*]*)
 
 ;; /*! @brief The function signature for window content refresh callbacks.
 ;;  *
@@ -455,7 +459,8 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWwindowrefreshfun [void,GLFWwindow*]*)
+(bind-alias GLFWwindowrefreshfun i8*)
+;; (bind-alias GLFWwindowrefreshfun [void,GLFWwindow*]*)
 
 ;; /*! @brief The function signature for window focus/defocus callbacks.
 ;;  *
@@ -469,7 +474,8 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWwindowfocusfun [void,GLFWwindow*,i32]*)
+(bind-alias GLFWwindowfocusfun i8*)
+;; (bind-alias GLFWwindowfocusfun [void,GLFWwindow*,i32]*)
 
 ;; /*! @brief The function signature for window iconify/restore callbacks.
 ;;  *
@@ -484,7 +490,8 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWwindowiconifyfun [void,GLFWwindow*,i32]*)
+(bind-alias GLFWwindowiconifyfun i8*)
+;; (bind-alias GLFWwindowiconifyfun [void,GLFWwindow*,i32]*)
 
 ;; /*! @brief The function signature for framebuffer resize callbacks.
 ;;  *
@@ -499,7 +506,8 @@
 ;;  *
 ;;  *  @ingroup window
 ;;  */
-(bind-alias GLFWframebuffersizefun [void,GLFWwindow*,i32,i32]*)
+(bind-alias GLFWframebuffersizefun i8*)
+;; (bind-alias GLFWframebuffersizefun [void,GLFWwindow*,i32,i32]*)
 
 ;; /*! @brief The function signature for mouse button callbacks.
 ;;  *
@@ -516,7 +524,8 @@
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-alias GLFWmousebuttonfun [void,GLFWwindow*,i32,i32,i32]*)
+(bind-alias GLFWmousebuttonfun i8*)
+;; (bind-alias GLFWmousebuttonfun [void,GLFWwindow*,i32,i32,i32]*)
 
 ;; /*! @brief The function signature for cursor position callbacks.
 ;;  *
@@ -530,7 +539,8 @@
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-alias GLFWcursorposfun [void,GLFWwindow*,double,double]*)
+(bind-alias GLFWcursorposfun i8*)
+;; (bind-alias GLFWcursorposfun [void,GLFWwindow*,double,double]*)
 
 ;; /*! @brief The function signature for cursor enter/leave callbacks.
 ;;  *
@@ -544,7 +554,8 @@
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-alias GLFWcursorenterfun [void,GLFWwindow*,i32]*)
+(bind-alias GLFWcursorenterfun i8*)
+;; (bind-alias GLFWcursorenterfun [void,GLFWwindow*,i32]*)
 
 ;; /*! @brief The function signature for scroll callbacks.
 ;;  *
@@ -558,7 +569,8 @@
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-alias GLFWscrollfun [void,GLFWwindow*,double,double]*)
+(bind-alias GLFWscrollfun i8*)
+;; (bind-alias GLFWscrollfun [void,GLFWwindow*,double,double]*)
 
 ;; /*! @brief The function signature for keyboard key callbacks.
 ;;  *
@@ -575,7 +587,8 @@
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-alias GLFWkeyfun [void,GLFWwindow*,i32,i32,i32,i32]*)
+(bind-alias GLFWkeyfun i8*)
+;; (bind-alias GLFWkeyfun [void,GLFWwindow*,i32,i32,i32,i32]*)
 
 ;; /*! @brief The function signature for Unicode character callbacks.
 ;;  *
@@ -588,7 +601,8 @@
 ;;  *
 ;;  *  @ingroup input
 ;;  */
-(bind-alias GLFWcharfun [void,GLFWwindow*,i32]*)
+(bind-alias GLFWcharfun i8*)
+;; (bind-alias GLFWcharfun [void,GLFWwindow*,i32]*)
 
 ;; /*! @brief The function signature for monitor configuration callbacks.
 ;;  *
@@ -601,7 +615,8 @@
 ;;  *
 ;;  *  @ingroup monitor
 ;;  */
-(bind-alias GLFWmonitorfun [void,GLFWmonitor*,i32]*)
+(bind-alias GLFWmonitorfun i8*)
+;; (bind-alias GLFWmonitorfun [void,GLFWmonitor*,i32]*)
 
 ;; /*! @brief Video mode type.
 ;;  *
@@ -2121,9 +2136,17 @@
 ;;                         (printf "unknown error.\n")))))
 ;;       res)))
 
+
+;; error handling
+
+(bind-func glfw_error_callback
+  (lambda (error:i32 description:i8*)
+    (printf "GLFW Error: %s\n" description)))
+
 (bind-func xtgl_init
   (lambda ()
-    (let ((res (glfwInit)))
+    (let ((oldcb (glfwSetErrorCallback (llvm_get_function_ptr "glfw_error_callback_native")))
+          (res (glfwInit)))
       (if (= res 1)
           (printf "Extempore OpenGL context initialised.\n")
           (printf "Error initialising Extempore OpenGL context.\n"))
@@ -2264,6 +2287,3 @@
       (if (not (null? monitor))
           (xtgl_print_video_mode_details (glfwGetVideoMode monitor))
           (printf "Error: Monitor pointer is NULL.\n")))))
-
-
-
