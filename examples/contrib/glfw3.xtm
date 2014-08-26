@@ -1,8 +1,7 @@
 ;; (sys:load "libs/core/math.xtm")
 (sys:load "libs/contrib/glfw3.xtm")
 
-(if (<> (xtgl_init) 0)
-    (error "Error initialising GLFW."))
+(xtgl_init)
 
 (define width 640.0)
 (define height 480.0)
@@ -20,6 +19,7 @@
 
 (bind-func glfw_key_callback
   (lambda (window:GLFWwindow* key:i32 scancode:i32 action:i32 mods:i32)
+    (println "key:" key "scancode:" scancode "action:" action "mods:" mods)
     (if (and (= key GLFW_KEY_ESCAPE)
              (= action GLFW_PRESS))
         (glfwSetWindowShouldClose window GL_TRUE))
