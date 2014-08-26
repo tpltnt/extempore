@@ -1,0 +1,348 @@
+;;; glwt.xtm:libs -- minimal, cross-platform OpenGL context management
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libglwt
+
+;;; Commentary:
+
+;; 
+
+;;; Code:
+
+(sys:load-preload-check 'glwt)
+(define *xtmlib-glwt-loaded* #f)
+
+;; set up the current dylib name and path (for precompilation)
+(sys:precomp:set-dylib-name-info
+ 'libglwt
+ (cond ((string=? (sys:platform) "OSX")
+        "/Users/ben/Code/src/glwt/src/libglwt.dylib")
+       ((string=? (sys:platform) "Linux")
+        "libglwt.so")
+       ((string=? (sys:platform) "Windows")
+        "libglwt.dll")
+       (else
+        (begin (print-with-colors 'red 'default #f (print "Error"))
+               (print ": unsupported platform ")
+               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
+
+;; load the dylib               
+(define libglwt
+  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; GLWT/glwt_keysym.h ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; #ifndef GLWT_glwt_keysym_h
+;; #define GLWT_glwt_keysym_h
+
+(bind-val GLWT_MOD_SHIFT i32 1)
+(bind-val GLWT_MOD_CTRL i32 2)
+(bind-val GLWT_MOD_ALT i32 4)
+(bind-val GLWT_MOD_SUPER i32 8)
+(bind-val GLWT_MOD_ALTGR i32 16)
+(bind-val GLWT_MOD_NUM_LOCK i32 32)
+(bind-val GLWT_MOD_CAPS_LOCK i32 64)
+
+(bind-val GLWT_KEY_UNKNOWN i32 #x00)
+
+(bind-val GLWT_KEY_BACKSPACE i32 #x08)
+(bind-val GLWT_KEY_TAB i32 #x09)
+(bind-val GLWT_KEY_RETURN i32 #x0d)
+(bind-val GLWT_KEY_ESCAPE i32 #x1b)
+(bind-val GLWT_KEY_SPACE i32 #x20)
+
+(bind-val GLWT_KEY_PLUS i32 #x2b)
+(bind-val GLWT_KEY_COMMA i32 #x2c)
+(bind-val GLWT_KEY_MINUS i32 #x2d)
+(bind-val GLWT_KEY_PERIOD i32 #x2e)
+(bind-val GLWT_KEY_SLASH i32 #x2f)
+
+(bind-val GLWT_KEY_0 i32 #x30)
+(bind-val GLWT_KEY_1 i32 #x31)
+(bind-val GLWT_KEY_2 i32 #x32)
+(bind-val GLWT_KEY_3 i32 #x33)
+(bind-val GLWT_KEY_4 i32 #x34)
+(bind-val GLWT_KEY_5 i32 #x35)
+(bind-val GLWT_KEY_6 i32 #x36)
+(bind-val GLWT_KEY_7 i32 #x37)
+(bind-val GLWT_KEY_8 i32 #x38)
+(bind-val GLWT_KEY_9 i32 #x39)
+
+(bind-val GLWT_KEY_A i32 #x41)
+(bind-val GLWT_KEY_B i32 #x42)
+(bind-val GLWT_KEY_C i32 #x43)
+(bind-val GLWT_KEY_D i32 #x44)
+(bind-val GLWT_KEY_E i32 #x45)
+(bind-val GLWT_KEY_F i32 #x46)
+(bind-val GLWT_KEY_G i32 #x47)
+(bind-val GLWT_KEY_H i32 #x48)
+(bind-val GLWT_KEY_I i32 #x49)
+(bind-val GLWT_KEY_J i32 #x4a)
+(bind-val GLWT_KEY_K i32 #x4b)
+(bind-val GLWT_KEY_L i32 #x4c)
+(bind-val GLWT_KEY_M i32 #x4d)
+(bind-val GLWT_KEY_N i32 #x4e)
+(bind-val GLWT_KEY_O i32 #x4f)
+(bind-val GLWT_KEY_P i32 #x50)
+(bind-val GLWT_KEY_Q i32 #x51)
+(bind-val GLWT_KEY_R i32 #x52)
+(bind-val GLWT_KEY_S i32 #x53)
+(bind-val GLWT_KEY_T i32 #x54)
+(bind-val GLWT_KEY_U i32 #x55)
+(bind-val GLWT_KEY_V i32 #x56)
+(bind-val GLWT_KEY_W i32 #x57)
+(bind-val GLWT_KEY_X i32 #x58)
+(bind-val GLWT_KEY_Y i32 #x59)
+(bind-val GLWT_KEY_Z i32 #x5a)
+
+;; // LEFTBRACKET, BACKSLASH, RIGHTBRACKET, CARET, UNDERSCORE. BACKQUOTE??!
+(bind-val GLWT_KEY_DELETE i32 #x7f)
+
+(bind-val GLWT_KEY_KEYPAD_0 i32 #x80)
+(bind-val GLWT_KEY_KEYPAD_1 i32 #x81)
+(bind-val GLWT_KEY_KEYPAD_2 i32 #x82)
+(bind-val GLWT_KEY_KEYPAD_3 i32 #x83)
+(bind-val GLWT_KEY_KEYPAD_4 i32 #x84)
+(bind-val GLWT_KEY_KEYPAD_5 i32 #x85)
+(bind-val GLWT_KEY_KEYPAD_6 i32 #x86)
+(bind-val GLWT_KEY_KEYPAD_7 i32 #x87)
+(bind-val GLWT_KEY_KEYPAD_8 i32 #x88)
+(bind-val GLWT_KEY_KEYPAD_9 i32 #x89)
+(bind-val GLWT_KEY_KEYPAD_SEPARATOR i32 #x8a)
+(bind-val GLWT_KEY_KEYPAD_DIVIDE i32 #x8b)
+(bind-val GLWT_KEY_KEYPAD_MULTIPLY i32 #x8c)
+(bind-val GLWT_KEY_KEYPAD_PLUS i32 #x8d)
+(bind-val GLWT_KEY_KEYPAD_MINUS i32 #x8e)
+(bind-val GLWT_KEY_KEYPAD_ENTER i32 #x8f)
+
+(bind-val GLWT_KEY_UP i32 #x90)
+(bind-val GLWT_KEY_DOWN i32 #x91)
+(bind-val GLWT_KEY_LEFT i32 #x92)
+(bind-val GLWT_KEY_RIGHT i32 #x93)
+(bind-val GLWT_KEY_PAGE_UP i32 #x94)
+(bind-val GLWT_KEY_PAGE_DOWN i32 #x95)
+(bind-val GLWT_KEY_HOME i32 #x96)
+(bind-val GLWT_KEY_END i32 #x97)
+(bind-val GLWT_KEY_INSERT i32 #x98)
+
+(bind-val GLWT_KEY_F1 i32 #xa0)
+(bind-val GLWT_KEY_F2 i32 #xa1)
+(bind-val GLWT_KEY_F3 i32 #xa2)
+(bind-val GLWT_KEY_F4 i32 #xa3)
+(bind-val GLWT_KEY_F5 i32 #xa4)
+(bind-val GLWT_KEY_F6 i32 #xa5)
+(bind-val GLWT_KEY_F7 i32 #xa6)
+(bind-val GLWT_KEY_F8 i32 #xa7)
+(bind-val GLWT_KEY_F9 i32 #xa8)
+(bind-val GLWT_KEY_F10 i32 #xa9)
+(bind-val GLWT_KEY_F11 i32 #xaa)
+(bind-val GLWT_KEY_F12 i32 #xab)
+
+(bind-val GLWT_KEY_LSHIFT i32 #xb0)
+(bind-val GLWT_KEY_RSHIFT i32 #xb1)
+(bind-val GLWT_KEY_LCTRL i32 #xb2)
+(bind-val GLWT_KEY_RCTRL i32 #xb3)
+(bind-val GLWT_KEY_LALT i32 #xb4)
+(bind-val GLWT_KEY_RALT i32 #xb5)
+(bind-val GLWT_KEY_LSUPER i32 #xb6)
+(bind-val GLWT_KEY_RSUPER i32 #xb7)
+(bind-val GLWT_KEY_MENU i32 #xb8)
+(bind-val GLWT_KEY_ALTGR i32 #xb9)
+(bind-val GLWT_KEY_NUM_LOCK i32 #xba)
+(bind-val GLWT_KEY_CAPS_LOCK i32 #xbb)
+(bind-val GLWT_KEY_SCROLL_LOCK i32 #xbc)
+
+;; #endif
+
+;;;;;;;;;;;;;;;;;
+;; GLWT/glwt.h ;;
+;;;;;;;;;;;;;;;;;
+
+;; #ifndef GLWT_glwt_h
+;; #define GLWT_glwt_h
+
+;; #include <GLWT/glwt_keysym.h>
+
+;; #ifdef __cplusplus
+;; extern "C" {
+;; #endif
+
+(define GLWT_API_ANY #x00)
+(bind-val GLWT_API_ANY i32 GLWT_API_ANY)
+(define GLWT_API_OPENGL #x01)
+(bind-val GLWT_API_OPENGL i32 GLWT_API_OPENGL)
+(define GLWT_API_OPENGL_ES #x02)
+(bind-val GLWT_API_OPENGL_ES i32 GLWT_API_OPENGL_ES)
+(define GLWT_API_MASK #x0f)
+(bind-val GLWT_API_MASK i32 GLWT_API_MASK)
+
+(define GLWT_PROFILE_CORE #x00)
+(bind-val GLWT_PROFILE_CORE i32 GLWT_PROFILE_CORE)
+(define GLWT_PROFILE_COMPATIBILITY #x10)
+(bind-val GLWT_PROFILE_COMPATIBILITY i32 GLWT_PROFILE_COMPATIBILITY)
+(define GLWT_PROFILE_DEBUG #x20)
+(bind-val GLWT_PROFILE_DEBUG i32 GLWT_PROFILE_DEBUG)
+(define GLWT_PROFILE_ROBUSTNESS #x40)
+(bind-val GLWT_PROFILE_ROBUSTNESS i32 GLWT_PROFILE_ROBUSTNESS)
+(define GLWT_PROFILE_MASK #xf0)
+(bind-val GLWT_PROFILE_MASK i32 GLWT_PROFILE_MASK)
+
+;; typedef struct GLWTConfig
+;; {
+;;     0,1,2,3   int red_bits, green_bits, blue_bits, alpha_bits;
+;;     4,5       int depth_bits, stencil_bits;
+;;     6,7       int samples, sample_buffers;
+;;     8         int api;
+;;     9,10      int api_version_major, api_version_minor;
+;; } GLWTConfig;
+
+(bind-type GLWTConfig <i32,i32,i32,i32,i32,i32,i32,i32,i32,i32,i32>)
+
+(bind-alias GLWTWindow i8)
+
+;; typedef enum GLWTWindowEventType {
+;;     GLWT_WINDOW_NO_EVENT = 0,
+;;     GLWT_WINDOW_CLOSE,
+;;     GLWT_WINDOW_EXPOSE,
+;;     GLWT_WINDOW_RESIZE,
+;;     GLWT_WINDOW_SHOW,
+;;     GLWT_WINDOW_HIDE,
+;;     GLWT_WINDOW_FOCUS_IN,
+;;     GLWT_WINDOW_FOCUS_OUT,
+;;     GLWT_WINDOW_KEY_UP,
+;;     GLWT_WINDOW_KEY_DOWN,
+;;     GLWT_WINDOW_BUTTON_UP,
+;;     GLWT_WINDOW_BUTTON_DOWN,
+;;     GLWT_WINDOW_MOUSE_MOTION,
+;;     GLWT_WINDOW_MOUSE_ENTER,
+;;     GLWT_WINDOW_MOUSE_LEAVE,
+;;     GLWT_WINDOW_CHARACTER_INPUT,
+;; } GLWTWindowEventType;
+
+(bind-alias GLWTWindowEventType enum)
+(bind-val GLWT_WINDOW_NO_EVENT GLWTWindowEventType 0)
+(bind-val GLWT_WINDOW_CLOSE GLWTWindowEventType 1)
+(bind-val GLWT_WINDOW_EXPOSE GLWTWindowEventType 2)
+(bind-val GLWT_WINDOW_RESIZE GLWTWindowEventType 3)
+(bind-val GLWT_WINDOW_SHOW GLWTWindowEventType 4)
+(bind-val GLWT_WINDOW_HIDE GLWTWindowEventType 5)
+(bind-val GLWT_WINDOW_FOCUS_IN GLWTWindowEventType 6)
+(bind-val GLWT_WINDOW_FOCUS_OUT GLWTWindowEventType 7)
+(bind-val GLWT_WINDOW_KEY_UP GLWTWindowEventType 8)
+(bind-val GLWT_WINDOW_KEY_DOWN GLWTWindowEventType 9)
+(bind-val GLWT_WINDOW_BUTTON_UP GLWTWindowEventType 10)
+(bind-val GLWT_WINDOW_BUTTON_DOWN GLWTWindowEventType 11)
+(bind-val GLWT_WINDOW_MOUSE_MOTION GLWTWindowEventType 12)
+(bind-val GLWT_WINDOW_MOUSE_ENTER GLWTWindowEventType 13)
+(bind-val GLWT_WINDOW_MOUSE_LEAVE GLWTWindowEventType 14)
+(bind-val GLWT_WINDOW_CHARACTER_INPUT GLWTWindowEventType 15)
+
+;; typedef struct GLWTWindowEvent
+;; {
+;;     GLWTWindow *window;
+
+;;     GLWTWindowEventType type;
+
+;;     union {
+;;         struct { int width, height; } resize;
+;;         struct { int keysym, scancode, mod; } key;
+;;         struct { int x, y, buttons; } motion;
+;;         struct { int x, y, button, mod; } button;
+;;         struct { unsigned int unicode; } character;
+;;         struct { int dummy; } dummy;
+;;     };
+;; } GLWTWindowEvent;
+
+;; too hard to do unions!  just use it as a void pointer
+(bind-alias GLWTWindowEvent i8)
+
+;; int glwtInit( const GLWTConfig *config, void (*error_callback)(const char *msg, void *userdata), void *userdata );
+(bind-lib libglwt glwtInit [i32,GLWTConfig*,i8*,i8*]*)
+
+;; void glwtQuit();
+(bind-lib libglwt glwtQuit [void]*)
+
+;; GLWTWindow *glwtWindowCreate( const char *title, int width, int height, GLWTWindow *share, void (*win_callback)(GLWTWindow *window, const GLWTWindowEvent *event, void *userdata), void *userdata );
+(bind-lib libglwt glwtWindowCreate [GLWTWindow*,i8*,i32,i32,GLWTWindow*,i8*,i8*]*)
+(bind-lib libglwt glwtWindowDestroy [void,GLWTWindow*]*)
+
+(bind-lib libglwt glwtWindowClosed [i32,GLWTWindow*]*)
+(bind-lib libglwt glwtWindowShow [void,GLWTWindow*,i32]*)
+(bind-lib libglwt glwtWindowSetTitle [void,GLWTWindow*,i8*]*)
+
+(bind-lib libglwt glwtMakeCurrent [i32,GLWTWindow*]*)
+(bind-lib libglwt glwtSwapBuffers [i32,GLWTWindow*]*)
+(bind-lib libglwt glwtSwapInterval [i32,GLWTWindow*,i32]*)
+(bind-lib libglwt glwtWindowGetSize [i32,GLWTWindow*,i32*,i32*]*)
+
+(bind-lib libglwt glwtEventHandle [i32,i32]*)
+(bind-lib libglwt glwtGetTime [double]*)
+
+;; #ifdef __cplusplus
+;; }
+;; #endif
+
+;; #endif
+
+;; some xtlang helper code
+
+(bind-func glwt_error_callback
+  (lambda (msg:i32 userdata:i8*)
+    (printf "GLWT Error: %s\n" msg)))
+
+(bind-func glwt_init
+  (lambda ()
+    (glwtInit null (llvm_get_function_ptr "glwt_error_callback_native") null)))
+
+(bind-func glwt_init_api_version
+  (lambda (api:i32 api_version_major:i32 api_version_minor:i32)
+    (glwtInit (GLWTConfig 0 0 0 0 0 0 0 0 api api_version_major api_version_minor)
+              (llvm_get_function_ptr "glwt_error_callback_native")
+              null)))
+
+(bind-func glwt_quit
+  (lambda ()
+    (glwtQuit)))
+
+(bind-func glwt_window_create
+  (lambda (width height)
+    (glwtWindowCreate "Extempore OpenGL Window" width height null null null)))
+
+(bind-func glwt_window_destroy
+  (lambda (window:GLWTWindow*)
+    (glwtWindowDestroy window)))
+
+(bind-func glwt_window_closed
+  (lambda (window:GLWTWindow*)
+    (glwtWindowClosed window)))
+
+(bind-func glwt_window_show
+  (lambda (window:GLWTWindow* show:i32)
+    (glwtWindowShow window show)))
+
+(bind-func glwt_window_set_title
+  (lambda (window:GLWTWindow* title:i8*)
+    (glwtWindowSetTitle window title)))
+
+(bind-func glwt_make_current
+  (lambda (window:GLWTWindow*)
+    (glwtMakeCurrent window)))
+
+(bind-func glwt_swap_buffers
+  (lambda (window:GLWTWindow*)
+    (glwtSwapBuffers window)))
+
+(bind-func glwt_swap_interval
+  (lambda (window:GLWTWindow* interval:i32)
+    (glwtSwapInterval window interval)))
+
+;; probably don't need this one, since the scheme wrapper doesn't work
+;; anyway. still, it's the only unwrapped function here.
+(bind-func glwt_window_get_size
+  (lambda (window:GLWTWindow* width:i32* height:i32*)
+    (glwtWindowGetSize window width height)))
+
+(define *xtmlib-glwt-loaded* #t)
