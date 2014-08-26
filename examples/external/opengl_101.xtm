@@ -9,11 +9,20 @@
 
 ;;; Code:
 
-(sys:load "libs/contrib/glfw3.xtm")
+(sys:load "libs/external/gl2.xtm")
+(sys:load "libs/contrib/glwt.xtm")
 
-(xtgl_init)
-(define *xtgl-window* (xtgl_create_window_with_size_compat 1024 768))
-(xtgl_make_context_current *xtgl-window*)
+(glwt_init_api_version GLWT_PROFILE_COMPATIBILITY 2 1)
+
+(define width 1920.0)
+(define height 1080.0)
+
+(define *glwt-window* (glwt_window_create (real->integer width)
+                                          (real->integer height)))
+
+(glwt_window_show *glwt-window* 1)
+(glwt_make_current *glwt-window* 1)
+(glwt_swap_interval *glwt-window* 1)
 
 (bind-func my-gl-loop
   (let ((size 0.01))
@@ -37,7 +46,9 @@
 (define run-my-opengl-loop
   (lambda (degree)
     (my-gl-loop degree)
-    (xtgl_swap_buffers *xtgl-window*)
-    (callback (+ (now) 500) 'run-my-opengl-loop (+ degree .005))))
+    (glwt_swap_buffers *glwt-window*)
+    (if (<> (glwt_window_closed *glwt-window*) 1)
+        (callback (+ (now) (/ *second* 30)) 'run-my-opengl-loop (+ degree .005))
+        (print "Window closed: finishing my-opengl-loop\n"))))
 
 (run-my-opengl-loop 70.0)
