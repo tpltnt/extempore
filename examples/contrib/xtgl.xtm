@@ -1,0 +1,49 @@
+;;; xtgl.xtm:examples -- examples for libxtgl
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libxtgl
+
+;;; Commentary:
+
+;; Basic OpenGL window/context creation. Works on OSX, Linux and Windows
+
+;;; Code:
+
+(sys:load "libs/external/gl2.xtm")
+(sys:load "libs/contrib/xtgl.xtm")
+
+(define width 640)
+(define height 480)
+(define fullscreen 0) ;; make this 1 if you want fullscreen
+
+(define *xtgl-context* (xtgl_create_context 0 0 width height "Extempore OpenGL Window" fullscreen))
+
+;; this is copy-pasted from examples/external/opengl_101.xtm
+
+(bind-func my-gl-loop
+  (let ((size 0.01))
+    (lambda (degree)
+      (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
+      (glLoadIdentity)
+      (glTranslatef 0.0 -1.0 0.0)
+      (let ((i 0.0))
+	(dotimes (i 1000.0)
+	  (glTranslatef (/ i 2000.0) 0.0 0.0)
+	  (glColor3f 1.0 (/ i 1500.0) (/ (- 1000. i) 500.0))
+	  (glRotatef degree (/ i 200000.0) 0.5 0.0)
+	  (glBegin GL_QUADS)
+	  (glVertex2f 0.0 0.0)
+	  (glVertex2f (* -5. size) 0.0)
+	  (glVertex2f size (* 2. size))
+	  (glVertex2f 0.0 size)
+	  (glEnd))))))
+
+;; standard impromptu callback                                                
+(define run-my-opengl-loop
+  (lambda (degree)
+    (my-gl-loop degree)
+    (xtgl_swap_buffers *xtgl-context*)
+    (callback (+ (now) (/ *second* 30)) 'run-my-opengl-loop (+ degree .005))))
+
+(run-my-opengl-loop 70.0)

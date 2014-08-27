@@ -1,0 +1,63 @@
+;;; xtgl.xtm -- a minimal OpenGL context management library
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: libxtgl
+
+;;; Commentary:
+
+;; This library (available from https://github.com/benswift/TODO) used
+;; to be part of the Extempore executable, but was stripped out and
+;; put into it's own shared lib. See the examples/contrib/xtgl.xtm
+;; file to see it in action
+
+;;; Code:
+
+;; set up the current dylib name and path (for precompilation)
+
+(sys:precomp:set-dylib-name-info
+ 'libxtgl
+ (cond ((string=? (sys:platform) "OSX")
+        "/Users/ben/Code/src/XTGL/libxtgl.dylib")
+       ((string=? (sys:platform) "Linux")
+        "libxtgl.so")
+       ((string=? (sys:platform) "Windows")
+        "libxtgl.dll")
+       (else
+        (begin (print-with-colors 'red 'default #f (print "Error"))
+               (print ": unsupported platform ")
+               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
+
+;; load the dylib               
+(define libxtgl
+  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
+
+(bind-alias XTGLcontext i8)
+(bind-alias XTGLevent i8)
+
+(bind-lib libxtgl xtglCreateContext [XTGLcontext*,i32,i32,i32,i32,i8*,i32]*)
+(bind-lib libxtgl xtglCreateCoreContext [XTGLcontext*,i32,i32,i32,i32,i8*,i32]*)
+(bind-lib libxtgl xtglSwapBuffers [void,XTGLcontext*]*)
+(bind-lib libxtgl xtglMakeContextCurrent [void,XTGLcontext*]*)
+(bind-lib libxtgl xtglGetEvent [void,XTGLcontext*,XTGLevent*]*)
+
+(bind-func xtgl_create_context
+  (lambda (x y w h title fullscreen)
+    (xtglCreateContext x y w h title fullscreen)))
+
+(bind-func xtgl_create_core_context
+  (lambda (x y w h title fullscreen)
+    (xtglCreateCoreContext x y w h title fullscreen)))
+
+(bind-func xtgl_swap_buffers
+  (lambda (ctx)
+    (xtglSwapBuffers ctx)))
+
+(bind-func xtgl_make_context_current
+  (lambda (ctx)
+    (xtglMakeContextCurrent ctx)))
+
+(bind-func xtgl_get_event
+  (lambda (ctx event)
+    (xtglGetEvent ctx event)))
+
