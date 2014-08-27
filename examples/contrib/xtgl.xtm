@@ -17,7 +17,7 @@
 (define height 480)
 (define fullscreen 0) ;; make this 1 if you want fullscreen
 
-(define *xtgl-context* (xtgl_create_context 0 0 width height "Extempore OpenGL Window" fullscreen))
+(define *xtgl-context* (xtgl_create_context 0 0 width height ":0.0" fullscreen))
 
 ;; this is copy-pasted from examples/external/opengl_101.xtm
 
