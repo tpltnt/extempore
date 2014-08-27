@@ -278,6 +278,8 @@
 (bind-lib libglwt glwtSwapInterval [i32,GLWTWindow*,i32]*)
 (bind-lib libglwt glwtWindowGetSize [i32,GLWTWindow*,i32*,i32*]*)
 
+(bind-lib libglwt glwtFullscreen [void,GLWTWindow*,i32]*)
+
 (bind-lib libglwt glwtEventHandle [i32,i32]*)
 (bind-lib libglwt glwtGetTime [double]*)
 
@@ -344,5 +346,9 @@
 (bind-func glwt_window_get_size
   (lambda (window:GLWTWindow* width:i32* height:i32*)
     (glwtWindowGetSize window width height)))
+
+(bind-func glwt_fullscreen
+  (lambda (window:GLWTWindow* mode:i32)
+    (glwtFullscreen window mode)))
 
 (define *xtmlib-glwt-loaded* #t)
