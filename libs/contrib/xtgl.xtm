@@ -20,7 +20,7 @@
  (cond ((string=? (sys:platform) "OSX")
         "/Users/ben/Code/src/XTGL/libxtgl.dylib")
        ((string=? (sys:platform) "Linux")
-        "libxtgl.so")
+        "/home/ben/Code/src/XTGL/libxtgl.so")
        ((string=? (sys:platform) "Windows")
         "libxtgl.dll")
        (else
