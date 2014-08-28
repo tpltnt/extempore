@@ -21,7 +21,7 @@
 
 ;; this is copy-pasted from examples/external/opengl_101.xtm
 
-(bind-func my-gl-loop
+(bind-func my_gl_loop
   (let ((size 0.01))
     (lambda (degree)
       (glClear (+ GL_COLOR_BUFFER_BIT GL_DEPTH_BUFFER_BIT))
@@ -42,7 +42,7 @@
 ;; standard impromptu callback                                                
 (define run-my-opengl-loop
   (lambda (degree)
-    (my-gl-loop degree)
+    (my_gl_loop degree)
     (xtgl_swap_buffers *xtgl-context*)
     (callback (+ (now) (/ *second* 30)) 'run-my-opengl-loop (+ degree .005))))
 
