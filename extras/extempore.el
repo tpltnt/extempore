@@ -109,6 +109,8 @@
      "(define\\(\\|-macro\\)\\s-+(?\\(\\S-+\\)\\_>" 2)
     ("instrument"
      "(define-\\(instrument\\|sampler\\)\\s-+\\(\\S-+\\)\\_>" 2)
+    ("lib" ;; bind-lib
+     "(bind-lib\\s-+\\S-+\\s-+\\(\\S-+\\)\\_>" 1)
     ("type"
      "(bind-\\(type\\|alias\\)\\s-+\\(\\S-+\\)\\_>" 2)
     ("type" ;; bind-lib-type
@@ -1562,7 +1564,7 @@ You shouldn't have to modify this list directly, use
 
 (defvar exvis-osc-client nil
   "OSC client used for sending messages to `exvis-osc-host'")
-(defvar exvis-osc-host (cons "localhost" 9880)
+(defvar exvis-osc-host (cons "127.0.0.1" 9880)
   "(HOST . PORT) pair")
 
 (define-minor-mode exvis-mode
@@ -1594,11 +1596,14 @@ backend in Extempore."
 
 ;; here are the different OSC messages in the spec
 
-;; (defun exvis-send-selection-message (selections)
-;;   (apply #'osc-send-message exvis-osc-client
-;;          "/interface/selection"
-;;          (length selections)
-;;          selections))
+;; get this file from https://github.com/Sarcasm/posn-on-screen/blob/master/posn-on-screen.el
+(load (concat user-extempore-directory "extras/posn-on-screen.el") :noerror)
+
+(defun exvis-send-cursor-message (cursor-pos pos-screen-min pos-screen-max pos-x pos-y)
+  (if exvis-osc-client
+      (osc-send-message exvis-osc-client
+                        "/interface/cursor"
+                        cursor-pos pos-screen-min pos-screen-max pos-x pos-y)))
 
 (defun exvis-send-code-message (code)
   (if exvis-osc-client
@@ -1631,10 +1636,16 @@ backend in Extempore."
   (let (deactivate-mark)
     (if (and (equal major-mode 'extempore-mode)
              (symbolp this-command)
-             (string-match (regexp-opt '("sp-" "-line" "-word" "-char" "insert"))
+             (string-match (regexp-opt '("sp-" "-line" "-word" "-char" "end-of-" "beginning-of-" "insert"))
                            (symbol-name this-command)))
-        (exvis-send-evaluation-message
-         (buffer-substring-no-properties (point-min) (point-max))))))
+        (let ((posn (get-point-pixel-position)))
+          (exvis-send-cursor-message (point)
+                                     (window-start)
+                                     (window-end)
+                                     (car posn)
+                                     (cdr posn))
+          (exvis-send-code-message
+           (buffer-substring-no-properties (point-min) (point-max)))))))
 
 (defun exvis-advise-functions ()
   "Advise (via defadvice) the relevant functions to send the OSC messages"
@@ -2183,7 +2194,7 @@ If you don't want to be prompted for this name each time, set the
   (interactive
    (list (read-from-minibuffer "libname: ")
          (read-from-minibuffer "tokens to ignore: ")))
-  (while (re-search-forward (format "^%s[ ]?\\(?:const \\|unsigned \\|extern \\)*\\([\\*[:word:]]*\\) \\([\\*[:word:]]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
+  (while (re-search-forward (format "^%s[ ]?\\(?:const \\|unsigned \\|extern \\)*\\([\\*[:word:]_]*\\) \\([\\*[:word:]_]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
                                     (if (string= ignore-tokens "")
                                         ""
                                       (concat (regexp-opt (split-string ignore-tokens " " t) "?"))))

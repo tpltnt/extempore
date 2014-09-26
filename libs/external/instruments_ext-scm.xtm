@@ -14,6 +14,11 @@
                            ,(if (> print? 0) 1 0)))))
 
 
+(define-macro (load-sample inst fname index . bank)
+  (if (null? bank)
+      `(set-sampler-index ,inst ,fname ,index 0 0 0 0)
+      `(set-sampler-index ,inst ,fname ,index 0 0 ,(car bank) 0)))
+
 ;; (set-sample-offset sampler 60 50000)
 ;; this would offset the sample at index 60 by 50000 samples
 (define-macro (set-sample-offset inst index offset)
@@ -66,12 +71,15 @@
                                                      note_starts free_note
                                                      (if (< nargs 2)
                                                          (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
-                                                                       (aref-ptr samples_channels bank) new_idx 0.5 0.0)
-                                                         (if (= nargs 2)
+                                                                       (aref-ptr samples_channels bank) new_idx 0.5 0.0 #f)
+                                                         (if (< nargs 3)
                                                              (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
-                                                                           (aref-ptr samples_channels bank) new_idx (pref dargs 1) 0.0)
-                                                             (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
-                                                                           (aref-ptr samples_channels bank) new_idx (pref dargs 1) (pref dargs 2))))
+                                                                           (aref-ptr samples_channels bank) new_idx (pref dargs 1) 0.0 #f)
+                                                             (if (= nargs 3)
+                                                                 (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank)
+                                                                               (aref-ptr samples_channels bank) new_idx (pref dargs 1) (pref dargs 2) #f)
+                                                                 (,note_kernel (aref-ptr samples bank) (aref-ptr samples_length bank) (aref-ptr samples_offsets bank) (aref-ptr samples_channels bank) new_idx (pref dargs 1) (pref dargs 2) (if (< (pref dargs 3) 0.01) #f #t)))))
+                                                         
                                                      note_zone))
                                       (pset! note_starts free_note start)
                                       (pop_zone))
@@ -95,7 +103,7 @@
 ;; must be stereo samples of type wav aif or ogg
 (define-macro (load-sampler sampler path . args)
   (let ((bank (if (> (length args) 0) (car args) 0))
-        (parser (if (> (length args) 1) (cadr args) 'parse-sample-names-1))
+        (parser (if (> (length args) 1) (cadr args) 'parse-sample-names))
         (midioffset (if (> (length args) 2) (caddr args) 0)))
     `(let ((cnt 0)
            (file-list (sys:directory-list ,(sys:expand-path path))))
@@ -119,6 +127,7 @@
        (println)
        )))
 
+(define load-samples load-sampler)
 
 (define-macro (clear-sampler sampler . args)
   (let ((bank (if (> (length args) 0) (car args) 0)))
@@ -149,7 +158,7 @@
                  (cond ((string=? (caddr result) "#") 1)
                        ((string=? (caddr result) "b") -1)
                        (else 0))))))))
-
+    
 ;; this will match e.g. 60.aiff (where 60 is the midi note number)
 (define parse-sample-names-1
   (lambda (file-list)
@@ -181,6 +190,16 @@
                        (note-name-to-midi-number (cadr result)) ; midi note number
                        0                                        ; offset
                        0))))                                    ; length (0 for whole sample)
+         file-list)))
+
+(define parse-sample-names
+  (lambda (file-list)
+    (map (lambda (fname)
+           (if (regex:match? fname "([0-9][0-9][0-9]*)\.(wav|WAV|aif|AIF|aiff|AIFF|ogg|OGG)$")
+               (car (parse-sample-names-1 (list fname)))
+               (if (regex:match? fname "^.*([abcdefgABCDEFG][#b]?[0-9]).*\.(wav|WAV|aif|AIF|aiff|AIFF|ogg|OGG)$")
+                   (car (parse-sample-names-2 (list fname)))
+                   #f)))
          file-list)))
 
 
@@ -440,10 +459,10 @@
                              (real->integer ,index)
                              (real->integer ,offset)))))
 
-;; must be stereo samples of type wav aif or ogg
+
 (define-macro (load-sampler sampler path . args)
   (let ((bank (if (> (length args) 0) (car args) 0))
-        (parser (if (> (length args) 1) (cadr args) 'parse-sample-names-1))
+        (parser (if (> (length args) 1) (cadr args) 'parse-sample-names))
         (midioffset (if (> (length args) 2) (caddr args) 0)))
     `(let ((cnt 0)
            (file-list (sys:directory-list ,(sys:expand-path path))))
@@ -466,6 +485,7 @@
        (ascii-print-color 0 7 10)
        (println)
        )))
+
 
 (define-macro (clear-sampler sampler . args)
   (let ((bank (if (> (length args) 0) (car args) 0)))
@@ -526,6 +546,17 @@
                        (note-name-to-midi-number (cadr result)) ; midi note number
                        0                                        ; offset
                        0))))                                    ; length (0 for whole sample)
+         file-list)))
+
+
+(define parse-sample-names
+  (lambda (file-list)
+    (map (lambda (fname)
+           (if (regex:match? fname \"([0-9][0-9][0-9]*)\.(wav|WAV|aif|AIF|aiff|AIFF|ogg|OGG)$\")
+               (car (parse-sample-names-1 (list fname)))
+               (if (regex:match? fname \"^.*([abcdefgABCDEFG][#b]?[0-9]).*\.(wav|WAV|aif|AIF|aiff|AIFF|ogg|OGG)$\")
+                   (car (parse-sample-names-2 (list fname)))
+                   #f)))
          file-list)))
 
 
