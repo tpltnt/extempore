@@ -48,6 +48,9 @@
 #include <Cocoa/Cocoa.h>
 #include <AppKit/AppKit.h>
 #endif
+#ifdef TARGET_OS_LINUX
+#include <X11/Xlib.h>
+#endif
 
 
 // WARNING EVIL WINDOWS TERMINATION CODE!
@@ -267,6 +270,9 @@ int main(int argc, char** argv)
     extemp::SchemeREPL* primary_repl = new extemp::SchemeREPL(primary_name);
     primary_repl->connectToProcessAtHostname(host,primary_port);
 
+#ifdef TARGET_OS_LINUX
+    XInitThreads(); // make Xlib thread-safe
+#endif
 
 #ifdef TARGET_OS_MAC
     [[NSApplication sharedApplication] run];
