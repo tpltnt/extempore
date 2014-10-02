@@ -11,18 +11,13 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/soil.xtm")
+(sys:load "libs/soil.xtm" 'quiet)
 (sys:load-preload-check 'soil)
 (define *xtmlib-soil-loaded* #f)
 
-(set! *sys:precomp:suppress-precomp* #t)
-(sys:load "libs/std.xtm")
-(sys:precomp:insert-sexp '(sys:load "libs/std.xtm"))
-(sys:load "libs/core/std.xtm")
-(sys:load "libs/gl2.xtm")
-(sys:precomp:insert-sexp '(sys:load "libs/gl2.xtm"))
-(sys:load "libs/external/gl2.xtm")
-(set! *sys:precomp:suppress-precomp* #f)
+(sys:precomp:suppress-precomp-do
+ (sys:load "libs/core/std.xtm"))
+(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
 
 ;; load soil library
 (sys:precomp:insert-header "xtmsoil")

@@ -18,8 +18,12 @@
 
 ;;; Code:
 
+(sys:load "libs/jansson.xtm" 'quiet)
 (sys:load-preload-check 'jansson)
-(define *xtmlib-jansson-loaded* #f)
+
+(sys:precomp:suppress-precomp-do
+ (sys:load "libs/core/std.xtm"))
+(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
 
 ;; set up the current dylib name and path (for precompilation)
 (sys:precomp:set-dylib-name-info
@@ -38,7 +42,11 @@
 ;; load the dylib               
 (define libjansson
   (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
- 
+
+(define *xtmlib-jansson-loaded* #f)
+
+(sys:precomp:insert-header "xtmjansson")
+
 ;; the json_type enums
 (bind-val JSON_OBJECT enum 0)
 (bind-val JSON_ARRAY enum 1)
@@ -133,34 +141,35 @@
   (lambda (json:json_t*)
     (tref json 0)))
 
-(bind-func json_is_object
+(bind-func json_object_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_OBJECT)))
-(bind-func json_is_array
+
+(bind-func json_array_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_ARRAY)))
 
-(bind-func json_is_string
+(bind-func json_string_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_STRING)))
 
-(bind-func json_is_integer
+(bind-func json_integer_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_INTEGER)))
 
-(bind-func json_is_real
+(bind-func json_real_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_REAL)))
 
-(bind-func json_is_true
+(bind-func json_true_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_TRUE)))
 
-(bind-func json_is_false
+(bind-func json_false_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_FALSE)))
 
-(bind-func json_is_null
+(bind-func json_null_p
   (lambda (json:json_t*)
     (= (json_typeof json) JSON_NULL)))
 
@@ -189,9 +198,11 @@
 
 (bind-func json_object_print_keys
   (lambda (object:json_t*)
-    (if (json_is_object object)
+    (if (json_object_p object)
         (json_obj_iterator object (json_object_iter object))
         (begin (printf "Error: argument is not a JSON object.%\n") 0))
     0))
 
 (define *xtmlib-jansson-loaded* #t)
+
+(sys:precomp:insert-footer "xtmjansson")
