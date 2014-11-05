@@ -1,0 +1,29 @@
+(sys:load "libs/contrib/glwt.xtm")
+
+(glwt_init)
+
+(define *glwt-window* (glwt_window_create))
+
+(glwt_window_show *glwt-window* 1)
+(glwt_make_current *glwt-window* 1)
+(glwt_swap_interval *glwt-window* 1)
+
+(bind-func glwt_window_print_size
+  (lambda (window:GLWTWindow*)
+    (let ((w:i32* (salloc))
+          (h:i32* (salloc)))
+      (glwtWindowGetSize window w h)
+      (println "w:" (pref w 0) "h:" (pref h 0)))))
+
+(glwt_window_print_size *glwt-window*)
+
+(sys:load "libs/core/audio_dsp.xtm")
+
+(bind-func dsp:DSP
+  (let ((saw (saw_mc_c 0.))
+        (osc (osc_mc_c 0.)))
+    (lambda (in time chan dat)
+      (* .1 (+ (* 1. (saw chan .5 300.))
+               (* 0. (osc chan .5 300.)))))))
+
+(dsp:set! dsp)
