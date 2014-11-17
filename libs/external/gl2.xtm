@@ -17,16 +17,13 @@
 
 ;; Constants
 
-(sys:load "libs/gl2.xtm")
+(sys:load "libs/gl2.xtm" 'quiet)
 (sys:load-preload-check 'gl2)
 (define *xtmlib-gl2-loaded* #f)
 
-;; first make sure that math.xtm is loaded
-(set! *sys:precomp:suppress-precomp* #t)
-(sys:load "libs/std.xtm")
-(sys:precomp:insert-sexp '(sys:load "libs/std.xtm"))
-(sys:load "libs/core/std.xtm")
-(set! *sys:precomp:suppress-precomp* #f)
+(sys:precomp:suppress-precomp-do
+ (sys:load "libs/std.xtm"))
+(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
 
 (sys:precomp:insert-header "xtmgl2")
 
