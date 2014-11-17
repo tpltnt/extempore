@@ -1,0 +1,13 @@
+;;; all.xtm -- all the tests!
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: 
+
+;;; Commentary:
+
+;; basically, this includes all-core.xtm and all-external.xtm
+
+;;; Code:
+
+(sys:run-tests '("tests/core/adt.xtm" "tests/core/builtins.xtm" "tests/core/math.xtm" "tests/core/std.xtm" "tests/core/xtlang.xtm" "tests/external/fft.xtm") #t #t)

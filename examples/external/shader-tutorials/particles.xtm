@@ -1,0 +1,89 @@
+(sys:load "examples/external/shader-tutorials/shader-setup.xtm")
+
+(define np 100)
+(bind-val np i32 np) ;; be careful - these values won't necessarily
+                     ;; stay in sync
+
+(bind-val particles float* (* np 4)) ;; <x,y,vx,vy>
+;; (bind-val colours float* (* np 3))
+
+(bind-func init_particles
+  (lambda (np)
+    ;; GL_points version
+    (let ((i 0))
+      (dotimes (i (* np 4))
+        (pset! particles (+ (* i 4) 0) (random -1. 1.))
+        (pset! particles (+ (* i 4) 1) (random -1. 1.))
+        (pset! particles (+ (* i 4) 2) (random -1. 1.))
+        (pset! particles (+ (* i 4) 3) (random -1. 1.))))))
+
+(init_particles np)
+
+;; (bind-func init_colours
+;;   (lambda (np)
+;;     ;; GL_points version
+;;     (let ((i 0))
+;;       (dotimes (i (* np 3))
+;;         (pset! colours (+ (* i 3) 0) (random -1. 1.))
+;;         (pset! colours (+ (* i 3) 1) (random -1. 1.))
+;;         (pset! colours (+ (* i 3) 2) (random -1. 1.))))))
+
+;; (init_colours np)
+
+(define particles-shader
+  (create_shader (file->string "examples/external/shader-tutorials/particles.vert")
+                 (file->string "examples/external/shader-tutorials/particles.frag")))
+
+(bind-val particles_vbo VBO*)
+(bind-val particles_vao VAO*)
+(bind-val star_texture i32)
+
+;; (call-as-xtlang (println particles_vbo))
+;; (call-as-xtlang (print particles_vao))
+;; (call-as-xtlang (println "particles_vbo:" particles_vbo "particles_vao:" particles_vao))
+
+(bind-func init_gl_objects
+  (lambda ()
+    (glEnable GL_PROGRAM_POINT_SIZE)
+    (set! particles_vao (create_vao) np)
+    (set! particles_vbo (create_vbo particles (* 4 np)))
+    (bind_attribute particles_vao particles_vbo 0 2 GL_FLOAT 16 0)
+    (bind_attribute particles_vao particles_vbo 1 2 GL_FLOAT 16 8)
+    (set! star_texture (gl_load_image "assets/images/star.png" 0))))
+
+(init_gl_objects)
+
+(bind-func bind_texture0
+  (lambda (tex uniform_location)
+    (glActiveTexture GL_TEXTURE0)
+    (glBindTexture GL_TEXTURE_2D star_texture)
+    (glUniform1i uniform_location tex)
+    (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE)
+    (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE)
+    (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+    (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)))
+
+(bind-func draw
+  (lambda (program:i32)
+    (println "checkpoint" 0)
+    (glUseProgram program)
+    (println "checkpoint" 1)
+    (bind_texture0 star_texture (glGetUniformLocation program "texStar"))
+    (println "checkpoint" 2)
+    (glClear GL_COLOR_BUFFER_BIT)
+    (println "checkpoint" 9)
+    (draw_vertex_array particles_vao GL_POINTS 0 np)
+    (println "checkpoint" 10)
+    void))
+
+(define gl-loop
+  (lambda (time delta-t)
+    (draw particles-shader)
+    (gl:swap-buffers *gl-window*)
+    (println 'time: time)
+    (callback (+ time (* *second* delta-t) 0.5)
+              'gl-loop
+              (+ time (* *second* delta-t)) 
+              delta-t)))
+
+(gl-loop (now) 1)

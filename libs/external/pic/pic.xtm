@@ -2,7 +2,7 @@
 
 ;; Author: Ben Swift
 ;; Keywords: extempore
-;; Required dylibs: libcpic2.dylib
+;; Required dylibs: libpic2.dylib
 
 ;;; Commentary:
 
@@ -11,7 +11,7 @@
 ;; particle-in-cell plasma physics simulation
 
 ;; To use this library in Extempore, first get the (slightly modified)
-;; cpic2 code from
+;; basic pic2 serial codes from
 
 ;; https://github.com/benswift/pic2
 
@@ -26,48 +26,48 @@
 
 ;; set up the current dylib name and path (for precompilation)
 (sys:precomp:set-dylib-name-info
- 'libcpic2
+ 'libpic2
  (cond ((string=? (sys:platform) "OSX")
-        "libcpic2.dylib")
+        "libpic2.dylib")
        ((string=? (sys:platform) "Linux")
-        "libcpic2.so")
+        "libpic2.so")
        ((string=? (sys:platform) "Windows")
-        "libcpic2.dll")
+        "libpic2.dll")
        (else
         (begin (print-with-colors 'red 'default #f (print "Error"))
                (print ": unsupported platform ")
                (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
 
 ;; load the dylib
-(define libcpic2
+(define libpic2
   (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
 
 (bind-type timeval <i64,i64>) ;; <time_t,suseconds_t>
 
 ;; from pic2.h
 
-(bind-lib libcpic2 dtimer [void,double*,timeval*,i32]*)
-(bind-lib libcpic2 main [i32,i32,i8**]*)
+(bind-lib libpic2 dtimer [void,double*,timeval*,i32]*)
+(bind-lib libpic2 main [i32,i32,i8**]*)
 
 ;; from push2.h
 
-(bind-lib libcpic2 ranorm [double]*)
-(bind-lib libcpic2 randum [double]*)
-(bind-lib libcpic2 cdistr2 [void,float*,float,float,float,float,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cgpush2l [void,float*,float*,float,float,float*,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cdgpush2l [void,double*,double*,double,double,double*,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cgpost2l [void,float*,float*,float,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cdsortp2yl [void,float*,float*,i32*,i32,i32,i32]*)
-(bind-lib libcpic2 ccguard2l [void,float*,i32,i32,i32,i32]*)
-(bind-lib libcpic2 caguard2l [void,float*,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cpois22 [void,cpxf*,cpxf*,i32,cpxf*,float,float,float,float*,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cwfft2rinit [void,i32*,cpxf*,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cfft2rxx [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cfft2rxy [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cfft2r2x [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cfft2r2y [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cwfft2rx [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32]*)
-(bind-lib libcpic2 cwfft2r2 [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 ranorm [double]*)
+(bind-lib libpic2 randum [double]*)
+(bind-lib libpic2 cdistr2 [void,float*,float,float,float,float,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cgpush2l [void,float*,float*,float,float,float*,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cdgpush2l [void,double*,double*,double,double,double*,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cgpost2l [void,float*,float*,float,i32,i32,i32,i32]*)
+(bind-lib libpic2 cdsortp2yl [void,float*,float*,i32*,i32,i32,i32]*)
+(bind-lib libpic2 ccguard2l [void,float*,i32,i32,i32,i32]*)
+(bind-lib libpic2 caguard2l [void,float*,i32,i32,i32,i32]*)
+(bind-lib libpic2 cpois22 [void,cpxf*,cpxf*,i32,cpxf*,float,float,float,float*,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cwfft2rinit [void,i32*,cpxf*,i32,i32,i32,i32]*)
+(bind-lib libpic2 cfft2rxx [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cfft2rxy [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cfft2r2x [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cfft2r2y [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cwfft2rx [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32]*)
+(bind-lib libpic2 cwfft2r2 [void,cpxf*,i32,i32*,cpxf*,i32,i32,i32,i32,i32,i32]*)
 
 ;; main
 
@@ -85,6 +85,7 @@
 (bind-val tpart float*)
 (bind-val qe float*)
 (bind-val fxye float*)
+(bind-val field float*)
 (bind-val ffc cpxf*)
 (bind-val mixup i32*)
 (bind-val sct cpxf*)
@@ -97,7 +98,8 @@
     (let ((part_ptr (halloc (* 4 np)))  ;; idimp = 4
           (part2_ptr (halloc (* 4 np))) ;; idimp = 4
           (qe_ptr (halloc (* (+ nx 2) (+ ny 1))))
-          (fxye_ptr (halloc (* 2 (+ nx 2) (+ ny 1)))) ;; ndim = 2
+          (fxye_ptr (halloc (* 2 (+ nx 2) (+ ny 1))))
+          (field_ptr (halloc (* 4 (+ nx 2) (+ ny 1)))) ;; twice the size of fxye
           (ffc_ptr (halloc (* (/ nx 2) (/ ny 2))))
           (mixup_ptr (halloc (max2i32 (/ nx 2) ny)))
           (sct_ptr (halloc (/ (max2i32 nx ny) 2)))
@@ -109,6 +111,7 @@
       (set! part2 part2_ptr)
       (set! qe qe_ptr)
       (set! fxye fxye_ptr)
+      (set! field field_ptr)
       (set! ffc ffc_ptr)
       (set! mixup mixup_ptr)
       (set! sct sct_ptr)
@@ -122,6 +125,7 @@
     (free part2)
     (free qe)
     (free fxye)
+    (free field)
     (free ffc)
     (free mixup)
     (free sct)
@@ -187,11 +191,11 @@
 ;; need to set up the graphics context before we create the VBO or
 ;; it'll crash
 
-(define width 1920.0)
-(define height 1080.0)
-(bind-val width float 1920.0)
-(bind-val height float 1080.0)
-(define fullscreen #t)
+(define width 1024.0)
+(define height 768.0)
+(bind-val width float 1024.0)
+(bind-val height float 768.0)
+(define fullscreen #f)
 
 (define *gl-ctx* (gl:make-ctx ":0" fullscreen 0. 0. width height))
 
@@ -207,10 +211,10 @@
 
 (bind-func pic_step
   (let ( ;; parameters
-        (indx:i32 8) ;; this can be up to 9
-        (indy:i32 8) ;; this can be up to 9
-        (npx:i32 200) ;; this can be up to 3072
-        (npy:i32 200) ;; this can be up to 3072
+        (indx:i32 9) ;; this can be up to 9
+        (indy:i32 9) ;; this can be up to 9
+        (npx:i32 500) ;; this can be up to 3072
+        (npy:i32 500) ;; this can be up to 3072
         (ndim:i32 2)
         (tend:float 10.)
         (dt:float .1)
@@ -383,13 +387,13 @@
 
 ;; visualisation code
 
-(bind-val texture1 i32 0)
+(bind-val star_texture i32 0)
 
 (bind-func load-tex
   (lambda (tex_path id)
     (let ((t (gl_load_image tex_path id)))
-      (set! texture1 t)
-      (printf "texture: %d\n" texture1)
+      (set! star_texture t)
+      (printf "texture: %d\n" star_texture)
       void)))
 
 ;; 0 meaning load texture into new id
@@ -413,8 +417,8 @@ uniform float time;
 attribute vec2 pvel;
 
 void main() {
-   gl_PointSize = 6.+0.*length(pvel);
-   gl_FrontColor = vec4(1.,1.,.7+.3*cos(time),1.);
+   gl_PointSize = min(20.0, 5.*sqrt(length(pvel)));
+   gl_FrontColor = vec4(.2,pvel/2.,1.0);
    gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * (vec4(pvert.x/(nx/2.0),pvert.y/(nx/2.0),0.0,1.0) - vec4(1.,1.,0.,0.));
    //TexCoord = gl_MultiTexCoord0.st;
 }"
@@ -436,7 +440,7 @@ void main() {
    //gl_FragColor = gl_Color;
 }")
 
-(bind-func gl_draw
+(bind-func gl_draw_particles
   (let ((vert_loc:i32 -1)
         (vel_loc:i32 -1)
         (nx_loc:i32 -1)
@@ -478,7 +482,7 @@ void main() {
         (glActiveTexture GL_TEXTURE0)
         (glDisable GL_TEXTURE_RECTANGLE_ARB)
         (glEnable GL_TEXTURE_2D)
-        (glBindTexture GL_TEXTURE_2D texture1)
+        (glBindTexture GL_TEXTURE_2D star_texture)
         (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE)
         (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE)
         (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
@@ -508,16 +512,34 @@ void main() {
         (gl_print_error))
       1)))
 
-(define run-simulation
-  (lambda (time delta-t)
+(define run-pic
+  (lambda (delta-t)
     (let ((ntime (pic_step)))
       (if (= (modulo ntime 1000) 0)
           (println 'ntime: ntime)))
     ;; (draw_energy_hud)
-    (gl_draw (pic_step.nx))
+    (gl_draw_particles (pic_step.nx))
     (gl:swap-buffers *gl-ctx*)
-    (let ((next-time (max (+ time (* *second* delta-t)) (now))))
-      (callback next-time
-                'run-simulation
-                next-time
-                delta-t))))
+    (callback (+ (now) (* *second* delta-t))
+              'run-pic
+              delta-t)))
+
+(bind-func init_field_xy
+  (lambda (nx:i32)
+    (let ((ny nx)
+          (nxe (+ 2 nx))
+          (nye (+ 1 ny))
+          (i 0))
+      (dotimes (i (* nx ny))
+        (pset! field (+ 0 (* 4 i)) (convert (/ i nxe) float))
+        (pset! field (+ 1 (* 4 i)) (convert (% i nxe) float))))))
+
+(bind-func copy_fxye_to_field
+  (lambda (nx)
+    (let ((ny nx)
+          (nxe (+ 2 nx))
+          (nye (+ 1 nx))
+          (i 0))
+      (dotimes (i (* nxe nye))
+        (pset! field (+ 2 (* 4 i)) (pref fxye (+ 0 (* 2 i))))
+        (pset! field (+ 3 (* 4 i)) (pref fxye (+ 1 (* 2 i))))))))

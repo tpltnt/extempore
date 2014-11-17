@@ -193,139 +193,129 @@ namespace extemp {
 	    const char * name;
 	    foreign_func func;
 	} funcTable[] = {
-	    { "ascii-print-color",		&SchemeFFI::asciiColor },
+	    { "ascii-print-color",	       	&SchemeFFI::asciiColor },
 	    { "emit",                       &SchemeFFI::emit },
-            { "quit",                       &SchemeFFI::exit_extempore },
-
+      { "quit",                       &SchemeFFI::exit_extempore },
 	    //IPC stuff
-	    { "ipc:new",			&SchemeFFI::newSchemeProcess },
-	    { "ipc:connect",		&SchemeFFI::connectToProcess },
-	    { "ipc:call-async",		&SchemeFFI::ipcCall },
-	    { "ipc:define",			&SchemeFFI::ipcDefine },
-	    { "ipc:eval-string",		&SchemeFFI::ipcEval },
-	    { "ipc:load",			&SchemeFFI::ipcLoad },
-	    { "ipc:set-priority",       &SchemeFFI::ipcSetPriority },
-	    { "ipc:get-priority",       &SchemeFFI::ipcGetPriority },
-	    { "ipc:get-process-name",	&SchemeFFI::getNameOfCurrentProcess },
-
+	    { "ipc:new",		              	&SchemeFFI::newSchemeProcess },
+	    { "ipc:connect",	            	&SchemeFFI::connectToProcess },
+	    { "ipc:call-async",	          	&SchemeFFI::ipcCall },
+	    { "ipc:define",		             	&SchemeFFI::ipcDefine },
+	    { "ipc:eval-string",	        	&SchemeFFI::ipcEval },
+	    { "ipc:load",			              &SchemeFFI::ipcLoad },
+	    { "ipc:set-priority",           &SchemeFFI::ipcSetPriority },
+	    { "ipc:get-priority",           &SchemeFFI::ipcGetPriority },
+	    { "ipc:get-process-name",      	&SchemeFFI::getNameOfCurrentProcess },
 	    // misc scheme ties
-	    { "assoc-strcmp",            &SchemeFFI::assocstrcmp },
-	    { "assoc-strcmp-all",            &SchemeFFI::assocstrcmpall },
-	    
+	    { "assoc-strcmp",               &SchemeFFI::assocstrcmp },
+	    { "assoc-strcmp-all",           &SchemeFFI::assocstrcmpall },
 	    // number stuff
-	    { "random-real",		&SchemeFFI::randomReal },
-	    { "random-int",			&SchemeFFI::randomInt },
-	    { "real->integer",		&SchemeFFI::realToInteger },
-	    { "real->rational",		&SchemeFFI::realToRational },
-	    { "rational->real",		&SchemeFFI::rationalToReal },
-	    { "integer->real",		&SchemeFFI::integerToReal },
-            { "rational->n",               &SchemeFFI::rationalToNumerator },
-            { "rational->d",               &SchemeFFI::rationalToDenominator },
-
+	    { "random-real",		            &SchemeFFI::randomReal },
+	    { "random-int",			            &SchemeFFI::randomInt },
+	    { "real->integer",		          &SchemeFFI::realToInteger },
+	    { "real->rational",		          &SchemeFFI::realToRational },
+	    { "rational->real",		          &SchemeFFI::rationalToReal },
+	    { "integer->real",		          &SchemeFFI::integerToReal },
+      { "rational->n",                &SchemeFFI::rationalToNumerator },
+      { "rational->d",                &SchemeFFI::rationalToDenominator },
 	    // sys stuff
-	    { "sys:pointer-size",		&SchemeFFI::pointerSize },
-	    { "sys:platform",		&SchemeFFI::platform },
-	    { "sys:cmdarg",		&SchemeFFI::cmdarg },
-	    { "sys:open-dylib",		&SchemeFFI::openDynamicLib },
-	    { "sys:close-dylib",	&SchemeFFI::closeDynamicLib },
-	    { "sys:symbol-cptr",	&SchemeFFI::symbol_pointer },
-	    { "sys:make-cptr",		&SchemeFFI::makeCptr },
-	    { "sys:directory-list",     &SchemeFFI::dirlist },
-      { "sys:expand-path",           &SchemeFFI::pathExpansion },
-      { "sys:set-default-timeout",  &SchemeFFI::setDefaultTimeout },
-      { "sys:get-default-timeout",  &SchemeFFI::getDefaultTimeout },
-
+	    { "sys:pointer-size",		        &SchemeFFI::pointerSize },
+	    { "sys:platform",	  	          &SchemeFFI::platform },
+	    { "sys:cmdarg",    		          &SchemeFFI::cmdarg },
+	    { "sys:open-dylib",		          &SchemeFFI::openDynamicLib },
+	    { "sys:close-dylib",	          &SchemeFFI::closeDynamicLib },
+	    { "sys:symbol-cptr",	          &SchemeFFI::symbol_pointer },
+	    { "sys:make-cptr",		          &SchemeFFI::makeCptr },
+	    { "sys:directory-list",         &SchemeFFI::dirlist },
+      { "sys:expand-path",            &SchemeFFI::pathExpansion },
+      { "sys:set-default-timeout",    &SchemeFFI::setDefaultTimeout },
+      { "sys:get-default-timeout",    &SchemeFFI::getDefaultTimeout },
 	    // DSP sys stuff
-	    { "sys:set-dsp-closure",	&SchemeFFI::setDSPClosure },
-	    { "sys:set-dspmt-closure",	&SchemeFFI::setDSPMTClosure },
-	    { "sys:set-dsp-wrapper",	&SchemeFFI::setDSPWrapper },
-	    { "sys:set-dspmt-wrapper",	&SchemeFFI::setDSPMTWrapper },
-            { "sys:init-mt-audio",      &SchemeFFI::initMTAudio },
-            { "sys:init-mt-audio-buf",      &SchemeFFI::initMTAudioBuf },
-            { "sys:audio-load",         &SchemeFFI::getAudioLoad },
+	    { "sys:set-dsp-closure",	      &SchemeFFI::setDSPClosure },
+	    { "sys:set-dspmt-closure",	    &SchemeFFI::setDSPMTClosure },
+	    { "sys:set-dsp-wrapper",	      &SchemeFFI::setDSPWrapper },
+	    { "sys:set-dspmt-wrapper",	    &SchemeFFI::setDSPMTWrapper },
+      { "sys:init-mt-audio",          &SchemeFFI::initMTAudio },
+      { "sys:init-mt-audio-buf",      &SchemeFFI::initMTAudioBuf },
+      { "sys:audio-load",             &SchemeFFI::getAudioLoad },
 	    { "sys:set-dsp-wrapper-array",	&SchemeFFI::setDSPWrapperArray },
-	    { "sys:set-dspmt-wrapper-array",	&SchemeFFI::setDSPMTWrapperArray },
-
+	    { "sys:set-dspmt-wrapper-array",&SchemeFFI::setDSPMTWrapperArray },
 	    // memory zone stuff
-    	    { "sys:create-mzone",		&SchemeFFI::createMallocZone },
-	    { "sys:default-mzone",		&SchemeFFI::defaultMallocZone },
-	    { "sys:destroy-mzone",		&SchemeFFI::destroyMallocZone },
-	    { "sys:copy-to-dmzone",		&SchemeFFI::copyToDefaultZone },
-	    { "sys:reset-mzone",		&SchemeFFI::resetMallocZone },
-	    { "sys:peek-memzone",               &SchemeFFI::peekMemoryZone },
-	    { "sys:pop-memzone",               &SchemeFFI::popMemoryZone },
-	    { "sys:push-memzone",               &SchemeFFI::pushMemoryZone },
-
-
+      { "sys:create-mzone",	   	      &SchemeFFI::createMallocZone },
+	    { "sys:default-mzone",		      &SchemeFFI::defaultMallocZone },
+	    { "sys:destroy-mzone",		      &SchemeFFI::destroyMallocZone },
+	    { "sys:copy-to-dmzone",		      &SchemeFFI::copyToDefaultZone },
+	    { "sys:reset-mzone",		        &SchemeFFI::resetMallocZone },
+	    { "sys:peek-memzone",           &SchemeFFI::peekMemoryZone },
+	    { "sys:pop-memzone",            &SchemeFFI::popMemoryZone },
+	    { "sys:push-memzone",           &SchemeFFI::pushMemoryZone },
 	    // misc stuff
-	    { "cptr:get-i64",            &SchemeFFI::dataGETi64 },
+	    { "cptr:get-i64",               &SchemeFFI::dataGETi64 },
 	    { "cptr:get-double",            &SchemeFFI::dataGETdouble },
-	    { "cptr:get-float",            &SchemeFFI::dataGETfloat },
-	    { "cptr:set-i64",            &SchemeFFI::dataSETi64 },
+	    { "cptr:get-float",             &SchemeFFI::dataGETfloat },
+	    { "cptr:set-i64",               &SchemeFFI::dataSETi64 },
 	    { "cptr:set-double",            &SchemeFFI::dataSETdouble },
-	    { "cptr:set-float",            &SchemeFFI::dataSETfloat },
-	    { "cptr->string",            &SchemeFFI::cptrToString },
+	    { "cptr:set-float",             &SchemeFFI::dataSETfloat },
+	    { "cptr->string",               &SchemeFFI::cptrToString },
 	    { "cptr:get-string",            &SchemeFFI::cptrToString },
-	    { "string->cptr",            &SchemeFFI::stringToCptr },
-	    { "string-strip",		&SchemeFFI::stringStrip },
-	    { "string-hash",		&SchemeFFI::stringHash },
-	    { "base64-encode",		&SchemeFFI::Base64Encode },
-	    { "base64-decode",		&SchemeFFI::Base64Decode },
-	    { "cname-encode",		&SchemeFFI::CNameEncode },
-	    { "cname-decode",		&SchemeFFI::CNameDecode },
-	    { "string-join",		&SchemeFFI::stringJoin },
-	    { "call-cpp-at-time",		&SchemeFFI::callCPPAtTime },
-	    { "now",			&SchemeFFI::getTime },
-	    { "sexpr->string",		&SchemeFFI::sexprToString },
-	    { "println",			&SchemeFFI::print },
-	    { "print",			&SchemeFFI::print_no_new_line },
-	    { "print-full",			&SchemeFFI::printFull },
-	    { "print-full-nq",		&SchemeFFI::printFullNoQuotes },
-	    { "pprint-error",		&SchemeFFI::printError }, // pprint-error is pprint for a reason!
-	    { "print-notification",		&SchemeFFI::printNotification },
-	    { "get-closure-env",		&SchemeFFI::getClosureEnv },
-            { "mk-ff",               &SchemeFFI::scmAddForeignFunc },
-
+	    { "string->cptr",               &SchemeFFI::stringToCptr },
+	    { "string-strip",		            &SchemeFFI::stringStrip },
+	    { "string-hash",		            &SchemeFFI::stringHash },
+	    { "base64-encode",	            &SchemeFFI::Base64Encode },
+	    { "base64-decode",	            &SchemeFFI::Base64Decode },
+	    { "cname-encode",		            &SchemeFFI::CNameEncode },
+	    { "cname-decode",		            &SchemeFFI::CNameDecode },
+	    { "string-join",		            &SchemeFFI::stringJoin },
+	    { "call-cpp-at-time",	         	&SchemeFFI::callCPPAtTime },
+	    { "now",			                  &SchemeFFI::getTime },
+	    { "sexpr->string",		          &SchemeFFI::sexprToString },
+	    { "println",	  		            &SchemeFFI::print },
+	    { "print",		     	            &SchemeFFI::print_no_new_line },
+	    { "print-full",			            &SchemeFFI::printFull },
+	    { "print-full-nq",		          &SchemeFFI::printFullNoQuotes },
+	    { "pprint-error",		            &SchemeFFI::printError }, // pprint-error is pprint for a reason!
+	    { "print-notification",	       	&SchemeFFI::printNotification },
+	    { "get-closure-env",         		&SchemeFFI::getClosureEnv },
+      { "mk-ff",                      &SchemeFFI::scmAddForeignFunc },
 	    // regex stuff
-	    { "regex:match?",		&SchemeFFI::regex_match },
-	    { "regex:matched",		&SchemeFFI::regex_matched },
-	    { "regex:match-all",		&SchemeFFI::regex_match_all },
-	    { "regex:split",		&SchemeFFI::regex_split },
-	    { "regex:replace",		&SchemeFFI::regex_replace },
-
+	    { "regex:match?",		            &SchemeFFI::regex_match },
+	    { "regex:matched",		          &SchemeFFI::regex_matched },
+	    { "regex:match-all",		        &SchemeFFI::regex_match_all },
+	    { "regex:split",		            &SchemeFFI::regex_split },
+	    { "regex:replace",		          &SchemeFFI::regex_replace },
 	    // llvm stuff
-	    { "llvm:optimize",			&SchemeFFI::optimizeCompiles },
-	    { "llvm:compile",			&SchemeFFI::compile },
-	    { "llvm:bind-global-var",		&SchemeFFI::bind_global_var },
-            { "llvm:ffi-set-name",             &SchemeFFI::ff_set_name },
-            { "llvm:ffi-get-name",             &SchemeFFI::ff_get_name },
-	    { "llvm:get-function",			&SchemeFFI::get_function },
-	    { "llvm:get-globalvar",			&SchemeFFI::get_globalvar },
-            { "llvm:get-struct-size",           &SchemeFFI::get_struct_size },
-            { "llvm:get-named-struct-size",           &SchemeFFI::get_named_struct_size },
-	    { "llvm:get-function-args",		&SchemeFFI::get_function_args },
+	    { "llvm:optimize",			        &SchemeFFI::optimizeCompiles },
+	    { "llvm:compile",			          &SchemeFFI::compile },
+	    { "llvm:bind-global-var",	     	&SchemeFFI::bind_global_var },
+      { "llvm:ffi-set-name",          &SchemeFFI::ff_set_name },
+      { "llvm:ffi-get-name",          &SchemeFFI::ff_get_name },
+	    { "llvm:get-function",		     	&SchemeFFI::get_function },
+	    { "llvm:get-globalvar",		     	&SchemeFFI::get_globalvar },
+      { "llvm:get-struct-size",       &SchemeFFI::get_struct_size },
+      { "llvm:get-named-struct-size", &SchemeFFI::get_named_struct_size },
+	    { "llvm:get-function-args",		  &SchemeFFI::get_function_args },
 	    { "llvm:get-function-varargs",	&SchemeFFI::get_function_varargs },
-	    { "llvm:get-function-type",		&SchemeFFI::get_function_type },
+	    { "llvm:get-function-type",		  &SchemeFFI::get_function_type },
 	    { "llvm:get-function-calling-conv",	&SchemeFFI::get_function_calling_conv },
 	    { "llvm:get-global-variable-type",	&SchemeFFI::get_global_variable_type },
-	    { "llvm:get-function-pointer",		&SchemeFFI::get_function_pointer },
-	    { "llvm:jit-compile-function",		&SchemeFFI::recompile_and_link_function },
-	    { "llvm:remove-function",		&SchemeFFI::remove_function },
-	    { "llvm:remove-globalvar",		&SchemeFFI::remove_global_var },
-	    { "llvm:erase-function",		&SchemeFFI::erase_function },
-	    { "llvm:call-void-func",          &SchemeFFI::llvm_call_void_native },
-	    { "llvm:run",				&SchemeFFI::call_compiled },
-	    { "llvm:run-closure",			&SchemeFFI::call_compiled_closure },
-	    { "llvm:convert-float",			&SchemeFFI::llvm_convert_float_constant },
- 	    { "llvm:convert-double",			&SchemeFFI::llvm_convert_double_constant },
-	    { "llvm:count",				&SchemeFFI::llvm_count },
-	    { "llvm:count-set",				&SchemeFFI::llvm_count_set },
-	    { "llvm:count++",			&SchemeFFI::llvm_count_inc },
-	    { "llvm:call-closure",			&SchemeFFI::callClosure },
-	    { "llvm:print",				&SchemeFFI::printLLVMModule },
-	    { "llvm:print-function",		&SchemeFFI::printLLVMFunction },
-      { "llvm:print-closure", &SchemeFFI::llvm_print_closure },
-      { "llvm:print-closure-work", &SchemeFFI::llvm_print_closure_work },
+	    { "llvm:get-function-pointer",	&SchemeFFI::get_function_pointer },
+	    { "llvm:jit-compile-function",	&SchemeFFI::recompile_and_link_function },
+	    { "llvm:remove-function",		    &SchemeFFI::remove_function },
+	    { "llvm:remove-globalvar",		  &SchemeFFI::remove_global_var },
+	    { "llvm:erase-function",		    &SchemeFFI::erase_function },
+	    { "llvm:call-void-func",        &SchemeFFI::llvm_call_void_native },
+	    { "llvm:run",				            &SchemeFFI::call_compiled },
+	    { "llvm:run-closure",			      &SchemeFFI::call_compiled_closure },
+	    { "llvm:convert-float",			    &SchemeFFI::llvm_convert_float_constant },
+ 	    { "llvm:convert-double",			  &SchemeFFI::llvm_convert_double_constant },
+	    { "llvm:count",				          &SchemeFFI::llvm_count },
+	    { "llvm:count-set",				      &SchemeFFI::llvm_count_set },
+	    { "llvm:count++",		        	  &SchemeFFI::llvm_count_inc },
+	    { "llvm:call-closure",			    &SchemeFFI::callClosure },
+	    { "llvm:print",				          &SchemeFFI::printLLVMModule },
+	    { "llvm:print-function",		    &SchemeFFI::printLLVMFunction },
+      { "llvm:print-closure",         &SchemeFFI::llvm_print_closure },
+      { "llvm:print-closure-work",    &SchemeFFI::llvm_print_closure_work },
       { "llvm:get-closure-work-name", &SchemeFFI::llvm_closure_last_name },
 	    { "llvm:bind-symbol",			&SchemeFFI::bind_symbol },
 	    { "llvm:add-llvm-alias",                          &SchemeFFI::add_llvm_alias },
@@ -338,16 +328,16 @@ namespace extemp {
 	    //#ifdef EXT_BOOST
 	    //#else
 	    //CLOCK STUFF
-	    { "clock:set-offset",                           &SchemeFFI::setClockOffset},
-	    { "clock:get-offset",                           &SchemeFFI::getClockOffset},
-            { "clock:adjust-offset",                        &SchemeFFI::adjustClockOffset},
-	    { "clock:clock",                                &SchemeFFI::getClockTime},
-            { "clock:ad:clock",                             &SchemeFFI::lastSampleBlockClock},    
-	    { "ad:clock:set-offset",                        &SchemeFFI::ad_setClockOffset},
-            { "ad:clock:get-offset",                       &SchemeFFI::ad_getClockOffset},
-	    { "ad:clock:adjust-offset",                    &SchemeFFI::ad_adjustClockOffset},
-	    { "ad:clock:clock",                            &SchemeFFI::ad_getClockTime},
-            { "ad:clock",                                  &SchemeFFI::ad_getClockTime},
+	    { "clock:set-offset",           &SchemeFFI::setClockOffset},
+	    { "clock:get-offset",           &SchemeFFI::getClockOffset},
+      { "clock:adjust-offset",        &SchemeFFI::adjustClockOffset},
+	    { "clock:clock",                &SchemeFFI::getClockTime},
+      { "clock:ad:clock",             &SchemeFFI::lastSampleBlockClock},    
+	    { "ad:clock:set-offset",        &SchemeFFI::ad_setClockOffset},
+      { "ad:clock:get-offset",        &SchemeFFI::ad_getClockOffset},
+	    { "ad:clock:adjust-offset",     &SchemeFFI::ad_adjustClockOffset},
+	    { "ad:clock:clock",             &SchemeFFI::ad_getClockTime},
+      { "ad:clock",                   &SchemeFFI::ad_getClockTime},
 	    //#endif
            
 
@@ -670,126 +660,151 @@ namespace extemp {
 	}
     }
 
-    pointer SchemeFFI::ipcCall(scheme* _sc, pointer args)
-    {
-	std::string process(string_value(pair_car(args)));
-        SchemeREPL* repl = SchemeREPL::I(process);
-        if(!repl) {
-          std::cout << "BAD IPC: Process name '" << process << "' does not exist!" << std::endl;
-          return _sc->F;
-        }
- 	std::stringstream ss;
-	pointer sym = pair_cadr(args);
-	args = pair_cddr(args);
-	for(; is_pair(args); args = pair_cdr(args)) {
+  pointer SchemeFFI::ipcCall(scheme* _sc, pointer args)
+  {
+    std::string process(string_value(pair_car(args)));
+    SchemeREPL* repl = SchemeREPL::I(process);
+    if(!repl) {
+      std::cout << "Error: unknown scheme process '" << process << "'" << std::endl;
+      return _sc->F;
+    }
+    std::stringstream ss;
+    pointer sym = pair_cadr(args);
+    args = pair_cddr(args);
+    for(; is_pair(args); args = pair_cdr(args)) {
 	    ss << " ";
 	    if(is_pair(pair_car(args)) || is_vector(pair_car(args)) || is_symbol(pair_car(args))) {
-		ss << "'";
-		UNIV::printSchemeCell(_sc, ss, pair_car(args),true);
+        ss << "'";
+        UNIV::printSchemeCell(_sc, ss, pair_car(args),true);
 	    }
 	    else if(_sc->NIL == pair_car(args)) {
-		ss << "'()";
+        ss << "'()";
 	    }
 	    else if(pair_car(args) == _sc->F) {
-		ss << "#f";
+        ss << "#f";
 	    }
 	    else if(pair_car(args) == _sc->T) {
-		ss << "#t";
+        ss << "#t";
 	    }
-            else if(pair_car(args) == _sc->EOF_OBJ) {
-                // igore end of file
-            }
+      else if(pair_car(args) == _sc->EOF_OBJ) {
+        // igore end of file
+      }
 	    else if(is_closure(pair_car(args))) {
-		std::stringstream tmp;
-		UNIV::printSchemeCell(_sc, tmp, closure_code(pair_car(args)), true);
-		std::string sss = "(lambda "+tmp.str().substr(1);
-		ss << sss;
+        std::stringstream tmp;
+        UNIV::printSchemeCell(_sc, tmp, closure_code(pair_car(args)), true);
+        std::string sss = "(lambda "+tmp.str().substr(1);
+        ss << sss;
 	    }
 	    else if(is_string(pair_car(args)) || is_number(pair_car(args)) || is_symbol(pair_car(args))){
-		UNIV::printSchemeCell(_sc, ss, pair_car(args), true);
+        UNIV::printSchemeCell(_sc, ss, pair_car(args), true);
 	    }
 	    else {
-	        PRINT_ERROR("IPC does not support type.\nThis maybe related to the return type as well as the arguments if calling from ipc:call.\nIn particular remember that objc objects cannot be passed natively (you can turn them into strings though by calling objc:string-encode and then on the other end use objc:string-decode to reconstitute an object\n");
-		return _sc->F;
+        PRINT_ERROR("Extempore's IPC mechanism cannot serialise this type - this maybe related to the return type as well as the arguments.\n");
+        return _sc->F;
 	    }
-	}
-	std::string str = "("+std::string(symname(sym))+ss.str()+")";
-        repl->writeString(str);
-	return _sc->T;
     }
+    std::string str = "("+std::string(symname(sym))+ss.str()+")";
+    repl->writeString(str);
+    return _sc->T;
+  }
     
-    pointer SchemeFFI::ipcDefine(scheme* _sc, pointer args)
-    {
-	std::string process(string_value(pair_car(args)));
-	std::stringstream ss;
-	pointer sym = pair_cadr(args);
-	pointer value = pair_caddr(args);
-	ss << " ";
-	if(is_pair(value) || is_vector(value) || is_symbol(value)) {
+  pointer SchemeFFI::ipcDefine(scheme* _sc, pointer args)
+  {
+    std::string process(string_value(pair_car(args)));
+    SchemeREPL* repl = SchemeREPL::I(process);
+    if(!repl) {
+      std::cout << "Error: unknown scheme process '" << process << "'" << std::endl;
+      return _sc->F;
+    }
+    std::stringstream ss;
+    pointer sym = pair_cadr(args);
+    pointer value = pair_caddr(args);
+    ss << " ";
+    if(is_pair(value) || is_vector(value) || is_symbol(value)) {
 	    ss << "'";
 	    UNIV::printSchemeCell(_sc, ss, value,true);
-	}
-	else if(_sc->NIL == value) {
+    }
+    else if(_sc->NIL == value) {
 	    ss << "'()";
-	}
-	else if(value == _sc->F) {
+    }
+    else if(value == _sc->F) {
 	    ss << "#f";
-	}
-	else if(value == _sc->T) {
+    }
+    else if(value == _sc->T) {
 	    ss << "#t";
-	}
-	else if(value == _sc->EOF_OBJ) {
-          // ignore eof
-	}
-	else if(is_closure(value)) {
+    }
+    else if(value == _sc->EOF_OBJ) {
+      // ignore eof
+    }
+    else if(is_closure(value)) {
 	    std::stringstream tmp;
 	    UNIV::printSchemeCell(_sc, tmp, closure_code(value), true);
 	    std::string sss = "(lambda "+tmp.str().substr(1);
 	    ss << sss;
-	}
-	else if(is_string(value) || is_number(value)) {
-	    UNIV::printSchemeCell(_sc, ss,value, true);
-	}
-	else {
-	    PRINT_ERROR("IPC does not support type.\nThis maybe related to the return type as well as the arguments if calling from ipc:call.\nIn particular remember that objc objects cannot be passed natively (you can turn them into strings though by calling objc:string-encode and then on the other end use objc:string-decode to reconstitute an object\n");
-	    return _sc->F;
-	}
-	std::string str = "(define "+std::string(symname(sym))+ss.str()+")";
-	SchemeREPL::I(process)->writeString(str);
-	return _sc->T;
     }
+    else if(is_string(value) || is_number(value)) {
+	    UNIV::printSchemeCell(_sc, ss,value, true);
+    }
+    else {
+      PRINT_ERROR("Extempore's IPC mechanism cannot serialise this type - this maybe related to the return type as well as the arguments.\n");
+	    return _sc->F;
+    }
+    std::string str = "(define "+std::string(symname(sym))+ss.str()+")";
+    repl->writeString(str);
+    return _sc->T;
+  }
 
-    pointer SchemeFFI::ipcEval(scheme* _sc, pointer args)
-    {
-	std::string process(string_value(pair_car(args)));
-	std::string expr(string_value(pair_cadr(args)));
-	SchemeREPL::I(process)->writeString(expr);
-	return _sc->T;
+  pointer SchemeFFI::ipcEval(scheme* _sc, pointer args)
+  {
+    std::string process(string_value(pair_car(args)));
+    SchemeREPL* repl = SchemeREPL::I(process);
+    if(!repl) {
+      std::cout << "Error: unknown scheme process '" << process << "'" << std::endl;
+      return _sc->F;
+    }
+    std::string expr(string_value(pair_cadr(args)));
+    SchemeREPL::I(process)->writeString(expr);
+    return _sc->T;
     }
     
-    pointer SchemeFFI::ipcLoad(scheme* _sc, pointer args)
-    {
-	std::string process(string_value(pair_car(args)));
-	std::string path(string_value(pair_cadr(args)));
-	std::string str = "(load \""+std::string(path)+"\")";
-	SchemeREPL::I(process)->writeString(str);
-	return _sc->T;
+  pointer SchemeFFI::ipcLoad(scheme* _sc, pointer args)
+  {
+    std::string process(string_value(pair_car(args)));
+    SchemeREPL* repl = SchemeREPL::I(process);
+    if(!repl) {
+      std::cout << "Error: unknown scheme process '" << process << "'" << std::endl;
+      return _sc->F;
     }
+    std::string path(string_value(pair_cadr(args)));
+    std::string str = "(sys:load \""+std::string(path)+"\")";
+    SchemeREPL::I(process)->writeString(str);
+    return _sc->T;
+  }
 
-    pointer SchemeFFI::ipcSetPriority(scheme* _sc, pointer args)
-    {
-	std::string process(string_value(pair_car(args)));
-	int priority = ivalue(pair_cadr(args));
-	SchemeProcess::I(process)->setPriority(priority);
-	return _sc->T;
+  pointer SchemeFFI::ipcSetPriority(scheme* _sc, pointer args)
+  {
+    std::string process(string_value(pair_car(args)));
+    SchemeREPL* repl = SchemeREPL::I(process);
+    if(!repl) {
+      std::cout << "Error: unknown scheme process '" << process << "'" << std::endl;
+      return _sc->F;
     }
+    int priority = ivalue(pair_cadr(args));
+    SchemeProcess::I(process)->setPriority(priority);
+    return _sc->T;
+  }
 
-    pointer SchemeFFI::ipcGetPriority(scheme* _sc, pointer args)
-    {
-	std::string process(string_value(pair_car(args)));
-	int priority = SchemeProcess::I(process)->getPriority();
-	return mk_integer(_sc, priority);
+  pointer SchemeFFI::ipcGetPriority(scheme* _sc, pointer args)
+  {
+    std::string process(string_value(pair_car(args)));
+    SchemeREPL* repl = SchemeREPL::I(process);
+    if(!repl) {
+      std::cout << "Error: unknown scheme process '" << process << "'" << std::endl;
+      return _sc->F;
     }
+    int priority = SchemeProcess::I(process)->getPriority();
+    return mk_integer(_sc, priority);
+  }
 
     pointer SchemeFFI::getNameOfCurrentProcess(scheme* _sc, pointer args)
     {

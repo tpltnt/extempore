@@ -43,6 +43,7 @@
 #include <string>
 #ifndef TARGET_OS_WINDOWS
 #include <unistd.h>
+#include <signal.h>
 #endif
 #ifdef TARGET_OS_MAC
 #include <Cocoa/Cocoa.h>
@@ -68,12 +69,26 @@ BOOL CtrlHandler( DWORD fdwCtrlType )
       return FALSE; 
   } 
 } 
+#else
+
+void sig_handler(int signo)
+{
+  if (signo == SIGINT){
+    printf("\nRecieved interrupt signal (SIGINT), exiting Extempore...\n");
+    exit(0);
+  }
+  else if (signo == SIGTERM){
+    printf("\nRecieved termination signal (SIGTERM), exiting Extempore...\n");
+    exit(0);
+  }
+}
+
 #endif
 
 
 enum { OPT_RUNTIME, OPT_NOSTD, OPT_SAMPLERATE, OPT_FRAMES, 
-       OPT_CHANNELS, OPT_IN_CHANNELS, OPT_INITFILE, 
-       OPT_PORT, OPT_TERM, OPT_DEVICE, OPT_IN_DEVICE,
+       OPT_CHANNELS, OPT_IN_CHANNELS, OPT_INITEXPR, OPT_INITFILE,
+       OPT_PORT, OPT_TERM, OPT_NO_AUDIO, OPT_DEVICE, OPT_IN_DEVICE,
        OPT_PRT_DEVICES, OPT_REALTIME, OPT_ARCH, OPT_CPU, OPT_ATTR,
        OPT_HELP
      };
@@ -86,9 +101,11 @@ CSimpleOptA::SOption g_rgOptions[] = {
     { OPT_FRAMES,      "--frames",        SO_REQ_SEP    },
     { OPT_CHANNELS,    "--channels",      SO_REQ_SEP    },
     { OPT_IN_CHANNELS, "--inchannels",    SO_REQ_SEP    },
+    { OPT_INITEXPR,    "--eval",          SO_REQ_SEP    },
     { OPT_INITFILE,    "--run",           SO_REQ_SEP    },
     { OPT_PORT,        "--port",          SO_REQ_SEP    },
     { OPT_TERM,        "--term",          SO_REQ_SEP    },
+    { OPT_NO_AUDIO,    "--noaudio",       SO_NONE       },
     { OPT_DEVICE,      "--device",        SO_REQ_SEP    },
     { OPT_IN_DEVICE,   "--indevice",      SO_REQ_SEP    },
     { OPT_PRT_DEVICES, "--print-devices", SO_NONE       },
@@ -104,8 +121,8 @@ CSimpleOptA::SOption g_rgOptions[] = {
 int main(int argc, char** argv)
 {
     std::string runtimedir("runtime");
-    std::string initfile;    
-    bool initfile_on = false;
+    std::string initexpr;    
+    bool initexpr_on = false;
     
     std::string host("localhost");
     std::string primary_name("primary");
@@ -118,10 +135,16 @@ int main(int argc, char** argv)
     freopen("/tmp/","w",stderr);
 #endif
 
-    // more evil windows termination code
-    #ifdef TARGET_OS_WINDOWS
-       SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CtrlHandler, TRUE );
-    #endif
+// more evil windows termination code
+#ifdef TARGET_OS_WINDOWS
+    SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CtrlHandler, TRUE );
+#else
+    // signal handlers for OSX/Linux
+    if (signal(SIGINT, sig_handler) == SIG_ERR)
+      printf("\nWarning: can't catch SIGINT.\n");
+    if (signal(SIGTERM, sig_handler) == SIG_ERR)
+      printf("\nWarning: can't catch SIGTERM.\n");
+#endif
 
 
     CSimpleOptA args(argc, argv, g_rgOptions);
@@ -143,9 +166,13 @@ int main(int argc, char** argv)
         case OPT_IN_CHANNELS:
 	  extemp::UNIV::IN_CHANNELS = atoi(args.OptionArg());
 	  break;
+        case OPT_INITEXPR:
+          initexpr = std::string(args.OptionArg());
+          initexpr_on = true;
+    break;
         case OPT_INITFILE:
-	  initfile = std::string(args.OptionArg());
-	  initfile_on = true;	  
+          initexpr = std::string("(sys:load \"") + std::string(args.OptionArg()) + std::string("\")");
+          initexpr_on = true;	  
 	  break;
   case OPT_NOSTD:
     extemp::UNIV::EXT_LOADSTD = 0;
@@ -164,6 +191,9 @@ int main(int argc, char** argv)
 	    extemp::UNIV::EXT_TERM = 0;
 	  }
           break;
+	case OPT_NO_AUDIO:
+    extemp::UNIV::AUDIO_NONE = 1;
+    break;
 	case OPT_DEVICE:
 	  extemp::UNIV::AUDIO_DEVICE = atoi(args.OptionArg());
           break;
@@ -204,6 +234,7 @@ int main(int argc, char** argv)
 	  std::cout << "          --frames: attempts to force frames [128]" << std::endl;
 	  std::cout << "        --channels: attempts to force num of output audio channels" << std::endl;
 	  std::cout << "      --inchannels: attempts to force num of input audio channels" << std::endl;
+	  std::cout << "          --noaudio: no audio output: use a \"dummy\" device (overrides --device option)" << std::endl;
 	  std::cout << "          --device: the index of the audio device to use (output or duplex)" << std::endl;
 	  std::cout << "        --indevice: the index of the audio input device to use" << std::endl;
     std::cout << "            --arch: the target architecture [current host]" << std::endl;
@@ -215,6 +246,8 @@ int main(int argc, char** argv)
       } else {
 	  char* key = (char*) args.OptionText();
 	  char* val = args.OptionArg();
+    if(!val)
+      val = "";
 	  char a[256];
 	  char b[256];
           if(!rmatch("--",key)) {
@@ -242,14 +275,26 @@ int main(int argc, char** argv)
 #ifdef TARGET_OS_MAC
     // we need to instantiate NSApp before potentially
     // calling something OSXy (like a window) inside
-    // an initfile.
+    // an initexpr.
     // We DONT want to start the run loop though as it
     // never exits - do that below
     [NSApplication sharedApplication];
 #endif
 
-    extemp::AudioDevice* dev = extemp::AudioDevice::I();
-    dev->start();
+    if(extemp::UNIV::AUDIO_NONE != 1)
+      {
+        extemp::AudioDevice* dev = extemp::AudioDevice::I();
+        dev->start();
+      }
+    else
+      {
+#ifdef TARGET_OS_WINDOWS
+        printf("Sorry, the \"noaudio\" dummy device isn't yet supported on Windows.\n");
+        exit(1);
+#else
+        extemp::AudioDevice::startNoAudioThread();
+#endif
+      }
     ascii_text_color(0,7,10);	        
     std::cout << "---------------------------------------" << std::endl;
     ascii_text_color(0,9,10);	            
@@ -260,8 +305,8 @@ int main(int argc, char** argv)
     extemp::SchemeREPL* utility_repl = new extemp::SchemeREPL(utility_name);
     utility_repl->connectToProcessAtHostname(host,utility_port);
 
-    if(initfile_on) { // if a file needs to be loaded from the command line
-       primary = new extemp::SchemeProcess(runtimedir, primary_name, primary_port, 0, initfile);
+    if(initexpr_on) { // if an expression needs to be evaluated from the command line
+       primary = new extemp::SchemeProcess(runtimedir, primary_name, primary_port, 0, initexpr);
     }else{
        primary = new extemp::SchemeProcess(runtimedir, primary_name, primary_port, 0);
     }

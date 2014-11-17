@@ -766,64 +766,89 @@
       (ipc:call-async process 'ipc:run-active-label id result))))
 
 
-(define ipc:call
-  (lambda (process func . args)
-     (let loop ((i *ipc:active-label-cnt*))
-	(if (not (null? (vector-ref *ipc:active-labels* i)))
-	    (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
-	    (set! *ipc:active-label-cnt* i)))
-     (apply ipc:call-async process 'ipc:sync-receive (ipc:proc-name-with-mapping)
-	    *ipc:active-label-cnt* func args)
-     (let ((return-val (call/cc (lambda (k)
-				   (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
-				   (*sys:toplevel-continuation* 0)))))
-	return-val)))
+;; (define ipc:call
+;;   (lambda (process func . args)
+;;     (let loop ((i *ipc:active-label-cnt*))
+;;       (if (not (null? (vector-ref *ipc:active-labels* i)))
+;;           (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
+;;           (set! *ipc:active-label-cnt* i)))
+;;     (apply ipc:call-async process 'ipc:sync-receive (ipc:proc-name-with-mapping)
+;;            *ipc:active-label-cnt* func args)
+;;     (let ((return-val (call/cc (lambda (k)
+;;                                  (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
+;;                                  (*sys:toplevel-continuation* 0)))))
+;;       return-val)))
 
 
 (define ipc:call
   (lambda (process . args)
     (let* ((callback-proc (ipc:get-process-name))
-	   (func (if (string? (car args))
-		     (begin (set! callback-proc (car args))
-			    (set! args (cdr args))
-			    (car args))
-		     (car args))))
+           (func (if (string? (car args))
+                     (begin (set! callback-proc (car args))
+                            (set! args (cdr args))
+                            (car args))
+                     (car args))))
       (let loop ((i *ipc:active-label-cnt*))
-	(if (not (null? (vector-ref *ipc:active-labels* i)))
-	    (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
-	    (set! *ipc:active-label-cnt* i)))
+        (if (not (null? (vector-ref *ipc:active-labels* i)))
+            (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
+            (set! *ipc:active-label-cnt* i)))
       (apply ipc:call-async process 'ipc:sync-receive callback-proc
-	     *ipc:active-label-cnt* func (cdr args))
+             *ipc:active-label-cnt* func (cdr args))
       (let ((return-val (call/cc (lambda (k)
-				   (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
-				   (*sys:toplevel-continuation* 0)))))
-	return-val))))
+                                   (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
+                                   (*sys:toplevel-continuation* 0)))))
+        return-val))))
 
-(define ipc:mapcall
+(define ipc:map
   (lambda (func process-lst . args-lists)
     (let* ((callback-proc (ipc:get-process-name))
-	   (results '())
-	   (loopK '()))
+           (results '())
+           (loopK '()))
       (let ((pos (call/cc (lambda (kk) (set! loopK kk) 0))))
-	(if (< pos (length process-lst))
-	    (let ((z (list-ref process-lst pos))
-		  (ags (if (null? args-lists) #f (list-ref args-lists pos))))
-	      (let loop ((i *ipc:active-label-cnt*))
-		(if (not (null? (vector-ref *ipc:active-labels* i)))
-		    (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
-		    (set! *ipc:active-label-cnt* i)))
-	      (apply ipc:call-async z 'ipc:sync-receive callback-proc
-		     *ipc:active-label-cnt* func (if (null? args-lists) '() ags))
-	      (let ((return-val (call/cc (lambda (k)
-					   (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
-					   (loopK (+ pos 1))))))
-		(set! results (cons return-val results))
-		(if (< (length results) (length process-lst))
-		    (*sys:toplevel-continuation* 0)
-		    results)))
-	    (*sys:toplevel-continuation*))))))
+        (if (< pos (length process-lst))
+            (let ((z (list-ref process-lst pos))
+                  (ags (if (null? args-lists) #f (list-ref args-lists pos))))
+              (let loop ((i *ipc:active-label-cnt*))
+                (if (not (null? (vector-ref *ipc:active-labels* i)))
+                    (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
+                    (set! *ipc:active-label-cnt* i)))
+              (apply ipc:call-async z 'ipc:sync-receive callback-proc
+                     *ipc:active-label-cnt* func (if (null? args-lists) '() ags))
+              (let ((return-val (call/cc (lambda (k)
+                                           (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
+                                           (loopK (+ pos 1))))))
+                (set! results (cons return-val results))
+                (if (< (length results) (length process-lst))
+                    (*sys:toplevel-continuation* 0)
+                    results)))
+            (*sys:toplevel-continuation*))))))
 
+;; comptibility alias (deprecated)
+(define ipc:mapcall ipc:map)
 
+;; async map
+
+;; syntax:
+
+;; (ipc:for-each '("primary" "utility") 'fn-with-no-args)
+
+;; both of these ok:
+;; (ipc:for-each '("primary" "utility") 'fn-with-1-arg '(12 36))
+;; (ipc:for-each '("primary" "utility") 'fn-with-1-arg '((12) (36)))
+
+;; (ipc:for-each '("primary" "utility") 'fn-with-2-args '((12 436) (36 45)))
+(define ipc:for-each
+  (lambda (proc-list func . arg-lists)
+    ;; poor man's destructuring(ish)
+    (set! arg-lists
+          (if (null? arg-lists)
+              (make-list (length proc-list) '())
+              (map (lambda (x) (if (list? x) x (list x)))
+                   (car arg-lists))))
+    (for-each (lambda (proc args)
+                (apply ipc:call-async proc func args))
+              proc-list
+              arg-lists)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1071,7 +1096,7 @@
 		   (vector-set! vv i (if (pair? f) (cadr f) '(if #f #f)))
 		   (loop (+ i 1) (cdr ff)))))
 	 (let ((ff (map (lambda (f) (if (pair? f) (car f) f)) ff)))
-	    `(begin (define ,(string->symbol (string-append "make-" ss))
+	    `(begin (define ,(string->symbol (string-append "make" "-" ss))
 		       (lambda fvfv
 			  (let ((st (make-vector ,n1)) (ff ',ff))
 			     (vector-set! st 0 ',s)
@@ -1198,9 +1223,6 @@
              )
             (else (print-error 'Bad 'closure 'signature 'for 'dsp:set! ct))))))
 
-(define-macro (dsp:set! name)
-  `(_dsp:set! #t ,(symbol->string name)))
-
 (define-macro (dsp:set! . names)
   (let ((zerolatency (if (boolean? (car names))
                          (car names)
@@ -1210,21 +1232,6 @@
                       (cdr names)
                       names))))
     `(_dsp:set! ,zerolatency ,@lst)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; library-loading helpers ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-macro (define-lib libname)
-  `(define ,libname
-     (let ((platform (sys:platform)))
-       (cond ((string=? platform "Linux")
-	      (sys:load-dylib ,(string-append (symbol->string libname) ".so")))
-	     ((string=? platform "Windows")
-	      (sys:load-dylib ,(string-append (symbol->string libname) ".dll")))
-	     ((string=? platform "OSX")
-	      (sys:load-dylib ,(string-append (symbol->string libname) ".dylib")))
-	     (else (begin (println "Unknown platform: " platform) nil))))))
 
 ;; filename wrangling
 
@@ -1251,8 +1258,7 @@
 ;; search LDPATH as usual
 (define sys:load-dylib
   (lambda (dylib-path)
-    (let ((dylib (or ;; (sys:open-dylib (string-append "runtime/lib/" dylib-path))
-                     (sys:open-dylib dylib-path))))
+    (let ((dylib (sys:open-dylib dylib-path)))
       (if dylib
           (begin (impc:compiler:print-dylib-loading-details-to-log dylib-path)
                  dylib)
@@ -1756,8 +1762,8 @@
   (lambda (libname)
     (if (not (or (symbol? libname) (string? libname)))
         (sys:load-escape "Error: lib-name must be symbol or string."))
-    (if (not (ipc:get-process-name "primary"))
-        (sys:load-escape "Error: xtlang libs must be loaded in primary process."))
+    (if (not (string=? (ipc:get-process-name) "primary"))
+        (sys:load-escape "Error: xtlang code must be compiled in the primary process."))
     (if (defined? (string->symbol (string-append "*xtmlib-" (atom->string libname) "-loaded*")))
         (sys:load-escape (string-append (atom->string libname) " already loaded")))))
 
@@ -1924,7 +1930,7 @@
 
 (define sys:precomp:insert-header
   (lambda (libname)
-    (if (sys:precomp:currently-compiling?)
+    (if (output-port? *sys:precomp:current-output-port*)
         (begin
           (display (string-append "(sys:load-preload-check '" (substring libname 3) ")\n")
                    *sys:precomp:current-output-port*)
@@ -1945,7 +1951,7 @@
 
 (define sys:precomp:insert-footer
   (lambda (libname)
-    (if (sys:precomp:currently-compiling?)
+    (if (output-port? *sys:precomp:current-output-port*)
         (begin
           (display (string-append "(print-with-colors 'green 'default #t (print \"Loaded \"))\n(print-with-colors 'blue 'default #t (print \"" libname "\"))\n")
                    *sys:precomp:current-output-port*)
@@ -1960,7 +1966,7 @@
 ;; the precomp .xtm file, otherwise do nothing
 (define sys:precomp:insert-sexp
   (lambda (sexp)
-    (if (sys:precomp:currently-compiling?)
+    (if (output-port? *sys:precomp:current-output-port*)
         (display (string-append (sexpr->string sexp) "\n")
                  *sys:precomp:current-output-port*))))
 
@@ -2032,13 +2038,37 @@
                              (print " cannot write precomp file at " precomp-file-path "\n")
                              (if exit-when-done? (quit 2)))))))))))
 
-
-(define-macro (xtmX expr)
-  (suppress-compiler-messages #t)
-  (eval `(bind-func xtm_expression
-           (lambda ()
-             ,expr
-             void))
-        (interaction-environment))
-  (suppress-compiler-messages #f)
-  (xtm_expression))                       
+(define sys:run-tests
+  (lambda (test-files print? quit-on-exit?)
+    (sys:load "libs/core/test.xtm" 'quiet)
+    (xtmtest-reset-results)
+    (if (string? test-files)
+        (set! test-files (list test-files)))
+    (let ((start (now)))
+      (for-each (lambda (tf)
+                  (sys:load tf))
+                test-files)
+      
+      (if print? (xtmtest-print-results))
+      (print "\nCompleted ")
+      (print-with-colors 'blue 'default #t
+                         (print (apply + (map (lambda (lab) (- (length lab) 1))
+                                              *xtmtest-results*))))
+      (print " tests in ")
+      (let ((dur-sec (/ (- (now) start) *au:samplerate* 1.0)))
+        (print-with-colors 'yellow 'default #t
+                           (print (if (> dur-sec 60) (/ dur-sec 60) dur-sec)))
+        (print (if (> dur-sec 60)
+                   " minutes.\n\n"
+                   " seconds.\n\n"))))
+    (if quit-on-exit?
+        (quit (if (cl:some (lambda (label-list)
+                             (and (not (equal? (car label-list) 'correct))
+                                  (> (length label-list) 1)))
+                           *xtmtest-results*)
+                  (begin (print-with-colors 'red 'default #t
+                                            (print "Some tests failed.\n"))
+                         1)
+                  (begin (print-with-colors 'green 'default #t
+                                            (print "All tests passed.\n"))
+                         0))))))

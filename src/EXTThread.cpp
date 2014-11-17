@@ -34,11 +34,17 @@
  */
 
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
 
+#include "UNIV.h"
 #include "EXTThread.h"
 
 #ifdef TARGET_OS_WINDOWS
 #include <Windows.h>
+#elif TARGET_OS_MAC
+#include <mach/thread_policy.h>
+#include <mach/thread_act.h>
 #endif
 
 #define _EXTTHREAD_DEBUG_
@@ -163,34 +169,64 @@ namespace extemp
 		
     }
 
-    int EXTThread::setPriority(int priority)
-    {
-#ifdef EXT_BOOST
-#ifdef TARGET_OS_WINDOWS
-        return (int) SetThreadPriority(bthread.native_handle(),priority);
-#else
-	return 0;
-#endif
-	return 0;
-#else
+  int EXTThread::setPriority(int priority, bool realtime)
+  {
+#ifdef TARGET_OS_LINUX
+    sched_param param;
+    int policy;
+    pthread_getschedparam(pthread,&policy,&param);
+    param.sched_priority = priority;
 
-#endif
+    // for realtime threads, use SCHED_RR policy
+    if(realtime)
+      policy = SCHED_RR;
+    
+    int result = pthread_setschedparam(pthread,policy,&param);
+    if(result != 0) {
+      fprintf(stderr, "Error: failed to set thread priority: %s\n", strerror(result));
+      return 0;
+    }else{
+      return 1;
     }
+#elif TARGET_OS_MAC    
+    struct thread_time_constraint_policy ttcpolicy;
+    int result;
+    
+    // OSX magic numbers
+    ttcpolicy.period=(uint32_t)(UNIV::SAMPLERATE/100); // HZ/160
+      ttcpolicy.computation=(uint32_t)(UNIV::SAMPLERATE/143); // HZ/3300;
+    ttcpolicy.constraint=(uint32_t)(UNIV::SAMPLERATE/143); // HZ/2200;
+    ttcpolicy.preemptible=1; // 1 
 
-    int EXTThread::getPriority()
-    {
-#ifdef EXT_BOOST
-#ifdef TARGET_OS_WINDOWS
-        return (int) GetThreadPriority(bthread.native_handle());
+    result = thread_policy_set(pthread_mach_thread_np(pthread),
+                               THREAD_TIME_CONSTRAINT_POLICY,
+                               (thread_policy_t)&ttcpolicy,
+                               THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+    if (result != KERN_SUCCESS)
+      {
+        fprintf(stderr, "Error: failed to set thread priority: %s\n", strerror(result));
+        return 0;
+      }else{
+        return 1;
+      }
 #else
-	return 0;
+    fprintf(stderr, "Error: cannot set thread priority on Windows\n");
+    return 0;
 #endif
-	return 0;
-#else
+  }
 
+  int EXTThread::getPriority()
+  {
+#ifdef TARGET_OS_LINUX 
+    int policy;
+    sched_param param;
+    pthread_getschedparam(pthread,&policy,&param);
+    return param.sched_priority;
 #endif
-    }
-	
+    // fprintf(stderr, "Error: thread priority only available Linux\n");    
+    return 0;
+  }
+  
     bool EXTThread::isRunning() 
     { 
 #ifdef EXT_BOOST

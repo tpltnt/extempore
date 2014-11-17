@@ -62,6 +62,14 @@
   (lambda (a)
     (tref a 1)))
 
+(bind-func third:[!b,Pair:<!a,!b>*]*
+  (lambda (a)
+    (tref a 2)))
+
+(bind-func fourth:[!b,Pair:<!a,!b>*]*
+  (lambda (a)
+    (tref a 3)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; singly linked lists
 ;;
@@ -77,10 +85,27 @@
           (printout ")")
           void))))
 
+(bind-func tostring:[String*,List*]*
+  (lambda (xs)
+    (if (null? xs)
+        (sprintln "()")
+        (let ((ska:String* (sprintout "(" (car xs))))
+          (for-each (lambda (xz)
+                      (set! ska (sprintout ska " " xz)))
+                    (cdr xs))
+          (sprintout ska ")")))))
+
 
 (bind-func cons:[List:<!a,List*>*,!a,List:<!a,List*>*]*
   (lambda (x y)
     (let ((obj (alloc)))
+      (tset! obj 0 x)
+      (tset! obj 1 y)
+      obj)))
+
+(bind-func cons_h:[List:<!a,List*>*,!a,List:<!a,List*>*]*
+  (lambda (x y)
+    (let ((obj (halloc)))
       (tset! obj 0 x)
       (tset! obj 1 y)
       obj)))
@@ -107,10 +132,33 @@
         0
         (+ 1 (length (cdr a))))))
 
+(bind-func copy:[List:<!a,List*>*,List:<!a,List*>*]*
+  (lambda (lst)
+    (let ((orig lst)
+          (cpy null))
+      (while (not (null? orig))
+        (set! cpy (cons (car orig) cpy))
+        (set! orig (cdr orig)))
+      (reverse cpy))))
+
+(bind-func copy_h:[List:<!a,List*>*,List:<!a,List*>*]*
+  (lambda (lst)
+    (let ((orig lst)
+          (cpy null))
+      (while (not (null? orig))
+        (set! cpy (cons_h (car orig) cpy))
+        (set! orig (cdr orig)))
+      (reverse cpy))))
+
+(bind-func equal:[List:<!a,List*>*,List:<!a,List*>*,List:<!a,List*>*]*
+  "returns true if 'equal' returns true for all pairs of elements"
+  (lambda (list1 list2)
+    (every (lambda (a b) (equal a b)) list1 list2)))
+
 (bind-func nth_tailr:[List:<!a,List*>*,List:<!a,List*>*,i64]*
   (lambda (lst idx)
     (let ((nt (lambdas (l i cnt)
-                       (if (or (= cnt i) (> cnt i))
+                       (if (or (= cnt i) (> cnt i) (null? l))
                            l
                            (nt (cdr l)
                                i
@@ -118,14 +166,11 @@
       (let ((r (nt lst idx 0)))
         r))))
 
-
-
 (bind-func nth_tail:[List:<!a,List*>*,List:<!a,List*>*,i64]*
   (lambda (lst idx)
-    (if (= idx 0)
+    (if (or (<= idx 0) (null? lst))
         lst
-        (if (null? (cdr lst)) lst
-            (nth_tail (cdr lst) (- idx 1))))))
+        (nth_tail (cdr lst) (- idx 1)))))
 
 (bind-func nthr:[!a,List:<!a,List*>*,i64]*
   (lambda (lst idx)
@@ -204,6 +249,28 @@
                        (cons (car l) (f (cdr l)))
                        (f (cdr l)))))))
       (f xs))))
+
+(bind-func index_of:[size_t,!a,List:<!a,List*>*]*
+  "return index of first occurrence of element in lst, or -1 if not present"
+  (lambda (element lst)
+    (let ((f (lambda (l cnt)
+               (if (null? l)
+                   -1
+                   (if (equal element (car l))
+                       cnt
+                       (f (cdr l) (set! cnt (+ cnt 1))))))))
+      (f lst 0))))
+
+(bind-func index_of:[size_t,!a,List:<!a,List*>*,[bool,!a,!a]*]*
+  "return index of first occurrence of element in lst, or -1 if not present"
+  (lambda (element lst pred)
+    (let ((f (lambda (l cnt)
+               (if (null? l)
+                   -1
+                   (if (pred element (car l))
+                       cnt
+                       (f (cdr l) (set! cnt (+ cnt 1))))))))
+      (f lst 0))))
 
 (bind-func member:[List:<!a,List*>*,!a,List:<!a,List*>*]*
   (lambda (element lst)
@@ -358,6 +425,24 @@
                       (fold (cdr l) (fn (car l) r))))))
       (fold (reverse lst) end))))
 
+(bind-func take:[List:<!a,List*>*,List:<!a,List*>*,i64]*
+  "returns a copy of the first n elements of lst"
+  (lambda (lst n)
+    (let ((newlst (list))
+          (oldlst lst)
+          (count 0))
+      (while (and (< count n)
+                  (not (null? oldlst)))
+        (set! newlst (cons (car oldlst) newlst))
+        (set! oldlst (cdr oldlst))
+        (set! count  (+ count 1)))
+      (reverse newlst))))
+
+(bind-func drop:[List:<!a,List*>*,List:<!a,List*>*,i64]*
+  "returns a copy of lst sans the first n elements"
+  (lambda (lst n)
+    (copy (nth_tail lst n))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; a simple 'assoc' dictionary
@@ -367,13 +452,45 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(bind-func dict_find:[!z,List:<Pair:<String*,!z>*,List*>*,String*]*
+(bind-func dict_get:[!v,List:<Pair:<String*,!v>*,List*>*,String*]*
+  "find value for key in dict (which must be a list of any <i8*,!v>)"
   (lambda (dict key)
-    (if (null? dict) (convert null)
+    (if (null? dict)
+        (convert null)
         (if (string_cmp (first (car dict)) key)
             (second (car dict))
-            (dict_find (cdr dict) key)))))
+            (dict_get (cdr dict) key)))))
 
+(bind-func dict_set:[!v,List:<Pair:<String*,!v>*,List*>*,String*,!v]*
+  "set (or overwrite) value for key in dict (returns the old value)"
+  (lambda (dict key value)
+    (if (null? dict)
+        (convert null)
+        (if (string_cmp (first (car dict)) key)
+            (let ((oldval (second (car dict))))
+              (tset! (car dict) 1 value)
+              oldval)
+            (if (null? (cdr dict))
+                (begin (append dict (list (Pair key value)))
+                       (convert null))
+                (dict_set (cdr dict) key value))))))
+
+(bind-func dict_update:[!v,List:<Pair:<String*,!v>*,List*>*,String*,[!v,!v]*]*
+  "set (or update) value for key in dict according to update_fn (returns the old value)"
+  (lambda (dict key update_fn)
+    (if (null? dict)
+        (convert null)
+        (if (string_cmp (first (car dict)) key)
+            (let ((oldval (second (car dict)))
+                  (newval (update_fn oldval)))
+              ;; if update_fn returns null, do nothing. otherwise
+              ;; update the value for key
+              (tset! (car dict) 1 newval)
+              oldval)
+            (if (null? (cdr dict))
+                (begin (append dict (list (Pair key (update_fn (convert null)))))
+                       (convert null))
+                (dict_update (cdr dict) key update_fn))))))
 
 ;;;;;;;;;;;
 ;; TREES ;;

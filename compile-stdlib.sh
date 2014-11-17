@@ -32,11 +32,7 @@ external/shaders.xtm \
 external/assimp.xtm \
 external/openvg.xtm"}
 
-PRECOMP_COMMAND_FILENAME="xtmprecomp-command-file.xtm"
-PRECOMP_EXTEMPORE_RUN_COMMAND="./extempore --nostd --run "
-
-# clear the log file (if present)
-rm -f compile-stdlib.log
+PRECOMP_EXTEMPORE_RUN_COMMAND="./extempore --nostd $1 --eval "
 
 echo Precompiling the Extempore standard library.  This may take several minutes...
 echo
@@ -44,11 +40,9 @@ echo
 # check all the required shared libs are there
 for f in $PRECOMP_LIBS
 do
-    echo "(sys:precomp:compile-xtm-file \"libs/$f\" #t #t #t)" > $PRECOMP_COMMAND_FILENAME
-    echo "Precompiling libs/$f"
-    $PRECOMP_EXTEMPORE_RUN_COMMAND $PRECOMP_COMMAND_FILENAME | tee -a compile-stdlib.log
+    $PRECOMP_EXTEMPORE_RUN_COMMAND "(sys:precomp:compile-xtm-file \"libs/$f\" #t #t #t)"
     rc=$?
-    if [[ $rc != 0 ]] ; then
+    if (($rc != 0))  ; then
         echo -e "\033[0;31mError precompiling libs/$f\033[0;00m"
         echo
         exit $rc
@@ -57,7 +51,5 @@ do
         echo
     fi
 done
-
-rm $PRECOMP_COMMAND_FILENAME
 
 exit 0

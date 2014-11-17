@@ -1,0 +1,135 @@
+;;; tests/test.xtm -- testing framework for Extempore
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: 
+
+;;; Commentary:
+
+;; These functions & macros provide a basic unit testing framework for
+;; Extempore - load before running any of the other .xtm files in
+;; tests/
+
+;; To write a test, use the xtmtest macro. Usage examples:
+
+;; (xtmtest '(bind-func compile_fn ; this is the function definition
+;;             (lambda ()               ; this is the function definition
+;;               (* 3 8)))         ; this is the function definition
+;;          (compile_fn))          ; this is how to call it
+
+;; (xtmtest '(bind-func no_compile_fn ; this is the function definition
+;;             (lambda ()                  ; this is the function definition
+;;               (* 3 8.0)))          ; this is the function definition
+;;          (no_compile_fn))          ; this is how to call it
+
+;; (xtmtest '(bind-func incorrect_fn ; this is the function definition
+;;             (lambda ()                 ; this is the function definition
+;;               (* 3 4)))           ; this is the function definition
+;;          (incorrect_fn)           ; this is how to call it
+;;          13)                      ; this is the expected return value
+
+;; (xtmtest '(bind-func correct_fn ; this is the function definition
+;;             (lambda ()               ; this is the function definition
+;;               (* 3 4)))         ; this is the function definition
+;;          (correct_fn)           ; this is how to call it
+;;          12)                    ; this is the expected return value
+
+;; ;; print the results
+;; (xtmtest-print-results)
+
+;; For more examples, see the test files in the tests/ subdirectory
+
+;;; Code:
+
+(sys:load-preload-check 'test)
+(define *xtmlib-test-loaded* #f)
+
+(define *xtmtest-results*
+  '((correct)
+    (incorrect)
+    (compile)
+    (no-compile)))
+
+(define xtmtest-reset-results
+  (lambda ()
+    (set! *xtmtest-results*
+          '((correct)
+            (incorrect)
+            (compile)
+            (no-compile)))))
+
+(define xtmtest-update-test-result
+  (lambda (func-sym label call expected got) 
+    (let ((tail (assoc label *xtmtest-results*))
+          (reslist (list func-sym call expected got)))
+      (set-cdr! tail
+                (cons reslist
+                      (cl:remove-if (lambda (res) (equal? res reslist))
+                                    (cdr tail)))))
+    (print "result: ")
+    (print-with-colors (case label
+                         ('correct 'green)
+                         ('incorrect 'magenta)
+                         ('compile 'yellow)
+                         ('no-compile ' red))
+                       'default #t (print label "\n"))))
+
+(define-macro (xtmtest form call . expected-result)
+  `(let ((func-sym (quote ,(car call)))
+         (exp-res ,(if (null? expected-result)
+                       #f
+                       (car expected-result))))
+     (print-with-colors 'cyan 'default #t (print "xtmtest "))
+     (print-with-colors 'black 'cyan #t (print "" func-sym ""))
+     (println)
+     (catch (xtmtest-update-test-result func-sym 'no-compile ',call #f #f)
+            (eval ,form (interaction-environment))
+            (catch (xtmtest-update-test-result func-sym 'compile ',call #f #f)
+                   (let ((result (eval ,call (interaction-environment))))
+                     (if (or (not exp-res) (equal? exp-res result))
+                         (xtmtest-update-test-result func-sym 'correct ',call exp-res result)
+                         (xtmtest-update-test-result func-sym 'incorrect ',call exp-res result)))))))
+
+(define-macro (xtmtest-result call expected-result)
+  `(let ((func-sym (quote ,(car call))))
+     (print-with-colors 'cyan 'default #t (print "xtmtest "))
+     (print-with-colors 'black 'cyan #t (print "" func-sym ""))
+     (println)
+     (catch (xtmtest-update-test-result func-sym ',call 'compile #f #f)
+            (let ((result (eval ,call (interaction-environment))))
+              (if (equal? ,expected-result result)
+                  (xtmtest-update-test-result func-sym 'correct ',call ,expected-result result)
+                  (xtmtest-update-test-result func-sym 'incorrect ',call ,expected-result result))))))
+
+(define xtmtest-print-results
+  (lambda ()
+    (println)
+    (print-with-colors 'black 'blue #t (print " Test results "))
+    (print "\n\n")
+    (for-each (lambda (label-list)
+                (if (> (length label-list) 1)
+                    (begin
+                      (print-with-colors 'blue 'default #t (print (car label-list) "\n\n"))
+                      (for-each (lambda (reslist)
+                                  (print "  name: ")
+                                  (print-with-colors (cdr (assoc (car label-list) '((correct . green)
+                                                                                    (incorrect . yellow)
+                                                                                    (compile . magenta)
+                                                                                    (no-compile . red))))
+                                                     'default #f (print (car reslist)))
+                                  (print " call: ")
+                                  (print-with-colors 'blue 'default #f (print (cadr reslist)))
+                                  (if (caddr reslist)
+                                      (begin (print " result:" (caddr reslist))
+                                             (if (not (equal? (car label-list) 'correct))
+                                                 (print " expecting:" (cadddr reslist)))))
+                                  (println))
+                                (cdr label-list))))
+                (println))
+              *xtmtest-results*)))
+
+(define *xtmlib-test-loaded* #t)
+(print-with-colors 'green 'default #t (print "Loaded "))
+(print-with-colors 'blue 'default #t (print "test"))
+(print " library\n")
+

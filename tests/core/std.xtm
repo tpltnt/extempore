@@ -1,0 +1,31 @@
+;;; std.xtm -- tests for core/std.xtm
+
+;; Author: Ben Swift
+;; Keywords: extempore
+;; Required dylibs: 
+
+;;; Commentary:
+
+;; 
+
+;;; Code:
+
+(sys:load "libs/core/test.xtm")
+
+(xtmtest '(bind-func test_string_cat_1
+            (lambda ()
+              (println (string_cat (Str "string1 ")
+                                   (Str "string2")))))
+         (test_string_cat_1))
+
+(xtmtest '(bind-func test_string_cat_2
+            (lambda ()
+              (println (string_cat (Str "string1 ")
+                                   (Str "string2 ")
+                                   (Str "string3 ")
+                                   (Str "string4 ")
+                                   (Str "string5 ")
+                                   (Str "string6 ")
+                                   (Str "string7 ")
+                                   (Str "string8")))))
+         (test_string_cat_2))
