@@ -316,7 +316,10 @@ int main(int argc, char** argv)
     primary_repl->connectToProcessAtHostname(host,primary_port);
 
 #ifdef TARGET_OS_LINUX
-    XInitThreads(); // make Xlib thread-safe
+    if(XInitThreads()==0){
+      printf("Failed to initialise multi-thread X11. Exiting...");
+      exit(1);
+    }
 #endif
 
 #ifdef TARGET_OS_MAC
