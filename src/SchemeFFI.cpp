@@ -396,7 +396,7 @@ namespace extemp {
     pointer SchemeFFI::exit_extempore(scheme* _sc, pointer args)
     {
       int rc = (int)ivalue(pair_car(args));
-      exit(rc);
+      std::_Exit(rc);
     }
 
     pointer SchemeFFI::dataGETi64(scheme* _sc, pointer args)
