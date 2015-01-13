@@ -18,9 +18,9 @@
 (sys:precomp:set-dylib-name-info
  'libxtgl
  (cond ((string=? (sys:platform) "OSX")
-        "/Users/ben/Code/src/XTGL/libxtgl.dylib")
+        "libxtgl.dylib")
        ((string=? (sys:platform) "Linux")
-        "/home/ben/Code/src/XTGL/libxtgl.so")
+        "libxtgl.so")
        ((string=? (sys:platform) "Windows")
         "libxtgl.dll")
        (else
