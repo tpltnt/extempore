@@ -490,6 +490,16 @@
        `(+ ,(caddr args) (+ (* .5 ,(cadddr args)) (* .5 ,(cadddr args) (ramp (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args)))))))
        `(+ ,(cadr args) (+ (* .5 ,(caddr args)) (* .5 ,(caddr args) (ramp (* 2pi beat ,(cadddr args))))))))
 
+(define slide
+  (lambda (x)
+    (- 1.0 (ramp x))))
+
+(macro (slider args)
+       (if (> (length args) 4)
+           `(+ ,(caddr args) (+ (* .5 ,(cadddr args)) (* .5 ,(cadddr args) (slide (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args)))))))
+           `(+ ,(cadr args) (+ (* .5 ,(caddr args)) (* .5 ,(caddr args) (slide (* 2pi beat ,(cadddr args))))))))
+
+
 ;; square wave LFO with period 2pi
 
 (define rect
@@ -686,22 +696,28 @@
 (define *metro* (make-metro 120 '(0 . 0)))
 
 
-(define-macro (set-signal! variable value dur . rate)
-   (let ((r (if (null? rate) 1/16 (car rate))))
-      (if (closure? (eval value))
-	  `(let l1929 ((count (/ ,dur ,r)))
-	      (if (equal? ,variable 'stop-signal)
-		  'done
-		  (begin (set! ,variable (apply ,value (list ,variable)))
-			 (if (> count 1)
-			     (callback (+ (now) (* *samplerate* ,r)) l1929 (- count 1))))))
-	  `(let l1929 ((inc (/ (- ,value ,variable) (/ ,dur ,r)))
-		       (count (/ ,dur ,r)))
-	      (if (equal? ,variable 'stop-signal)
-		  'done
-		  (begin (set! ,variable (+ ,variable inc))
-			 (if (> count 1)
-			     (callback (+ (now) (* *samplerate* ,r)) l1929 inc (- count 1)))))))))
+;; define me first!
+(define-macro (set-signal! variable value seconds . rate)
+  (let ((r (if (null? rate) 1/30 (car rate))))
+    (if (and (or (list? value)
+                 (defined? value))
+             (closure? (eval value)))
+        `(let l1929 ((t (now))
+                     (count (/ ,seconds ,r)))
+           (if (equal? ,variable 'stop-signal)
+               'done
+               (begin (set! ,variable (apply ,value (list ,variable)))
+                      (if (> count 1)
+                          (callback (+ t (* *samplerate* ,r)) l1929 (+ t (* *samplerate* ,r)) (- count 1))))))
+        `(let l1929 ((t (now))
+                     (inc (/ (- ,value ,variable) (real->integer (/ ,seconds ,r))))
+                     (count (real->integer (/ ,seconds ,r))))
+           (if (equal? ,variable 'stop-signal)
+               'done
+               (begin (set! ,variable (+ ,variable inc))
+                      (if (> count 1)
+                          (callback (+ t (* *samplerate* ,r)) l1929 (+ t (* *samplerate* ,r)) inc (- count 1)))))))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1871,32 +1887,45 @@
                  (print " to point to your LLVM directory before you can precompile xtlang code.\n")
                  (error "")))
       (let* ((platform (sys:platform))
-             (bitcode-path (string-append "/tmp/" module-name ".bc"))
-             (asm-path (string-append "/tmp/" module-name ".s"))
+             (bitcode-path (if (string=? platform "Windows")
+                               (string-append module-name ".bc")
+                               (string-append "/tmp/" module-name ".bc")))
+             (asm-path (if (string=? platform "Windows")
+                           (string-append module-name ".s")
+                           (string-append "/tmp/" module-name ".s")))
              (shlib-path
               (cond ((string=? platform "Linux")
                      (string-append "/tmp/" module-name ".so"))
                     ((string=? platform "OSX")
                      (string-append "/tmp/" module-name ".dylib"))
                     ((string=? platform "Windows")
-                     (string-append "./" module-name ".dll"))
+                     (string-append "" module-name ".dll"))
                     (else "")))
              (compilation-command-a
-              (string-append
-               ext-llvm-dir
-               "/bin/llc -O3 -relocation-model=pic -tailcallopt "
-               bitcode-path))              
+              (if (string=? platform "Windows")
+                  (string-append
+                   ext-llvm-dir
+                   "/bin/Release/llc -O3 -relocation-model=pic -tailcallopt "
+                   bitcode-path)
+                  (string-append
+                   ext-llvm-dir
+                   "/bin/llc -O3 -relocation-model=pic -tailcallopt "
+                   bitcode-path)))
              (compilation-command-b
-              (string-append
-               (cond ((string=? platform "Linux")
-                      "gcc -O3 --shared -fPIC -g ")
-                     ((string=? platform "OSX")
-                      (string-append "clang -O3 -dynamiclib -undefined dynamic_lookup "
-                                     )))
-               asm-path
-               " -o " shlib-path "\n")))
-        (if (string=? platform "Windows")
-            (print-error 'Sorry, 'this 'function 'is 'not 'available 'on 'your 'platform))
+              (if (string=? platform "Windows")
+                  (string-append "cl.exe /D_USRDLL /D_WINDLL "
+                                 asm-path
+                                 " /link /DLL /OUT:"
+                                 shlib-path "\n")
+                  (string-append
+                   (cond ((string=? platform "Linux")
+                          "gcc -O3 --shared -fPIC -g ")
+                         ((string=? platform "OSX")
+                          (string-append "clang -O3 -dynamiclib -undefined dynamic_lookup ")))
+                   asm-path
+                   " -o " shlib-path "\n"))))
+        ;; (if (string=? platform "Windows")
+        ;;     (print-error 'Sorry, 'this 'function 'is 'not 'available 'on 'your 'platform))
         (begin (print "Looking for ")
                (print-with-colors 'magenta 'default #t (print "llc"))
                (print " in " ext-llvm-dir "\n"))
@@ -2067,8 +2096,8 @@
                                   (> (length label-list) 1)))
                            *xtmtest-results*)
                   (begin (print-with-colors 'red 'default #t
-                                            (print "Some tests failed.\n"))
+                                            (print "Some tests failed :(\n"))
                          1)
                   (begin (print-with-colors 'green 'default #t
-                                            (print "All tests passed.\n"))
+                                            (print "All tests passed :)\n"))
                          0))))))

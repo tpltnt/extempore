@@ -37,6 +37,9 @@
 #define _EXTLLVM_H
 
 #include "Scheme.h"
+#include <vector>
+#include <map>
+#include <string>
 //#include <ucontext.h>
 
 typedef struct _llvm_zone_t {
@@ -98,6 +101,7 @@ void llvm_push_zone_stack(llvm_zone_t*);
 bool llvm_ptr_in_zone(llvm_zone_t*, void*);
 bool llvm_ptr_in_current_zone(void*);
 
+void llvm_schedule_callback(long long, void*);  
 void* llvm_get_function_ptr(char* n);
 pointer llvm_scheme_env_set(scheme* _sc, char* sym);
 bool llvm_check_valid_dot_symbol(scheme* sc, char* symbol);
@@ -162,9 +166,16 @@ unsigned long string_hash(unsigned char* str);
 ///////////////////////////////////////////////////
 
 namespace llvm {
-    class Module;
-    class ModuleProvider;
-    class ExecutionEngine;
+  class Module;
+  class GlobalVariable;
+  class GlobalValue;
+  class Function;
+  class StructType;  
+  class ModuleProvider;
+#ifdef EXT_MCJIT
+  class SectionMemoryManager;
+#endif
+  class ExecutionEngine;  
 
   namespace legacy {
     class PassManager;
@@ -180,6 +191,16 @@ namespace extemp {
 	static EXTLLVM* I() { return &SINGLETON; }	
 	
 	void initLLVM();
+
+  llvm::Module* activeModule();
+  llvm::Function* getFunction(std::string);
+  llvm::GlobalVariable* getGlobalVariable(std::string);
+  llvm::StructType* getNamedType(std::string);
+  llvm::GlobalValue* getGlobalValue(std::string);
+#ifdef EXT_MCJIT  
+  uint64_t getSymbolAddress(std::string);
+#endif
+  void addModule(llvm::Module* m) { Ms.push_back(m); }  
 	
 	static int64_t LLVM_COUNT;
 	static bool OPTIMIZE_COMPILES;	
@@ -189,9 +210,13 @@ namespace extemp {
 	llvm::ModuleProvider* MP;
 	llvm::ExecutionEngine* EE;
   llvm::legacy::PassManager* PM;
+#ifdef EXT_MCJIT
+  llvm::SectionMemoryManager* MM;
+#endif  
 
     private:
 	static EXTLLVM SINGLETON;
+  std::vector<llvm::Module*> Ms;  
     };
 
 } // end extemp namespace

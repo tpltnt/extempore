@@ -6,17 +6,7 @@ else
 PLATFORM_LIBS += -pthread
 endif
 
-ifdef JACK_AUDIO
-PLATFORM_LIBS += -ljack
-else
-PLATFORM_LIBS += -lportaudio
-endif
-
-ifdef EXT_BUILD_GENERIC
-PLATFORM_LIBS += -Wl,-Bstatic -lpcre -Wl,-Bdynamic -lX11
-else
-PLATFORM_LIBS += -lpcre -lX11
-endif
+PLATFORM_LIBS += -lportaudio -lpcre # -lGL -lX11
 
 PLATFORM_CXXFLAGS := -g -fPIC -O3
 PLATFORM_LDFLAGS := -Wl,--export-dynamic
@@ -24,7 +14,3 @@ PLATFORM_LDFLAGS := -Wl,--export-dynamic
 PLATFORM_DEFINES := -DTARGET_OS_LINUX
 PLATFORM_CXX := g++
 PLATFORM_LD := g++
-
-ifdef EXT_BUILD_GENERIC
-PLATFORM_CXXFLAGS += -mtune=generic
-endif

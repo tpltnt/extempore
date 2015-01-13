@@ -550,8 +550,11 @@ namespace extemp {
 
 		std::stringstream ss;
 		std::string load_path = scm->getLoadPath();
-
-                sleep(1); // give time for NSApp etc. to init                
+#ifdef TARGET_OS_WINDOWS
+		Sleep(1000);
+#else
+                sleep(1); // give time for NSApp etc. to init    
+#endif
 
                 while(!scm->getRunning()) {}
 
@@ -560,17 +563,25 @@ namespace extemp {
                 scm->loadFile("llvmti.xtm", load_path.c_str());		
 
                 scm->setLoadedLibs(true);
-                sleep(1); // give time for NSApp etc. to init
+#ifdef TARGET_OS_WINDOWS
+				Sleep(1000);
+#else
+				sleep(1); // give time for NSApp etc. to init    
+#endif
 
                 // only load extempore.xtm in primary process
                 char sstr[EXT_INITEXPR_BUFLEN];
                 if(scm->getName().compare("primary") == 0) {
                   if (extemp::UNIV::EXT_LOADSTD == 1) {
                     memset(sstr,0,EXT_INITEXPR_BUFLEN);
+#ifdef TARGET_OS_WINDOWS
+					_snprintf(sstr,EXT_INITEXPR_BUFLEN,"(sys:load \"libs/core/std.xtm\" 'quiet)");
+#else
                     snprintf(sstr,EXT_INITEXPR_BUFLEN,"(sys:load \"libs/core/std.xtm\" 'quiet)");
+#endif
                     std::string* s4 = new std::string(sstr);
                     guard.lock();
-                    q.push(SchemeTask(extemp::UNIV::TIME, (60*5*44100), s4, "file_init", 5));
+                    q.push(SchemeTask(extemp::UNIV::TIME, scm->getMaxDuration(), s4, "file_init", 5));
                     guard.unlock();
                   }
 
@@ -581,8 +592,13 @@ namespace extemp {
                     ascii_text_color(0,7,10);
                     printf("%s\n\n", scm->getInitExpr().c_str());
                     memset(sstr,0,EXT_INITEXPR_BUFLEN);
-                    snprintf(sstr,EXT_INITEXPR_BUFLEN,"%s",scm->getInitExpr().c_str());
-                    std::string* s5 = new std::string(sstr);
+#ifdef TARGET_OS_WINDOWS
+					_snprintf(sstr, EXT_INITEXPR_BUFLEN, "%s", scm->getInitExpr().c_str());
+#else
+					snprintf(sstr, EXT_INITEXPR_BUFLEN, "%s", scm->getInitExpr().c_str());
+#endif
+
+					std::string* s5 = new std::string(sstr);
                     guard.lock();
                     q.push(SchemeTask(extemp::UNIV::TIME+1000, (60*60*44100), s5, "file_init", 5));
                     guard.unlock();
@@ -630,7 +646,7 @@ namespace extemp {
 							// this should be the expected result!!  - i.e. do nothing
 						}
 						uint64_t in_time = UNIV::TIME;
-                                                uint64_t out_time = schemeTask.getMaxDuration();
+            uint64_t out_time = schemeTask.getMaxDuration();
 						scheme_load_string(sc, (const char*) evalString->c_str(), in_time, in_time+out_time); // sc->call_default_time);
 						if(SCHEME_EVAL_TIMING) {
 						}	
@@ -665,7 +681,8 @@ namespace extemp {
 							evalString->erase(--evalString->end());
 						}					
 						long long in_time = UNIV::TIME;
-						scheme_load_string(sc, (const char*) evalString->c_str(), in_time, in_time+sc->call_default_time);
+            uint64_t out_time = schemeTask.getMaxDuration();            
+						scheme_load_string(sc, (const char*) evalString->c_str(), in_time, in_time+out_time);
 						if(SCHEME_EVAL_TIMING) {
 						}												
 						if(sc->retcode != 0) { //scheme error
