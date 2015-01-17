@@ -805,12 +805,15 @@
     `(begin (push_new_zone ,(cadr ast))
             (let ((,resname ,(if (= (length ast) 3) (caddr ast) (cadddr ast)))
                   (,zonename (pop_zone))
-                  (,newzname (llvm_peek_zone_stack))
-                  (,rescopyname (zcopy ,resname ,zonename ,newzname)))
-              ,(if (= (length ast) 3)
-                   `(llvm_zone_destroy ,zonename)
-                   `(llvm_destroy_zone_after_delay ,zonename ,(caddr ast)))
-              ,rescopyname))))
+                  (,newzname (llvm_peek_zone_stack)))
+               ;; this extra let seems reduentant! BUT is needed
+               ;; because rescopyname should go in newzone not zonename
+               ;; i.e. needs to go into a *new* let after pop_zone is called
+               (let ((,rescopyname (zcopy ,resname ,zonename ,newzname)))
+                 ,(if (= (length ast) 3)
+                     `(llvm_zone_destroy ,zonename)
+                     `(llvm_destroy_zone_after_delay ,zonename ,(caddr ast)))
+                   ,rescopyname)))))
 
 (define impc:ti:letz
   (lambda (ast)
@@ -5414,14 +5417,14 @@
          ;; compile to ir	 
          (define fstr (impc:ir:compiler newast types))
          ;; compile to x86 - i.e. call jit on any new ir functions to force jit compilation	
-         (for-each (lambda (fn) (llvm:jit-compile-function fn)) (impc:ti:get-closure-names newast))
+         ;; (for-each (lambda (fn) (llvm:jit-compile-function fn)) (impc:ti:get-closure-names newast))
 
          ;;
          ;; now compile ir to x86 and make stub code
          (let* ((closure-type (cadr (impc:ir:gname)))
 		(closure-type-- (impc:ir:get-type-str (impc:ir:pointer-- (impc:ir:get-type-from-str closure-type))))
                 (compile-stub? (if (llvm:get-function (string-append (symbol->string symname) "_getter")) #f #t))
-                (fs (string-append "define ccc " closure-type " @" (string-append (symbol->string symname) "_maker")
+                (fs (string-append "define dllexport ccc " closure-type " @" (string-append (symbol->string symname) "_maker")
                                    "(i8* %_impz) nounwind {\nentry:\n"				   
                                    ;; "%_zone = bitcast i8* %_impz to %mzone*\n"
 				   ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -5431,10 +5434,10 @@
 				   ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                    fstr "}\n"))
                 (fssetter (string-append (if compile-stub? ;;(llvm:get-globalvar (string-append (symbol->string symname) "_var"))
-                                             (string-append "@" (symbol->string symname) "_var = global [1 x i8*] [ i8* null ]\n\n"
-                                                            "@" (symbol->string symname) "_var_zone = global [1 x i8*] [ i8* null ]\n\n")
+                                             (string-append "@" (symbol->string symname) "_var = dllexport global [1 x i8*] [ i8* null ]\n\n"
+                                                            "@" (symbol->string symname) "_var_zone = dllexport global [1 x i8*] [ i8* null ]\n\n")
                                              "") ;; if global var alread exists do nothing
-                                         "define ccc void @" (string-append (symbol->string symname) "_setter")
+                                         "define dllexport ccc void @" (string-append (symbol->string symname) "_setter")
                                          "(i8* %_impz) nounwind {\nentry:\n" 
                                          "%oldzone1 = getelementptr [1 x i8*]* @" (symbol->string symname) "_var_zone, i32 0, i32 0\n"
                                          "%oldzone2 = load i8** %oldzone1\n"
@@ -5455,7 +5458,7 @@
                                          "cont:\n"
                                          "ret void\n}\n"))
                 (stub-type (impc:ir:get-closure-type-from-str closure-type))
-                (fsgetter (string-append "define ccc i8* @" (symbol->string symname) "_getter() nounwind {\n"
+                (fsgetter (string-append "define dllexport ccc i8* @" (symbol->string symname) "_getter() nounwind {\n"
                                          "entry:\n"
                                          "%ptr = getelementptr [1 x i8*]* @" (symbol->string symname) "_var, i32 0, i32 0\n"
                                          "%func = load i8** %ptr\n"
@@ -5470,7 +5473,7 @@
 							     (string-append ", " (impc:ir:get-type-str a)))
 							   (cddr stub-type)))
 					       "}*")))
-		(fscallback (string-append "define ccc void @" (string-append (symbol->string symname) "_callback(i8* %dat) nounwind {\n"
+		(fscallback (string-append "define dllexport ccc void @" (string-append (symbol->string symname) "_callback(i8* %dat) nounwind {\n"
 					   "entry:\n"
 					   (if (null? cb-struct-type)
 					       "%fstruct = select i1 true, i8* %dat, i8* %dat\n"
@@ -5512,7 +5515,7 @@
              "ret void\n" 
 					   "}\n")))
 		(fstub_scheme_valid #t) 
-                (fstub_scheme (string-append "define ccc i8* " ;(impc:ir:get-type-str (car stub-type))
+                (fstub_scheme (string-append "define dllexport ccc i8* " ;(impc:ir:get-type-str (car stub-type))
 					     " @" (string-append (symbol->string symname) "_scheme(i8* %_sc, i8* %args) nounwind\n"
 					     "{\nentry:\n"
 					     "%_zone = call ccc %mzone* @llvm_peek_zone_stack()\n"
@@ -5632,7 +5635,7 @@
 					     
 					     "ret i8* %res\n"
 					     "}")))
-                (fstub (string-append "define fastcc " (impc:ir:get-type-str (car stub-type))
+                (fstub (string-append "define dllexport fastcc " (impc:ir:get-type-str (car stub-type))
                                       " @" (string-append (symbol->string symname) "("
                                                           (apply string-append (map (lambda (t n c)
                                                                                       (string-append c (impc:ir:get-type-str t) " "
@@ -5665,7 +5668,7 @@
                                                           ")\nret " (impc:ir:get-type-str (car stub-type)) 
                                                           (if (impc:ir:void? (car stub-type)) "\n" " %result\n")
                                                           "}")))
-                (fstub_native (string-append "define ccc " (impc:ir:get-type-str (car stub-type))
+                (fstub_native (string-append "define dllexport ccc " (impc:ir:get-type-str (car stub-type))
                                              " @" (string-append (symbol->string symname) "_native("
                                                                  (apply string-append (map (lambda (t n c)
                                                                                              (string-append c (impc:ir:get-type-str t) " "
@@ -6270,6 +6273,68 @@
     (println str)
     (llvm:compile str)))
 
+
+
+;; (define-macro (bind-val symbol type . optional-value)
+;;   (let ((value (if (null? optional-value)
+;;                    0
+;;                    (car optional-value))))
+;;     (if *impc:compiler:precomp-llvm*
+;;         (emit (sexpr->string
+;;                `(bind-val ,symbol ,type ,value))
+;;               "\n\n"
+;;               *impc:compiler:precomp*))
+;;     (let ((t (impc:ir:get-type-from-pretty-str (atom->string type))))
+;;       (cond ((llvm:get-globalvar (symbol->string symbol))
+;;              `(begin
+;;                 (print-with-colors 'yellow 'default #t (print "Compiler Warning:"))
+;;                 (print " symbol ")
+;;                 (print-with-colors 'green 'default #f (print ',symbol))
+;;                 (print " is already bound, and has not been re-bound")
+;;                 (println)
+;;                 (throw "")))
+;;             ((and (equal? "i8*" (symbol->string type))
+;;                   (string? value))
+;;              `(begin
+;;                 (llvm:compile (string-append "@" ,(symbol->string symbol)
+;;                                              " = external global i8*"))
+;;                 (llvm:bind-global-var ,(symbol->string symbol) ,(string->cptr value))
+;;                 (impc:print-bound-message ,symbol ,type)))
+;;             ((and (or (impc:ir:number? t) (impc:ir:boolean? t))
+;;                   (not (impc:ir:pointer? t)))
+;;              `(begin
+;;                 (llvm:compile
+;;                  (string-append "@" ,(symbol->string symbol)
+;;                                 " = global "
+;;                                 ,(impc:ir:get-type-str t) " "
+;;                                 ,(if (= t *impc:ir:fp32*)
+;;                                      (llvm:convert-float (atom->string (eval value)))
+;;                                      (atom->string (eval value)))))
+;;                 (impc:print-bound-message ,symbol ,type)))
+;;             ((impc:ir:pointer? t)
+;;              (if (integer? (eval value))
+;;                  `(begin (llvm:compile (string-append "@" ,(symbol->string symbol)
+;;                                                       " = external global "
+;;                                                       ,(impc:ir:get-type-str t)))
+;;                          (llvm:bind-global-var ,(symbol->string symbol)
+;;                                                ,(sys:make-cptr (* (eval value)
+;;                                                                   (if (impc:ir:number? t)
+;;                                                                       (impc:ir:get-type-size t)
+;;                                                                       (/ (sys:pointer-size) 8)))))
+;;                          (impc:print-bound-message ,symbol ,type))
+;;                  `(impc:compiler:print-compiler-error "when binding global pointers, third argument should be size of buffer to allocate")))
+;;             ((or (impc:ir:tuple? t) (impc:ir:array? t) (impc:ir:vector? t))
+;;              `(begin
+;;                 (llvm:compile
+;;                  (string-append
+;;                   "@" ,(symbol->string symbol)
+;;                   " = global "
+;;                   ,(impc:ir:get-type-str t) " zeroinitializer"))
+;;                 (impc:print-bound-message ,symbol ,type)))
+;;             (else (impc:compiler:print-missing-type-error type))))))
+
+
+
 ;; it needs to: work for
 ;; - primitives
 ;; - pointers to primitives
@@ -6277,7 +6342,7 @@
 
 (define-macro (bind-val symbol type . optional-value)
   (let ((value (if (null? optional-value)
-                   0
+                   1
                    (car optional-value))))
     (if *impc:compiler:precomp-llvm*
         (emit (sexpr->string
@@ -6297,15 +6362,17 @@
                   (string? value))
              `(begin
                 (llvm:compile (string-append "@" ,(symbol->string symbol)
-                                             " = external global i8*"))
-                (llvm:bind-global-var ,(symbol->string symbol) ,(string->cptr value))
+                                             " = dllexport global i8* zeroinitializer"))
+                (call-as-xtlang ,(string->sexpr (string-append "(set! " (symbol->string symbol)
+                                                               " \"" value "\")")))
+                ;;(llvm:bind-global-var ,(symbol->string symbol) ,(string->cptr value))
                 (impc:print-bound-message ,symbol ,type)))
             ((and (or (impc:ir:number? t) (impc:ir:boolean? t))
                   (not (impc:ir:pointer? t)))
              `(begin
                 (llvm:compile
                  (string-append "@" ,(symbol->string symbol)
-                                " = global "
+                                " = dllexport global "
                                 ,(impc:ir:get-type-str t) " "
                                 ,(if (= t *impc:ir:fp32*)
                                      (llvm:convert-float (atom->string (eval value)))
@@ -6313,25 +6380,48 @@
                 (impc:print-bound-message ,symbol ,type)))
             ((impc:ir:pointer? t)
              (if (integer? (eval value))
-                 `(begin (llvm:compile (string-append "@" ,(symbol->string symbol)
-                                                      " = external global "
-                                                      ,(impc:ir:get-type-str t)))
-                         (llvm:bind-global-var ,(symbol->string symbol)
-                                               ,(sys:make-cptr (* (eval value)
-                                                                  (if (impc:ir:number? t)
-                                                                      (impc:ir:get-type-size t)
-                                                                      (/ (sys:pointer-size) 8)))))
-                         (impc:print-bound-message ,symbol ,type))
-                 `(impc:compiler:print-compiler-error "when binding global pointers, third argument should be size of buffer to allocate")))
+                 `(begin
+                    (llvm:compile (string-append "@" ,(symbol->string symbol)
+                                                 " = dllexport global " "" ""
+                                                 ,(impc:ir:get-type-str t)
+                                                 " zeroinitializer"))
+                    (call-as-xtlang ,(string->sexpr
+                                      (string-append "(set! " (symbol->string symbol)
+                                                     " (cast (malloc "
+                                                     (atom->string (* (eval value)
+                                                                      (if (impc:ir:number? t)
+                                                                          (impc:ir:get-type-size t)
+                                                                          (/ (sys:pointer-size) 8))))
+                                                     ") "
+                                                     (atom->string type)
+                                                     "))")))
+                    ;; (llvm:bind-global-var ,(symbol->string symbol)
+                    ;;                       ,(sys:make-cptr (* (eval value)
+                    ;;                                          (if (impc:ir:number? t)
+                    ;;                                              (impc:ir:get-type-size t)
+                    ;;                                              (/ (sys:pointer-size) 8)))))
+                    (impc:print-bound-message ,symbol ,type))
+                 (if (list? (eval value))
+                     `(begin
+                        (llvm:compile (string-append "@" ,(symbol->string symbol)
+                                                     " = dllexport global "
+                                                     ,(impc:ir:get-type-str t)
+                                                     "zeroinitializer"))
+                        (call-as-xtlang ,(string->sexpr (string-append "(set! " (symbol->string symbol)
+                                                                       " \"" (sexpr->string value) "\")")))
+                        ;;(llvm:bind-global-var ,(symbol->string symbol) ,(string->cptr value))
+                        (impc:print-bound-message ,symbol ,type))
+                     `(impc:compiler:print-compiler-error "when binding global pointers, third argument should be size of buffer to allocate or a valid xtlang sexpr"))))
             ((or (impc:ir:tuple? t) (impc:ir:array? t) (impc:ir:vector? t))
              `(begin
                 (llvm:compile
                  (string-append
                   "@" ,(symbol->string symbol)
-                  " = global "
+                  " = dllexport global "
                   ,(impc:ir:get-type-str t) " zeroinitializer"))
                 (impc:print-bound-message ,symbol ,type)))
             (else (impc:compiler:print-missing-type-error type))))))
+
 
 (define impc:ir:get-function-type
   (lambda (name)

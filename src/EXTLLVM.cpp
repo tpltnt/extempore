@@ -98,6 +98,7 @@
 
 #include "llvm/ExecutionEngine/JIT.h"
 #include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/ExecutionEngine/Interpreter.h"
 #include "llvm/ExecutionEngine/GenericValue.h"
 
@@ -121,11 +122,11 @@ std::map<std::string,std::string> LLVM_STR_CONST_MAP;
 
 extemp::EXTMutex alloc_mutex("alloc mutex");
 
-#ifdef _MSC_VER
-double log2(double num) {
-	return log(num)/log(2.0);
-}
-#endif
+//#ifdef _MSC_VER
+//double log2(double num) {
+//	return log(num)/log(2.0);
+//}
+//#endif
 
 // double (&cosd)(double) = cos;
 // double (&tand)(double) = tan;
@@ -614,8 +615,9 @@ void llvm_schedule_callback(long long time, void* dat)
 void* llvm_get_function_ptr(char* fname)
 {
   //using namespace llvm;
-  llvm::Module* M = extemp::EXTLLVM::I()->M;
-  llvm::Function* func = M->getFunction(std::string(fname));
+  // llvm::Module* M = extemp::EXTLLVM::I()->M;
+  // llvm::Function* func = M->getFunction(std::string(fname));
+  llvm::Function* func = extemp::EXTLLVM::I()->getFunction(std::string(fname));
   if(func == 0) {
     // throw std::runtime_error("Extempore runtime error: error retrieving function in llvm_get_function_ptr");
     return NULL;
@@ -1199,26 +1201,24 @@ struct closure_address_table* new_address_table()
  
 struct closure_address_table* add_address_table(llvm_zone_t* zone, char* name, uint32_t offset, char* type, int alloctype, struct closure_address_table* table)
 {
-  
-    struct closure_address_table* t = NULL;
-    if(alloctype == 1) {
-      t = (struct closure_address_table*) malloc(sizeof(struct closure_address_table));
-    } else if(alloctype == 2) {
+  struct closure_address_table* t = NULL;
+  if(alloctype == 1) {
+    t = (struct closure_address_table*) malloc(sizeof(struct closure_address_table));
+  /* }  else if(alloctype == 2) {
 #ifdef _MSC_VER
     t = (struct closure_address_table*) _alloca(sizeof(struct closure_address_table));
 #else
     t = (struct closure_address_table*) alloca(sizeof(struct closure_address_table));
-#endif
-    } else {
-      t = (struct closure_address_table*) llvm_zone_malloc(zone,sizeof(struct closure_address_table));
-    }
+#endif */
+  } else {
+    t = (struct closure_address_table*) llvm_zone_malloc(zone,sizeof(struct closure_address_table));
+  }
 
-    t->name = name;
-    t->offset = offset;
-    t->type = type;
-    t->next = table;
-    //printf("adding %s of type %s at %d\n",t->name,t->type,t->offset);
-    return t;
+  t->name = name;
+  t->offset = offset;
+  t->type = type;
+  t->next = table;
+  return t;
 }
 
 // bool rsplit(char* regex, char* str, char* a, char* b)
@@ -1268,10 +1268,11 @@ bool llvm_check_valid_dot_symbol(scheme* sc, char* symbol) {
     //printf("Eval error: not valid dot syntax: bad value\n");
     return false;
   }else{
-    llvm::Module* M = extemp::EXTLLVM::I()->M;
+    //llvm::Module* M = extemp::EXTLLVM::I()->M;
     std::string funcname(a);
     std::string getter("_getter");
-    llvm::Function* func = M->getFunction(funcname+getter);
+    //llvm::Function* func = M->getFunction(funcname+getter);
+    llvm::Function* func = extemp::EXTLLVM::I()->getFunction(funcname+getter);
     if(func) {
       return true;
     }else{
@@ -1299,10 +1300,11 @@ pointer llvm_scheme_env_set(scheme* _sc, char* sym)
   }   
   //printf("in llvm scheme env set %s.%s:%s\n",fname,vname,tname);
   
-  Module* M = extemp::EXTLLVM::I()->M;
+  // Module* M = extemp::EXTLLVM::I()->M;
   std::string funcname(fname);
   std::string getter("_getter");
-  llvm::Function* func = M->getFunction(funcname+getter); //std::string(string_value(pair_car(args))));
+  //llvm::Function* func = M->getFunction(funcname+getter); //std::string(string_value(pair_car(args))));
+  llvm::Function* func = extemp::EXTLLVM::I()->getFunction(funcname+getter);
   if(func == 0) {
     printf("Error: no matching function for %s.%s\n",fname,vname);
     return _sc->F; 
@@ -1408,17 +1410,89 @@ namespace extemp {
 	M = 0;
 	MP = 0;
 	EE = 0;
+#ifdef EXT_MCJIT
+  MM = 0;
+#endif
 	//initLLVM();
     }
 	
-    EXTLLVM::~EXTLLVM() {}
+  EXTLLVM::~EXTLLVM() {}
+
+    llvm::Function* EXTLLVM::getFunction(std::string name) {
+    //llvm::Function* cf = llvm_func_cache[name];
+    //if (cf) return cf;
+    for(int i=0;i<Ms.size();i++) {
+      llvm::Module* m = Ms[i];
+      llvm::Function* f = m->getFunction(name);
+      //std::cout << "Checked " << m->getModuleIdentifier() << " for " << name << " found func " << f << std::endl;
+      if(f!=NULL) {
+        //if(!cf) llvm_func_cache[name] = cf;
+        return f;
+      }
+    }
+    return NULL;
+    }
+
+    llvm::GlobalVariable* EXTLLVM::getGlobalVariable(std::string name) {
+    //llvm::GlobalVariable* cgv = llvm_var_cache[name];
+    //if (cgv) return cgv;
+    for(int i=0;i<Ms.size();i++) {
+      llvm::Module* m = Ms[i];
+      llvm::GlobalVariable* gv = m->getGlobalVariable(name);
+      //std::cout << "Checked " << m->getModuleIdentifier() << " for " << name << " found var " << gv << std::endl;      
+      if(gv!=NULL) {
+        //if(!cgv) llvm_var_cache[name] = gv;
+        return gv;
+      }
+    }
+    return NULL;
+  }
+  
+  llvm::GlobalValue* EXTLLVM::getGlobalValue(std::string name) {
+    // llvm::GlobalValue* cgv = llvm_val_cache[name];
+    //if (cgv) return cgv;
+    for(int i=0;i<Ms.size();i++) {
+      llvm::Module* m = Ms[i];
+      llvm::GlobalValue* gv = m->getNamedValue(name);
+      //std::cout << "Checked " << m->getModuleIdentifier() << " for " << name << " found val " << gv << std::endl;      
+      if(gv!=NULL) {
+        //if(!cgv) llvm_val_cache[name] = gv;        
+        return gv;
+      }
+    }
+    return NULL;
+  }
+  
+  llvm::StructType* EXTLLVM::getNamedType(std::string name) {
+    //llvm::StructType* ct = llvm_struct_cache[name];
+    //if (ct) return ct;
+    for(int i=0;i<Ms.size();i++) {
+      llvm::Module* m = Ms[i];
+      llvm::StructType* t = m->getTypeByName(name);
+      //std::cout << "Checked " << m->getModuleIdentifier() << " for " << name << " found type " << t << std::endl;      
+      if(t!=NULL) {
+        //if(!ct) llvm_struct_cache[name];
+        return t;
+      }
+    }
+    return NULL;
+  }
+
+#ifdef EXT_MCJIT  
+    uint64_t EXTLLVM::getSymbolAddress(std::string name) {      
+      return MM->getSymbolAddress(name);
+    }
+#endif
+
+
 	
     void EXTLLVM::initLLVM()
     {
 	if(M == 0) { // Initalize Once Only (not per scheme process)
                      // 
 
-          llvm::TargetOptions Opts;
+    llvm::TargetOptions Opts;
+	    //llvm::PerformTailCallOpt = true;    
           Opts.GuaranteedTailCallOpt = true;
           Opts.JITEmitDebugInfo = true;
           Opts.UnsafeFPMath = false;
@@ -1430,35 +1504,30 @@ namespace extemp {
           //llvm::IRBuilder<> theBuilder(context);
   
           // Make the module, which holds all the code.
-          M = new llvm::Module("xtmjit", context);
+          M = new llvm::Module("xtmmodule_0", context);
+          Ms.push_back(M);
   
           // Build engine with JIT
           llvm::EngineBuilder factory(M);
           factory.setEngineKind(llvm::EngineKind::JIT);
           factory.setAllocateGVsWithCode(false);
           factory.setTargetOptions(Opts);
+#ifdef EXT_MCJIT
+          factory.setUseMCJIT(true);
+          MM = new llvm::SectionMemoryManager();          
+          factory.setMCJITMemoryManager(MM);
+#else          
           factory.setUseMCJIT(false);
+#endif
           if(!extemp::UNIV::ARCH.empty()) factory.setMArch(extemp::UNIV::ARCH.front());
           if(!extemp::UNIV::ATTRS.empty()) factory.setMAttrs(extemp::UNIV::ATTRS);
           if(!extemp::UNIV::CPU.empty()) factory.setMCPU(extemp::UNIV::CPU.front());
-          factory.setOptLevel(llvm::CodeGenOpt::Aggressive); // llvm::CodeGenOpt::None
-          llvm::TargetMachine* tm = factory.selectTarget();          
+          factory.setOptLevel(llvm::CodeGenOpt::Aggressive); 
           //factory.setOptLevel(llvm::CodeGenOpt::None);
+          llvm::TargetMachine* tm = factory.selectTarget();          
           EE = factory.create(tm);
           EE->DisableLazyCompilation(true);
 
-	    // //llvm::llvm_start_multithreaded();
-	    // bool result = llvm::InitializeNativeTarget();			
-	    // M = new llvm::Module("JIT",llvm::getGlobalContext());
-	    // // Create the JIT.
-	    // std::string ErrStr;
-	    // EE = llvm::EngineBuilder(M).setErrorStr(&ErrStr).setTargetOptions(llvm::TargetOptions::|).setUseMCJIT(true).create();
-	    // if (!EE) {
-	    //     fprintf(stderr, "Could not create ExecutionEngine: %s\n", ErrStr.c_str());
-	    //     exit(1);
-	    // }
-	    // EE->DisableLazyCompilation(true);
-	    // //std::cout << "Lazy Compilation: OFF" << std::endl;
           ascii_text_color(0,7,10);
           std::cout << "ARCH           : " << std::flush;
           ascii_text_color(1,6,10);	        
@@ -1471,7 +1540,16 @@ namespace extemp {
           std::cout << "ATTRS          : " << std::flush;
           ascii_text_color(1,6,10);	        
           std::cout << std::string(tm->getTargetFeatureString()) << std::endl;          
-          ascii_text_color(0,7,10);	            
+          ascii_text_color(0,7,10);
+          std::cout << "MCJIT          : " << std::flush;
+          ascii_text_color(1,6,10);
+#ifdef EXT_MCJIT
+          std::cout << "YES" << std::endl;
+#else
+          std::cout << "NO" << std::endl;
+#endif          
+          ascii_text_color(0,7,10);          
+          
 
 			
 	    //EE = llvm::EngineBuilder(M).create();
@@ -1499,11 +1577,6 @@ namespace extemp {
       // 
 	    PM->add(llvm::createPromoteMemoryToRegisterPass());
 
-
-	    //llvm::PerformTailCallOpt = true;
-	    //llvm::GuaranteedTailCallOpt = true;
-	    //llvm::llvm_start_multithreaded();
-			
 	    char fname[] = "/code.ir";
 	    char load_path[256];
 	    strcpy(load_path,extemp::UNIV::PWD);
@@ -1558,7 +1631,7 @@ namespace extemp {
 	    EE->updateGlobalMapping(gv,(void*)&llvm_destroy_zone_after_delay);			
 	    gv = M->getNamedValue(std::string("free_after_delay"));
 	    EE->updateGlobalMapping(gv,(void*)&free_after_delay);			
-	    gv = M->getNamedValue(std::string("next_prime"));
+	    gv = M->getNamedValue(std::string("llvm_get_next_prime"));
 	    EE->updateGlobalMapping(gv,(void*)&llvm_get_next_prime);			
 	    gv = M->getNamedValue(std::string("llvm_printf"));
 	    EE->updateGlobalMapping(gv,(void*)&llvm_printf);  
@@ -1678,7 +1751,7 @@ namespace extemp {
 	    gv = M->getNamedValue(std::string("unswap32f"));
 	    EE->updateGlobalMapping(gv,(void*)&unswap32f);	
 
-	    gv = M->getNamedValue(std::string("imp_rand"));
+	    gv = M->getNamedValue(std::string("imp_randd"));
 	    EE->updateGlobalMapping(gv,(void*)&imp_randd);	
 	    gv = M->getNamedValue(std::string("imp_randf"));
 	    EE->updateGlobalMapping(gv,(void*)&imp_randf);	
@@ -1700,10 +1773,10 @@ namespace extemp {
 	    EE->updateGlobalMapping(gv,(void*)&imp_rand2_f);	
 
 
-#ifdef _MSC_VER
-	    gv = M->getNamedValue(std::string("log2"));
-	    EE->updateGlobalMapping(gv,(void*)&log2);		
-#endif
+//#ifdef _MSC_VER
+//	    gv = M->getNamedValue(std::string("log2"));
+//	    EE->updateGlobalMapping(gv,(void*)&log2);		
+//#endif
 	    gv = M->getNamedValue(std::string("rsplit"));
 	    EE->updateGlobalMapping(gv,(void*)&rsplit);		
 	    gv = M->getNamedValue(std::string("rmatch"));
@@ -1889,7 +1962,10 @@ namespace extemp {
       // EE->updateGlobalMapping(gv,(void*)&llvm_fabs);
             
             
-	}	
+	}
+#ifdef EXT_MCJIT
+  extemp::EXTLLVM::I()->EE->finalizeObject();
+#endif
 	return;
     }
 }
