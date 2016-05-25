@@ -2,75 +2,102 @@
 
 ;; Author: Andrew Sorensen
 ;; Keywords: extempore
-;; Required dylibs: libSOIL, libassimp, libGLU
+;; Required dylibs: libstb_image, libassimp
 
 ;;; Commentary:
 
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/assimp.xtm" 'quiet)
+(sys:load "libs/aot-cache/assimp.xtm" 'quiet)
 (sys:load-preload-check 'assimp)
 (define *xtmlib-assimp-loaded* #f)
 
-(sys:precomp:suppress-precomp-do
- (sys:load "libs/external/shaders.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/external/shaders.xtm"))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/external/stb_image.xtm")
+ (sys:load "libs/external/graphics-pipeline.xtm"))
+(impc:aot:insert-forms
+ (sys:load "libs/external/stb_image.xtm" 'quiet)
+ (sys:load "libs/external/graphics-pipeline.xtm" 'quiet))
 
-(sys:precomp:insert-header "xtmassimp")
+(impc:aot:insert-header "xtmassimp")
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'libassimp
- (cond ((string=? (sys:platform) "OSX")
-        "libassimp.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libassimp.so.3")
-       ((string=? (sys:platform) "Windows")
-        "assimp.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib libassimp
+  (cond ((string=? (sys:platform) "OSX")
+         "libassimp.dylib")
+        ((string=? (sys:platform) "Linux")
+         "libassimp.so")
+        ((string=? (sys:platform) "Windows")
+         (list "assimp-vc130-mt.dll" "assimp.dll"))))
 
-;; load the dylib
-(define libassimp
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(if (or (eq? #f libassimp)
-        (null? libassimp))
-    (sys:load-escape "Error loading assimp library"))
-
-;; load texture and returns texture number
-;; 16 is for verticle flip
-;; 512 is for GL_TEXTURE_RECTANGLE_ARB (otherwise GL_TEXTURE_2D)
-;; 4 is for repeat
-;; 8 multiply alpha
 (bind-func ai_load_ogl_texture
-  (lambda (path idx:i32)
-    (let ((res (SOIL_load_OGL_texture path 4 idx (+ 4 8 16)))) ; (+ 512 16))))
-      (if (= res 0)
-	  (begin (printf "failed (%lld) to load %s\n" res path)
+  (lambda (filename tex_id:i32)
+    ;; if tex_id is 0, generate a new texture
+    (if (= tex_id 0)
+        (let ((texid_ptr:i32* (salloc)))
+          (glGenTextures 1 texid_ptr)
+          (set! tex_id (pref texid_ptr 0))))
+    (stbi_set_flip_vertically_on_load 1)
+    (let ((width_ptr:i32* (salloc))
+          (height_ptr:i32* (salloc))
+          (comp_ptr:i32* (salloc))
+          (data (stbi_load filename width_ptr height_ptr comp_ptr 4)))
+      (if (null? data)
+          (begin (println (stbi_failure_reason))
                  0)
-	  (begin (printf "...tex:> id(%d) loaded path:%s\n" res path)
-                 res)))))
+          (begin
+            (glActiveTexture GL_TEXTURE0)
+            (glBindTexture GL_TEXTURE_2D tex_id)
+            (glTexImage2D GL_TEXTURE_2D 0
+                          GL_RGBA
+                          (pref width_ptr 0)
+                          (pref height_ptr 0)
+                          0
+                          GL_RGBA
+                          GL_UNSIGNED_BYTE
+                          data)
+            ;; set some parameters
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE)
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE)
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+            (gl_print_error "error in ai_load_ogl_texture")
+            tex_id)))))
 
-;; load texture and returns texture number
-;; 16 is for verticle flip
-;; 512 is for GL_TEXTURE_RECTANGLE_ARB (otherwise GL_TEXTURE_2D)
-;; 4 is for repeat
-;; 8 multiply alpha
 (bind-func ai_load_ogl_texture_from_buffer
-  (lambda (data datalgth idx:i32)
-    (printf "load ogl texture\n")
-    (let ((res (SOIL_load_OGL_texture_from_memory data datalgth 4 idx (+ 4 8 16)))) ; (+ 512 16))))
-      (printf "loaded ogl texture %d\n" res)
-      (if (= res 0)
-	  (begin (printf "failed (%d) to load embedded texture\n" res)
+  (lambda (buffer buflen tex_id:i32)
+    ;; if tex_id is 0, generate a new texture
+    (if (= tex_id 0)
+        (let ((texid_ptr:i32* (salloc)))
+          (glGenTextures 1 texid_ptr)
+          (set! tex_id (pref texid_ptr 0))))
+    ;; (stbi_set_flip_vertically_on_load 1)
+    (let ((width_ptr:i32* (salloc))
+          (height_ptr:i32* (salloc))
+          (comp_ptr:i32* (salloc))
+          (data (stbi_load_from_memory buffer buflen width_ptr height_ptr comp_ptr 4)))
+      (if (null? data)
+          (begin (println (stbi_failure_reason))
                  0)
-	  (begin (printf "...tex:> id(%d) loaded embedded texture\n" res)
-                 res)))))
-
+          (begin
+            (glActiveTexture GL_TEXTURE0)
+            (glBindTexture GL_TEXTURE_2D tex_id)
+            (glTexImage2D GL_TEXTURE_2D 0
+                          GL_RGBA
+                          (pref width_ptr 0)
+                          (pref height_ptr 0)
+                          0
+                          GL_RGBA
+                          GL_UNSIGNED_BYTE
+                          data)
+            ;; set some parameters
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE)
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE)
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR)
+            (glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR)
+            (gl_print_error "error in ai_load_ogl_texture")
+            tex_id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -82,35 +109,35 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(bind-val aiProcess_CalcTangentSpace i32 1)
-(bind-val aiProcess_JoinIdenticalVertices i32 2)
-(bind-val aiProcess_MakeLeftHanded i32 4)
-(bind-val aiProcess_Triangulate i32 8)
-(bind-val aiProcess_RemoveComponent i32 16)
-(bind-val aiProcess_GenNormals i32 32)
-(bind-val aiProcess_GenSmoothNormals i32 64)
-(bind-val aiProcess_SplitLargeMeshes i32 128)
-(bind-val aiProcess_PreTransformVertices i32 256)
-(bind-val aiProcess_LimitBoneWeights i32 512)
-(bind-val aiProcess_ValidateDataStructure i32 1024)
-(bind-val aiProcess_ImproveCacheLocality i32 2048)
-(bind-val aiProcess_RemoveRedundantMaterials i32 4096)
-(bind-val aiProcess_FixInfacingNormals i32 8192)
-(bind-val aiProcess_SortByPType i32 32768)
-(bind-val aiProcess_FindDegenerates i32 65536)
-(bind-val aiProcess_FindInvalidData i32 131072)
-(bind-val aiProcess_GenUVCoords i32 262144)
-(bind-val aiProcess_TransformUVCoords i32 524288)
-(bind-val aiProcess_FindInstances i32 1048576)
-(bind-val aiProcess_OptimizeMeshes i32 2097152)
-(bind-val aiProcess_OptimizeGraph i32 4194304)
-(bind-val aiProcess_FlipUVs i32 8388608)
-(bind-val aiProcess_FlipWindingOrder i32 16777216)
-(bind-val aiProcess_SplitByBoneCount i32 33554432)
-(bind-val aiProcess_Debone i32 67108864)
+(bind-val aiProcess_CalcTangentSpace enum #x1)
+(bind-val aiProcess_JoinIdenticalVertices enum #x2)
+(bind-val aiProcess_MakeLeftHanded enum #x4)
+(bind-val aiProcess_Triangulate enum #x8)
+(bind-val aiProcess_RemoveComponent enum #x10)
+(bind-val aiProcess_GenNormals enum #x20)
+(bind-val aiProcess_GenSmoothNormals enum #x40)
+(bind-val aiProcess_SplitLargeMeshes enum #x80)
+(bind-val aiProcess_PreTransformVertices enum #x100)
+(bind-val aiProcess_LimitBoneWeights enum #x200)
+(bind-val aiProcess_ValidateDataStructure enum #x400)
+(bind-val aiProcess_ImproveCacheLocality enum #x800)
+(bind-val aiProcess_RemoveRedundantMaterials enum #x1000)
+(bind-val aiProcess_FixInfacingNormals enum #x2000)
+(bind-val aiProcess_SortByPType enum #x8000)
+(bind-val aiProcess_FindDegenerates enum #x10000)
+(bind-val aiProcess_FindInvalidData enum #x20000)
+(bind-val aiProcess_GenUVCoords enum #x40000)
+(bind-val aiProcess_TransformUVCoords enum #x80000)
+(bind-val aiProcess_FindInstances enum #x100000)
+(bind-val aiProcess_OptimizeMeshes enum  #x200000)
+(bind-val aiProcess_OptimizeGraph enum  #x400000)
+(bind-val aiProcess_FlipUVs enum #x800000)
+(bind-val aiProcess_FlipWindingOrder enum  #x1000000)
+(bind-val aiProcess_SplitByBoneCount enum  #x2000000)
+(bind-val aiProcess_Debone enum  #x4000000)
 
-(bind-type aiString <size_t,|1024,i8|>)
-;(llvm:compile "%aiString = type {i64, |1024xi8|}
+(bind-type aiString <size_t,|1024,i8|> (printer? . #f))
+                                        ;(llvm:compile "%aiString = type {i64, |1024xi8|}
 (bind-type aiMatrix4x4 <float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float>)
 (bind-type aiMatrix3x3 <float,float,float,float,float,float,float,float,float>)
 (bind-type aiVector4D <float,float,float,float>)
@@ -138,9 +165,9 @@
 ;; mVertices,mNormals,mTangents,mBitangents,mColors,mNumVertices
 (bind-type aiAnimMesh <aiVector3D*,aiVector3D*,aiVector3D*,aiVector3D*,|8,aiColor4D*|,|8,aiVector3D*|,i32>) ;; good
 ;; mPrimitiveTypes(0),mNumVertices(1),mNumFaces(2),mVertices(3),mNormals(4),mTangents(5),mBitangents(6),mColors(7),mTextureCoords(8),mNumUVComponents(9),mFaces(10),mNumBones(11),mBones(12),mMaterialIndex(13),mName(14),mNumAnimMeshes(15)
-;; NOTE!  for some reason GCC registers aiMesh as 1288 bytes long (LLVM only 1280) so I've padded an i64 on the end.
-;;        so don't know what internal alignment problems there might be :(
+
 (bind-type aiMesh <i32,i32,i32,aiVector3D*,aiVector3D*,aiVector3D*,aiVector3D*,|8,aiColor4D*|,|8,aiVector3D*|,|8,i32|,aiFace*,i32,aiBone**,i32,aiString,i32,aiAnimMesh**,i64>) ;; i64 on end is padding
+
 ;; mTranslation,mScaling,mRotation
 (bind-type aiUVTransform <aiVector2D,aiVector2D,float>) ;; good
 ;; mKey(0),mSemantic(1),mIndex(2),mDataLength(3),mType(4),mData(5)
@@ -188,182 +215,24 @@
   (lambda (mat pkey type index pout)
     (aiGetMaterialFloatArray mat pkey type index pout null)))
 
-
-(bind-func ai_copy_matrix4
-  (lambda (src:aiMatrix4x4* dest:aiMatrix4x4*)
-    (tset! dest 0 (tref src 0))
-    (tset! dest 1 (tref src 1))
-    (tset! dest 2 (tref src 2))
-    (tset! dest 3 (tref src 3))
-    (tset! dest 4 (tref src 4))
-    (tset! dest 5 (tref src 5))
-    (tset! dest 6 (tref src 6))
-    (tset! dest 7 (tref src 7))
-    (tset! dest 8 (tref src 8))
-    (tset! dest 9 (tref src 9))
-    (tset! dest 10 (tref src 10))
-    (tset! dest 11 (tref src 11))
-    (tset! dest 12 (tref src 12))
-    (tset! dest 13 (tref src 13))
-    (tset! dest 14 (tref src 14))
-    (tset! dest 15 (tref src 15))
-    1))
-
 (bind-func ai_matrix4_to_float
   (lambda (mat1:aiMatrix4x4* mat2:float*)
-    (pset! mat2 0 (tref mat1 0))
-    (pset! mat2 1 (tref mat1 1))
-    (pset! mat2 2 (tref mat1 2))
-    (pset! mat2 3 (tref mat1 3))
-    (pset! mat2 4 (tref mat1 4))
-    (pset! mat2 5 (tref mat1 5))
-    (pset! mat2 6 (tref mat1 6))
-    (pset! mat2 7 (tref mat1 7))
-    (pset! mat2 8 (tref mat1 8))
-    (pset! mat2 9 (tref mat1 9))
-    (pset! mat2 10 (tref mat1 10))
-    (pset! mat2 11 (tref mat1 11))
-    (pset! mat2 12 (tref mat1 12))
-    (pset! mat2 13 (tref mat1 13))
-    (pset! mat2 14 (tref mat1 14))
-    (pset! mat2 15 (tref mat1 15))
-    void))
+    (doloop (i 16)
+      (pset! mat2 i (aref (convert mat1 |16,float|*) i)))))
 
-
-(bind-func aisgl_min
-  (lambda (a:float b:float)
-    (if (< a b) a b)))
-
-
-(bind-func aisgl_max
-  (lambda (a:float b:float)
-    (if (> a b) a b)))
-
-
-(bind-func ai_print_string
+(bind-func print
   (lambda (str:aiString*)
     (let ((size (tref str 0))
-	  (dat (bitcast (tref-ptr str 1) i8*)))
-      (printf "%.*s\n" size dat))))
-
-
-;; (bind-func ai_get_bounding_box_for_node
-;;   (lambda (scene:aiScene* nd:aiNode* min:aiVector3D* max:aiVector3D* trafo:aiMatrix4x4*)
-;;     (let ((prev:aiMatrix4x4* (stack-alloc))
-;; 	  (prevarr (bitcast prev float*))
-;;           (n:i32 0)
-;;           (nn:i32 0)
-;;           (t:i32 0)
-;; 	  (minarr (bitcast min float*))
-;; 	  (maxarr (bitcast max float*))
-;; 	  (trafoarr (bitcast trafo float*)))
-;;       (ai_copy_matrix4 trafo prev)
-;;       (aiMultiplyMatrix4 trafo (tref-ptr nd 1))
-;;       ;(printf "meshes: %lld\n" (tref nd 5))
-;;       (dotimes (n (tref nd 5))
-;; 	;(printf "n: %lld\n" n)
-;; 	(let ((mesh (pref (tref scene 3) (pref (tref nd 6) n)))
-;; 	      (verts (tref mesh 3)))
-;; 	  ;(printf "verts: %lld\n" (tref mesh 1))
-;; 	  (dotimes (t (tref mesh 1))	   
-;; 	    (let ((tmp (pref-ptr verts t))
-;; 		  (tmparr (bitcast tmp float*)))
-;; 	      (aiTransformVecByMatrix4 tmp trafo)
-;; 	      (tset! min 0 (aisgl_min (tref min 0) (tref tmp 0)))
-;; 	      (tset! min 1 (aisgl_min (tref min 1) (tref tmp 1)))
-;; 	      (tset! min 2 (aisgl_min (tref min 2) (tref tmp 2)))
-;; 	      (tset! max 0 (aisgl_max (tref max 0) (tref tmp 0)))
-;; 	      (tset! max 1 (aisgl_max (tref max 1) (tref tmp 1)))
-;; 	      (tset! max 2 (aisgl_max (tref max 2) (tref tmp 2)))))))
-      
-;;       (dotimes (nn (tref nd 3))
-;; 	(let ((mynodes (tref nd 4))
-;; 	      (next-node (pref mynodes nn)))
-;; 	  ;(printf "node %d:%d\n" nn (tref nd 3))
-;; 	  (ai_get_bounding_box_for_node scene next-node min max trafo)))
-;;       (ai_copy_matrix4 prev trafo))))
-
-
-;; (bind-func ai_get_bounding_box
-;;   (lambda (scene:aiScene* min:aiVector3D* max:aiVector3D*)
-;;     (let ((trafo:aiMatrix4x4* (stack-alloc))
-;;           (i 0)
-;; 	  (minarr:float* (cast min))
-;; 	  (maxarr:float* (cast max)))
-;;       (aiIdentityMatrix4 trafo)
-;;       (dotimes (i 3)
-;; 	(pset! minarr i 123151.0)
-;; 	(pset! maxarr i -123151.0))
-;;       ;(printf "number of node meshes %d\n" (tref (tref scene 1) 5))
-;;       (ai_get_bounding_box_for_node scene (tref scene 1) min max trafo))))
-
-
-(bind-func aiColor4f
-  (lambda (colour:aiColor4D*)
-    (glColor4f (tref colour 1) (tref colour 2) (tref colour 3) (tref colour 0))))
-
+          (dat (convert (tref-ptr str 1) i8*)))
+      (printf "%.*s\n" size dat)
+      void)))
 
 (bind-func ai_color4_to_float4
   (lambda (colour:aiColor4D* dat:float*)
     (pset! dat 0 (tref colour 0))
     (pset! dat 1 (tref colour 1))
     (pset! dat 2 (tref colour 2))
-    (pset! dat 3 (tref colour 3))
-    1))
-
-(bind-func ai_apply_material
-  (lambda (mtl:aiMaterial* idx:i32)
-    (let ((c1:|4,float|* (salloc))
-          (c:float* (cast c1))
-	  (diffuse:aiColor4D* (salloc))
-	  (specular:aiColor4D* (salloc))
-	  (ambient:aiColor4D* (salloc))
-	  (emission:aiColor4D* (salloc))
-	  (max_:i32* (salloc))
-	  (wireframe:i32* (salloc))
-	  (two_sided:i32* (salloc))
-	  (shininess:float* (salloc))
-	  (strength:float* (salloc))
-	  (name:aiString* (salloc))
-	  (texfile:aiString* (salloc)))
-
-      ;; PRINT MATERIAL PARAMS
-      ;; mKey(0),mSemantic(1),mIndex(2),mDataLength(3),mType(4),mData(5)
-      (aiGetMaterialString mtl "?mat.name" 0 0 name)      
-      (printf "material %d name: " (+ idx 1))
-      (ai_print_string name)
-
-      ;; (printf "textures: diffuse:%d ambient:%d specular:%d normals:%d unknown:%d\n"
-      ;; 	      (aiGetMaterialTextureCount mtl 1)
-      ;; 	      (aiGetMaterialTextureCount mtl 3)
-      ;; 	      (aiGetMaterialTextureCount mtl 2)
-      ;; 	      (aiGetMaterialTextureCount mtl 6)
-      ;; 	      (aiGetMaterialTextureCount mtl 12))
-
-      
-      (if (= (aiGetMaterialTexture mtl 1 0 texfile null null null null null null) 0)
-	  (begin (printf "bind to index:%d texture name: " (+ 1 idx))
-		 (ai_print_string texfile)
-		 (glBindTexture GL_TEXTURE_2D (+ 1 idx))))
-
-      (pfill! c 0.8 0.8 0.8 1.0)      
-      (glMaterialfv GL_FRONT_AND_BACK GL_DIFFUSE c)
-      
-      (pfill! c 0.0 0.0 0.0 1.0)      
-      (glMaterialfv GL_FRONT_AND_BACK GL_SPECULAR c)
-
-      (pfill! c 0.0 0.0 0.0 1.0)      
-      (glMaterialfv GL_FRONT_AND_BACK GL_AMBIENT c)
-
-      (pfill! c 0.0 0.0 0.0 1.0)      
-      (glMaterialfv GL_FRONT_AND_BACK GL_EMISSION c)
-
-      (if (and (= (begin (pset! max_ 0 1)
-                         (aiGetMaterialIntegerArray mtl "$mat.twosided" 0 0 two_sided max_)) 0)
-      	       (= (pref two_sided 0) 1))
-      	  (glEnable GL_CULL_FACE)
-      	  (glDisable GL_CULL_FACE)))))
-
+    (pset! dat 3 (tref colour 3))))
 
 ;; mode is a bit of a dodge
 ;; it basically returns whatever the
@@ -454,18 +323,15 @@
           (printf "Error: positions:%d <> position_cnt:%d" positions (+ position_cnt 1)))
       (pset! modes 0 GL_TRIANGLES) ;;  face_mode)
       ;; return vbo
-      (let ((vbo (create_vbo (* positions vbostride 4) (cast vbodata i8*) GL_STATIC_DRAW)))
-        (glBindBuffer GL_ARRAY_BUFFER (tref vbo 0))        
-        (glBufferData GL_ARRAY_BUFFER (convert (tref vbo 1)) (tref vbo 2) GL_STATIC_DRAW)
+      (let ((vbo (VBO_create_float_usage vbodata (convert (* positions vbostride)) GL_STATIC_DRAW)))
         (glBindBuffer GL_ARRAY_BUFFER 0)
         vbo))))
- 
 
 (bind-func ai_build_mesh
   (lambda (scene:aiScene* mesh:aiMesh* aimesh:xtm_mesh* dir:i8*)
     ;; (printf "\tBuild Mesh\n")
     (let ((facemode:i32* (salloc)) 
-          (vbo:E_vbo* null)
+          (vbo:VBO* null)
           (color:aiColor4D* (salloc))
           (val:float* (salloc))
           (diffuse:float* (halloc 4))
@@ -476,7 +342,7 @@
           (material (pref (tref scene 5) material_index))
           (texid 0)
           (texfile:aiString* (salloc))          
-	  (name:aiString* (tref-ptr mesh 14)))
+          (name:aiString* (tref-ptr mesh 14)))
       (set! vbo (ai_build_mesh_vbo mesh facemode))
       (tset! aimesh 0 vbo)
       (if (= (aiGetMaterialTexture material 1 0 texfile null null null null null null) 0)
@@ -520,8 +386,6 @@
       (tset! aimesh 8 (pref facemode 0))
       void)))
 
-
-
 ;; returns the scenes top level node as xtm_node*
 (bind-func ai_build_node
   (lambda (scene:aiScene* node:aiNode* _node:xtm_node* parent:xtm_node* dir:i8*)
@@ -554,7 +418,6 @@
       (tset! _node 6 _meshes)
       void)))
 
-
 ;; returns the scenes top level node as xtm_node*
 (bind-func ai_build_scene  
   (lambda (scene:aiScene* dir:i8*)
@@ -570,7 +433,7 @@
 ;; if value > 0 then use post exactly as defined
 ;; which means the user must add AT LEAST aiProcess_Triangulate
 ;;
-(bind-func assimp_load_model_a
+(bind-func assimp_load_model
   (lambda (dir file post)
     (let ((lgth (+ (strlen dir) (strlen file) 1))
           (scene:aiScene* null)
@@ -588,78 +451,12 @@
                  (ai_build_scene scene dir))))
         (if (not (null? scene))
             (begin ;; (printf "delete scene: %p\n" scene)
-                   (aiReleaseImport scene)))
+              (aiReleaseImport scene)))
         root))))
 
-(bind-func assimp_load_model_b
+(bind-func assimp_load_model
   (lambda (dir file)
-    (assimp_load_model_a dir file 0)))
-
-(bind-poly assimp_load_model assimp_load_model_a)
-(bind-poly assimp_load_model assimp_load_model_b)
-
-(bind-func assimp_draw_node
-  (lambda (node:xtm_node* shader:i32 model:float* view:float* projection:float* lights:i32 light:float*)
-    (let ((i:i32 0)
-          (children (tref node 4))
-          (meshes (tref node 6))
-          (transmat:float* (tref node 1))
-          (m2:float* (salloc 16))
-          (m:float* (salloc 16)))
-      ;; (printf "draw node: %s\n" (tref node 0))
-      ;;(mprint transmat 4 4 1)      
-      ;;(mprintf model 4 4 1)
-      (if (null? transmat)
-          (begin (memcpy (cast m i8*) (cast model i8*) (* 4 16)) 1)
-          (begin
-            (mtrans transmat 4 4 m2)
-            (mmul m2 4 4 model 4 4 m)
-            1))
-      (shader_update_matrices_lvs shader m view projection lights light)
-      ;; first draw meshes
-      (dotimes (i (tref node 5))
-        (xtm_draw_mesh (pref-ptr meshes i) shader))
-      ;; then draw other children recursively
-      (dotimes (i (tref node 3))
-        (assimp_draw_node (pref-ptr children i) shader model view projection lights light))
-      void)))
-
-
-(bind-func assimp_draw_model
-  (lambda (scene:xtm_node* shader:i32 model view projection lights light)
-    (assimp_draw_node scene shader model view projection lights light)
-    void))
-
-
-(bind-func ai_load_textures
-  (lambda (scene:aiScene*)
-    (let ((materials (tref scene 5))
-	  (num-of-mats (tref scene 4))
-          (i:i32 0))
-      (dotimes (i num-of-mats) 
-	(let ((mtl (pref materials i))
-	      (name:aiString* (salloc))
-	      (texfile:aiString* (salloc)))
-	  (if (= (aiGetMaterialTexture mtl 1 0 texfile null null null null null null) 0)
-	      (begin (aiGetMaterialString mtl "?mat.name" 0 0 name)      
-		     (printf "load texture for material %d name: " (+ 1 i))
-		     (ai_print_string name)
-		     (printf "textures: diffuse:%d specular:%d ambient:%d emissive:%d hight:%d normals:%d shininess:%d opacity:%d displacement:%d lightmap:%d reflect:%d unknown:%d\n"
-			     (aiGetMaterialTextureCount mtl 1)
-			     (aiGetMaterialTextureCount mtl 2)			     
-			     (aiGetMaterialTextureCount mtl 3)
-			     (aiGetMaterialTextureCount mtl 4)
-			     (aiGetMaterialTextureCount mtl 5)			     
-			     (aiGetMaterialTextureCount mtl 6)
-			     (aiGetMaterialTextureCount mtl 7)
-			     (aiGetMaterialTextureCount mtl 8)
-			     (aiGetMaterialTextureCount mtl 9)			     
-			     (aiGetMaterialTextureCount mtl 10)
-			     (aiGetMaterialTextureCount mtl 11)			     
-			     (aiGetMaterialTextureCount mtl 12))		     
-		     (printf "texture name: ")
-		     (ai_print_string texfile)
-		     (ai_load_ogl_texture (bitcast (tref-ptr texfile 1) i8*) (+ 1 i)))))))))
+    (assimp_load_model:[xtm_node*,i8*,i8*,i32]* dir file 0)))
 
 
 (bind-func ai_print_export_formats
@@ -683,10 +480,66 @@
       (printf "\n Done exporting scene\n")
       void)))
 
-(sys:load "libs/external/assimp-scm.xtm")
-;; make sure we load them with precompiled code as well
-(sys:precomp:insert-sexp
- '(sys:load "libs/external/assimp-scm.xtm"))
+;; define the constants in Scheme as well
+(impc:aot:do-or-emit
+ (define aiProcess_CalcTangentSpace #x1))
+(impc:aot:do-or-emit
+ (define aiProcess_JoinIdenticalVertices #x2))
+(impc:aot:do-or-emit
+ (define aiProcess_MakeLeftHanded #x4))
+(impc:aot:do-or-emit
+ (define aiProcess_Triangulate #x8))
+(impc:aot:do-or-emit
+ (define aiProcess_RemoveComponent #x10))
+(impc:aot:do-or-emit
+ (define aiProcess_GenNormals #x20))
+(impc:aot:do-or-emit
+ (define aiProcess_GenSmoothNormals #x40))
+(impc:aot:do-or-emit
+ (define aiProcess_SplitLargeMeshes #x80))
+(impc:aot:do-or-emit
+ (define aiProcess_PreTransformVertices #x100))
+(impc:aot:do-or-emit
+ (define aiProcess_LimitBoneWeights #x200))
+(impc:aot:do-or-emit
+ (define aiProcess_ValidateDataStructure #x400))
+(impc:aot:do-or-emit
+ (define aiProcess_ImproveCacheLocality #x800))
+(impc:aot:do-or-emit
+ (define aiProcess_RemoveRedundantMaterials #x1000))
+(impc:aot:do-or-emit
+ (define aiProcess_FixInfacingNormals #x2000))
+(impc:aot:do-or-emit
+ (define aiProcess_SortByPType #x8000))
+(impc:aot:do-or-emit
+ (define aiProcess_FindDegenerates #x10000))
+(impc:aot:do-or-emit
+ (define aiProcess_FindInvalidData #x20000))
+(impc:aot:do-or-emit
+ (define aiProcess_GenUVCoords #x40000))
+(impc:aot:do-or-emit
+ (define aiProcess_TransformUVCoords #x80000))
+(impc:aot:do-or-emit
+ (define aiProcess_FindInstances #x100000))
+(impc:aot:do-or-emit
+ (define aiProcess_OptimizeMeshes #x200000))
+(impc:aot:do-or-emit
+ (define aiProcess_OptimizeGraph #x400000))
+(impc:aot:do-or-emit
+ (define aiProcess_FlipUVs #x800000))
+(impc:aot:do-or-emit
+ (define aiProcess_FlipWindingOrder #x1000000))
+(impc:aot:do-or-emit
+ (define aiProcess_SplitByBoneCount #x2000000))
+(impc:aot:do-or-emit
+ (define aiProcess_Debone #x4000000))
+;; poor man's Scheme polying
+(impc:aot:do-or-emit
+ (define assimp_load_model
+                       (lambda (dir file . args)
+                         (if (null? args)
+                             (assimp_load_model_b dir file)
+                             (assimp_load_model_a dir file (car args))))))
 
-(sys:precomp:insert-footer "xtmassimp")
+(impc:aot:insert-footer "xtmassimp")
 (define *xtmlib-assimp-loaded* #t)

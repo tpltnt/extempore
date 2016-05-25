@@ -1,100 +1,46 @@
-Extempore is a systems programming language designed to support the
-programming of real-time systems *in real-time*. Extempore promotes
-human orchestration as a meta model of real-time man-machine
-interaction in an increasingly distributed and environmentally aware
-computing context.
+# Extempore [![Build Status](https://travis-ci.org/JimKuhn/extempore.svg?branch=master)](https://travis-ci.org/JimKuhn/extempore)
 
-Extempore is designed to support a style of programming dubbed
-['cyberphysical' programming](http://dl.acm.org/citation.cfm?id=1869526).
-Cyberphysical programming supports the notion of a human programmer
-operating as an active agent in a real-time distributed network of
-environmentally aware systems. The programmer interacts with the
-distributed real-time system procedurally by modifying code
-on-the-fly. In order to achieve this level of on-the-fly interaction
-Extempore is designed from the ground up to support code hot-swapping
-across a distributed heterogeneous network, compiler as service,
-real-time task scheduling and a first class semantics for time.
+A programming environment for cyberphysical programming.
 
-Extempore is designed to mix the high-level expressiveness of Lisp
-with the low-level expressiveness of C.  Extempore is a statically
-typed, type-inferencing language with strong temporal semantics and
-a flexible concurrency architecture in a completely hot-swappable
-runtime environment.  Extempore makes extensive use of the LLVM
-project to provide back-end code generation across a variety of
-architectures.
+# Getting started
 
-For more detail on what the Extempore project is all about, see
-[the Extempore philosophy](http://benswift.me/2012-08-07-extempore-philosophy.html). 
+To get started, you can either download a binary release or build
+Extempore from source yourself.
 
-To see Extempore in action, check out these videos:
+## Download a pre-built binary
 
-- [interactive, distributed, physics simulation](http://vimeo.com/52964510)
-- [graphics demo](http://vimeo.com/37293927)
-- [general introduction](http://vimeo.com/21956071)
-- [a more technical intro](http://vimeo.com/20502359)
+Download a
+[binary release](https://github.com/digego/extempore/releases), unzip
+it and run `extempore.exe` from inside the `extempore` folder.
 
-# Installation
+## Build from source
 
-## OSX
+This will download and build all the dependencies you need (including
+LLVM). So, if you've got a C++ compiler, git and CMake, here are some
+one-liner build commands:
 
-If you're a [homebrew](http://brew.sh/) user, it's pretty
-straightforward:
+On **Linux/OSX**:
 
-```shell
-brew tap benswift/extempore
-brew install extempore
-```
+    git clone https://github.com/digego/extempore && mkdir extempore/cmake-build && cd extempore/cmake-build && cmake .. && make install
 
-If you get stuck, there are more detailed instructions
-[here](http://benswift.me/2013/11/12/building-extempore-through-homebrew/).
+On **Windows**:
 
-Alternately, you can [build it yourself from source](http://benswift.me/2013-03-20-building-extempore-on-osx-linux.html).
+    git clone https://github.com/digego/extempore && mkdir extempore/cmake-build && cd extempore/cmake-build && cmake -G"Visual Studio 14 2015 Win64" .. && cmake --build . --target ALL_BUILD --config Release
 
-## Linux
+# See Extempore in action
 
-On Linux, too, you can build Extempore
-[through homebrew](http://benswift.me/2013/11/12/building-extempore-through-homebrew/)
-or
-[build from source](http://benswift.me/2013-03-20-building-extempore-on-osx-linux.html).
+Check out these videos:
 
-## Windows 7
-
-Windows installation instructions are available [here](http://benswift.me/2013-03-20-building-extempore-on-windows.html).
-
-Extempore has thus far only been tested on Windows 7 64-bit, but if you
-can get it to build/run on other flavours of Windows then do let us
-know and we'll update these instructions.  Also, if anyone wants to
-improve and streamline the Windows build process, then patches are
-welcome :)
-
-# Running Extempore
-
-You don't need to do anything special to run extempore, it'll just run
-in any terminal (or command prompt on Windows).
-
-```shell
-$ ./extempore
-```
-
-The running extempore process acts as a server, and you send extempore
-code to the server for evaluation (by default on port `7099`).Once
-you've started extempore you can connect using either telnet,
-[Emacs](http://benswift.me/2012/10/10/extempore-emacs-cheat-sheet/),
-[vim](http://benswift.me/2014/11/07/hacking-extempore-in-vim/),
-[Sublime Text](http://benswift.me/2012/10/23/extempore-st2-cheat-sheet/),
-or whatever you like. The Emacs support is probably the most mature at
-the moment, but patches are welcome for other editors.
-
-There are some optional command line options that you may want to use
-you can get a list by running `./extempore --help`
-
-For more detail, see this post on
-[interacting with the Exempore compiler](http://benswift.me/2012-09-26-interacting-with-the-extempore-compiler.html).
-
+- [The Concert Programmer](https://www.youtube.com/watch?v=yY1FSsUV-8c)
+- [Interactive, distributed, physics simulation](https://vimeo.com/126577281)
+- [Programming in Time](https://www.youtube.com/watch?v=Sg2BjFQnr9s)
+- [The Physics Playroom - interactive installation](https://vimeo.com/58239256)
+- [An *old* Graphics Demo](https://vimeo.com/37293927)
+- [A Programmer's Guide to Western Music](https://www.youtube.com/watch?v=xpSYWd_aIiI)
 
 # Docs & Community
 
-More Extempore documentation can be found at http://benswift.me/extempore-docs/index.html
+Extempore documentation can be found at http://digego.github.io/extempore/index.html
 
 You can also join the Extempore community:
 
@@ -103,7 +49,7 @@ You can also join the Extempore community:
 
 # Licence
 
-Copyright (c) 2011-2014, Andrew Sorensen
+Copyright (c) 2011-2016, Andrew Sorensen
 
 All rights reserved.
 

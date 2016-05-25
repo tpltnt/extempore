@@ -37,29 +37,19 @@
 
 ;;; Code:
 
-;; make sure you include / on the end
-(define path "assets/models/")
+(sys:load "libs/external/glfw3.xtm")
 
-(define fullscreen #f)
-;; (define width 1920.0)
-;; (define height 1200.0)
-(define width 1024.0)
-(define height 768.0)
+(bind-val width i32 1024)
+(bind-val height i32 768)
 
-(bind-val width float width)
-(bind-val height float height)
+(bind-val window GLFWwindow*
+  ;; some of the shaders in the graphics pipeline use older glsl
+  ;; versions, so we need a "compatibility" graphics context
+  (begin
+    (glfwSetErrorCallback (convert (get_native_fptr glfw_error_callback)))
+    (glfw_init_and_create_interaction_compatibility_window width height)))
 
-;; setup opengl
-(define glctx (gl:make-ctx ":0.0" fullscreen 0.0 0.0 width height))
-
-;; first try to load from prebuilt stdlib
-;; (sys:load "libs/xtm.xtm")
-;; failing that compile on-the-fly
-(sys:load "libs/core/math.xtm")
-(sys:load "libs/external/opengl.xtm")
-(sys:load "libs/external/shaders.xtm")
 (sys:load "libs/external/assimp.xtm")
-
 
 ;; add a light and a camera
 (bind-func prerender:XTMRENDERCB
@@ -94,24 +84,38 @@
 (bind-func gl_render
   (let ((models:xtm_node** (alloc 3)))
     (lambda (model1:xtm_node* model2:xtm_node* model3:xtm_node*)
+      (if (null? model1)
+          (println "gl_render recieved null pointer for model1 - did you load the model successfully?"))
+      (if (null? model2)
+          (println "gl_render recieved null pointer for model2 - did you load the model successfully?"))
+      (if (null? model3)
+          (println "gl_render recieved null pointer for model3 - did you load the model successfully?"))
       (pfill! models model1 model2 model3)
-      (xtm_render prerender render null null (cast models i8*))
+      (xtm_render prerender:XTMRENDERCB render:XTMRENDERCB null null (cast models i8*))
       void)))
 
-;; standard impromptu callback
-(define opengl-loop
-  (lambda (time dur model1 model2 model3 degree)
-    (let ((v (clock:clock)))
-      (gl_render model1 model2 model3)
-      (gl:swap-buffers glctx)
-      )
-    (callback (+ time (* dur .1)) 'opengl-loop (+ time dur) dur
-              model1 model2 model3 (+ degree .5))))
+(bind-val model_path i8*
+  (cstring (cat2 (String (sys_sharedir)) (String "/assets/models/"))))
+(bind-val peppino xtm_node*
+  (assimp_load_model model_path "peppino.dae" aiProcess_Triangulate))
+(bind-val scene xtm_node*
+  (assimp_load_model model_path "scene.dae" aiProcess_Triangulate))
+(bind-val dome xtm_node*
+  (assimp_load_model model_path "dome_cut.dae" (+ aiProcess_Triangulate aiProcess_FlipWindingOrder)))
 
-(define peppino (assimp_load_model path "peppino.dae" aiProcess_Triangulate))
-(define scene (assimp_load_model path "scene.dae" aiProcess_Triangulate))
-(define dome (assimp_load_model path "dome_cut.dae" (+ aiProcess_Triangulate aiProcess_FlipWindingOrder)))
+(xtm_render_setup
+ (call-as-xtlang (glfw_get_framebuffer_width window))
+ (call-as-xtlang (glfw_get_framebuffer_height window)))
 
-(xtm_render_setup (real->integer width) (real->integer height))
- 
-(opengl-loop (now) 2000 peppino scene dome 70.0)
+(bind-func gl_draw_loop
+  (lambda (time:i64 delta_t:double)
+    (gl_render peppino scene dome)
+    ;; swap buffers
+    (glfwPollEvents)
+    (glfwSwapBuffers window)
+    ;; set next frame callback
+    (let ((next_time (+ time (convert (* 44100. delta_t)))))
+      (callback next_time gl_draw_loop next_time delta_t))))
+
+;; and to start it running...
+(gl_draw_loop (now) (/ 1.0 30.0)) ;; 30fps

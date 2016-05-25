@@ -14,34 +14,25 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/ghttp.xtm" 'quiet)
+(sys:load "libs/aot-cache/ghttp.xtm" 'quiet)
 (sys:load-preload-check 'ghttp)
 
-(sys:precomp:suppress-precomp-do
- (sys:load "libs/core/std.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/base/base.xtm")
+ (sys:load "libs/external/jansson.xtm"))
+(impc:aot:insert-forms (sys:load "libs/base/base.xtm" 'quiet))
+(impc:aot:insert-forms (sys:load "libs/external/jansson.xtm"))
 
-(sys:load "libs/external/jansson.xtm")
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib libghttp
+  (cond ((string=? (sys:platform) "OSX")
+         "libghttp.dylib")
+        ((string=? (sys:platform) "Linux")
+         "libghttp.so")
+        ((string=? (sys:platform) "Windows")
+         "libghttp.dll")))
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'libghttp
- (cond ((string=? (sys:platform) "OSX")
-        "libghttp.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libghttp.so")
-       ((string=? (sys:platform) "Windows")
-        "libghttp.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
-
-;; load the dylib               
-(define libghttp
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(sys:precomp:insert-header "xtmghttp")
+(impc:aot:insert-header "xtmghttp")
 
 (define *xtmlib-ghttp-loaded* #f)
 
@@ -511,4 +502,4 @@
 
 (define *xtmlib-ghttp-loaded* #t)
 
-(sys:precomp:insert-footer "xtmghttp")
+(impc:aot:insert-footer "xtmghttp")

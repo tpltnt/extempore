@@ -2,13 +2,13 @@
 
 ;; Author: Ben Swift
 ;; Keywords: extempore
-;; Required dylibs: 
+;; Required dylibs:
 
 ;;; Commentary:
 
 ;; Test that all the builtins are there and work properly
 
-;; this test should be called through sys:run-tests
+;; this test should be called through xtmtest-run-tests
 
 ;;; Code:
 
@@ -372,35 +372,15 @@
 
          (test_cos) 1.)
 
-;; (xtmtest '(bind-func test_mutex_trylock
-;;   (lambda ()
-;;     (mutex_trylock))))
-
-;;  (test-xtfunc test_mutex_trylock)
-
-;; (xtmtest '(bind-func test_mutex_unlock
-;;   (lambda ()
-;;     (mutex_unlock))))
-
-;;  (test-xtfunc test_mutex_unlock)
-
-;; (xtmtest '(bind-func test_mutex_lock
-;;   (lambda ()
-;;     (mutex_lock))))
-
-;;  (test-xtfunc test_mutex_lock)
-
-;; (xtmtest '(bind-func test_mutex_destroy
-;;   (lambda ()
-;;     (mutex_destroy))))
-
-;;  (test-xtfunc test_mutex_destroy)
-
-;; (xtmtest '(bind-func test_mutex_create
-;;   (lambda ()
-;;     (mutex_create))))
-
-;;  (test-xtfunc test_mutex_create)
+(xtmtest '(bind-func test_mutex
+  (lambda ()
+    (let ((mutex (mutex_create)))
+      (mutex_lock mutex)
+      (mutex_trylock mutex) ; this is allowed to spuriously fail, would that affect this test?
+      (mutex_unlock mutex)
+      (mutex_unlock mutex)
+      (mutex_destroy mutex))))
+  (test_mutex))
 
 ;; (xtmtest '(bind-func test_thread_sleep
 ;;   (lambda ()
@@ -927,12 +907,6 @@
 ;;     (llvm_schedule_callback))))
 
 ;;  (test-xtfunc test_llvm_schedule_callback)
-
-;; (xtmtest '(bind-func test_llvm_threads_get_callback_zone
-;;   (lambda ()
-;;     (llvm_threads_get_callback_zone))))
-
-;;  (test-xtfunc test_llvm_threads_get_callback_zone)
 
 ;; (xtmtest '(bind-func test_llvm_send_udp
 ;;   (lambda ()

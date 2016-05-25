@@ -32,7 +32,7 @@
 ;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 ;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 ;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-;; ARE DISCLEXTD. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+;; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
 ;; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 ;; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 ;; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -52,14 +52,14 @@
 		   (magenta . 5)
 		   (cyan . 6)
 		   (white . 7)
-		   (default . 10)
-		   (none . 10))))
+		   (default . 9)
+		   (none . 9))))
      (ascii-print-color (if ,bold 1 0)
 			(cdr (assoc ,fg colors))
 			(cdr (assoc ,bg colors)))
      ,@body
      ;; return colors to normal
-     (ascii-print-color 0 7 10)))
+     (ascii-print-color 0 7 9)))
 
 (define print-error
 	(lambda args
@@ -119,19 +119,23 @@
 
 
 (define replace-all
-   (lambda (lst alst)
-      (if (pair? lst)
-	  (let loop ((lsta lst) (lstb '()))
-	     (if (null? lsta)
-		 (reverse lstb)
-		 (let* ((v (car lsta))
-			(lstb2 (cond ((pair? v)
-				     (cons (loop v '()) lstb))
-				    ((assoc v alst)
-				     (cons (cdr (assoc v alst)) lstb))
-				    (#t (cons v lstb)))))
-		    (loop (cdr lsta) lstb2))))
-	  lst)))
+  (lambda (lst alst)
+    (if (pair? lst)
+        (let loop ((lsta lst) (lstb '()))
+          (if (null? lsta)
+              (reverse lstb)
+              (let* ((v (car lsta))
+                     (lstb2 (cond ((assoc v alst)
+                                   (cons (cdr (assoc v alst)) lstb))
+                                  ((list? v)
+                                   (cons (loop v '()) lstb))
+                                  ((pair? v)
+                                   (cons (cons (car (loop (list (car v)) '()))
+                                               (car (loop (list (cdr v)) '())))
+                                         lstb))
+                                  (#t (cons v lstb)))))
+                (loop (cdr lsta) lstb2))))
+        lst)))
 
 (define replace-first
    (lambda (obj-a obj-b  lst)
@@ -345,77 +349,6 @@
    (call-cpp time *io:osc:send-msg* (car host-address) (cdr host-address) osc-address args))
 
 
-(define make-envelope
-  (lambda (points . args)
-     (if (vector? points)
-	 (make-envelope-v points (if (null? args) #f (car args)))
-	 (make-envelope-l points (if (null? args) #f (car args))))))
-
-(define envelope-segments-l
-   (lambda (points)
-      (let loop ((lst points)
-		 (lines '()))
-	 (if (null? (cdr lst))
-	     (reverse lines)
-	     (let* ((x1 (caar lst))
-		    (y1 (cdar lst))
-		    (x2 (caadr lst))
-		    (y2 (cdadr lst))
-		    (m (if (= 0 (- x2 x1)) 0 (/ (- y2 y1) (- x2 x1))))
-		    (c (- y2 (* m x2))))
-		(loop (cdr lst) (cons (lambda (time) (+ (* m time) c)) lines)))))))
-
-(define make-envelope-l
-   (lambda (points whole-num?)
-      (let ((lines (envelope-segments-l points)))
-	 (lambda (time)
-	    (let loop ((p-list (cdr points))
-		       (l-list lines))
-	       (if (or (<= time (caar p-list))
-		       (null? (cdr p-list)))
-		   (if whole-num?
-		       (real->integer (round ((car  l-list) time)))
-		       ((car l-list) time))
-		   (loop (cdr p-list) (cdr l-list))))))))
-
-(define envelope-segments-v
-   (lambda (points)
-      (let loop ((idx 0)
-		 (lines '()))
-	 (if (>= (+ idx 2) (vector-length points))
-	     (reverse lines)
-	     (let* ((x1 (vector-ref points idx))
-		    (y1 (vector-ref points (+ idx 1)))
-		    (x2 (vector-ref points (+ idx 2)))
-		    (y2 (vector-ref points (+ idx 3)))
-		    (m (if (= 0 (- x2 x1)) 0 (/ (- y2 y1) (- x2 x1))))
-		    (c (- y2 (* m x2))))
-		(loop (+ idx 2) (cons (lambda (time) (+ (* m time) c)) lines)))))))
-
-(define make-envelope-v
-   (lambda (points whole-num?)
-      (let ((lines (envelope-segments-v points)))
-	 (lambda (time)
-	    (let loop ((idx 2)
-		       (l-list lines))
-	       (if (or (<= time (vector-ref points idx))
-		       (null? (cdr l-list)))
-		   (if whole-num?
-		       (real->integer (round ((car l-list) time)))
-		       ((car l-list) time))
-		   (loop (+ idx 2) (cdr l-list))))))))
-
-(define random-envelope
-   (lambda (duration interval whole-numbers? . args)
-      (let* ((lgth (real->integer (/ duration interval)))
-	     (v1 (make-vector-with-proc lgth (lambda (i) (* i interval))))
-	     (v2 (make-vector-with-proc lgth (lambda (i) (apply random args))))
-	     (v3 (make-vector (* 2 lgth))))
-	 (math:vector= v3 v1 (list 0 lgth 2))
-	 (math:vector= v3 v2 (list 1 lgth 2))
-	 (make-envelope-v v3 whole-numbers?))))
-
-
 (define math:mean
    (lambda (lst)
       (/ (apply + lst) (length lst))))
@@ -434,21 +367,6 @@
 		(let ((var (- (car l) m)))
 		   (loop (cdr l) (+ v (* var var)))))))))
 
-
-;; function must take two arguments beat and duration
-(define change-over-time
-   (lambda (start duration rate from to function . args)
-      (let* ((env (make-envelope (vector start from (+ start duration) to)))
-	     (func (lambda (beat dur)
-		      ;(callback (*metro* beat) function beat (env beat) args)
-		      (function beat (env beat) args)
-		      (if (> dur rate)
-			  (callback (*metro* (+ beat rate)) func
-				    (+ beat rate)
-				    (- dur rate))))))
-	 (callback (*metro* start) func start duration))))
-
-
 (define (string->sexpr str)
    (let* ((port (open-input-string str))
 	  (res (read port)))
@@ -461,81 +379,78 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define pi 3.14159265358979323846)
-(define 2pi (* 2.0 pi))
+;; (define pi 3.14159265358979323846)
+;; (define 2pi (* 2.0 pi))
+
+(define PI 3.14159265358979323846)
+(define TWOPI (* 2.0 PI))
 
 ;; sinusoidal LFOs
 
 (macro (cosr args)
    (if (> (length args) 4)
-       `(+ ,(caddr args) (* ,(cadddr args) (cos (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args))))))
-       `(+ ,(cadr args) (* ,(caddr args) (cos (* 2pi beat ,(cadddr args)))))))
+       `(+ ,(caddr args) (* ,(cadddr args) (cos (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args))))))
+       `(+ ,(cadr args) (* ,(caddr args) (cos (* TWOPI beat ,(cadddr args)))))))
 
 (macro (sinr args)
        (if (> (length args) 4)
-       `(+ ,(caddr args) (* ,(cadddr args) (sin (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args))))))
-       `(+ ,(cadr args) (* ,(caddr args) (sin (* 2pi beat ,(cadddr args)))))))
+       `(+ ,(caddr args) (* ,(cadddr args) (sin (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args))))))
+       `(+ ,(cadr args) (* ,(caddr args) (sin (* TWOPI beat ,(cadddr args)))))))
 
 (macro (tanr args)
        (if (> (length args) 4)
-       `(+ ,(caddr args) (* ,(cadddr args) (tan (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args))))))
-       `(+ ,(cadr args) (* ,(caddr args) (tan (* 2pi beat ,(cadddr args)))))))
+       `(+ ,(caddr args) (* ,(cadddr args) (tan (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args))))))
+       `(+ ,(cadr args) (* ,(caddr args) (tan (* TWOPI beat ,(cadddr args)))))))
 
 ;; sawtooth wave LFO with period 2pi
 
-(define ramp
-  (lambda (x)
-    (let ((xmod2pi (- x (* 2pi (floor (/ x 2pi))))))
-      (* (/ 1 pi) (if (< xmod2pi pi) xmod2pi (- xmod2pi 2pi))))))
+(define-macro (ramp x)
+  `(let ((xmod2pi (- ,x (* TWOPI (floor (/ ,x TWOPI))))))
+     (* (/ 1.0 PI) (if (< xmod2pi PI) xmod2pi (- xmod2pi TWOPI)))))
 
 (macro (rampr args)
        (if (> (length args) 4)
-       `(+ ,(caddr args) (+ (* .5 ,(cadddr args)) (* .5 ,(cadddr args) (ramp (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args)))))))
-       `(+ ,(cadr args) (+ (* .5 ,(caddr args)) (* .5 ,(caddr args) (ramp (* 2pi beat ,(cadddr args))))))))
+       `(+ ,(caddr args) (+ (* .5 ,(cadddr args)) (* .5 ,(cadddr args) (ramp (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args)))))))
+       `(+ ,(cadr args) (+ (* .5 ,(caddr args)) (* .5 ,(caddr args) (ramp (* TWOPI beat ,(cadddr args))))))))
 
-(define slide
-  (lambda (x)
-    (- 1.0 (ramp x))))
+(define-macro (slide x)
+  `(- 1.0 (ramp ,x)))
 
 (macro (slider args)
        (if (> (length args) 4)
-           `(+ ,(caddr args) (+ (* .5 ,(cadddr args)) (* .5 ,(cadddr args) (slide (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args)))))))
-           `(+ ,(cadr args) (+ (* .5 ,(caddr args)) (* .5 ,(caddr args) (slide (* 2pi beat ,(cadddr args))))))))
+           `(+ ,(caddr args) (+ (* .5 ,(cadddr args)) (* .5 ,(cadddr args) (slide (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args)))))))
+           `(+ ,(cadr args) (+ (* .5 ,(caddr args)) (* .5 ,(caddr args) (slide (* TWOPI beat ,(cadddr args))))))))
 
 
 ;; square wave LFO with period 2pi
 
-(define rect
-  (lambda (x)
-    (let ((xmod2pi (- x (* 2pi (floor (/ x 2pi))))))
-      (if (< xmod2pi pi) 1 0))))
+(define-macro (rect x)  
+  `(let ((xmod2pi (- ,x (* TWOPI (floor (/ ,x TWOPI))))))
+     (if (< xmod2pi PI) 1.0 0.0)))
 
 (macro (rectr args)
    (if (> (length args) 4)
-       `(+ ,(caddr args) (* ,(cadddr args) (rect (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args))))))
-       `(+ ,(cadr args) (* ,(caddr args) (rect (* 2pi beat ,(cadddr args)))))))
+       `(+ ,(caddr args) (* ,(cadddr args) (rect (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args))))))
+       `(+ ,(cadr args) (* ,(caddr args) (rect (* TWOPI beat ,(cadddr args)))))))
 
 ;; triangle wave LFO with period 2pi
 
-(define tri-wave
-  (lambda (x)
-    (let ((xmod2pi (- x (* 2pi (floor (/ x 2pi))))))
-      (if (< xmod2pi pi)
-	  (+ 1 (* (/ -1 pi) xmod2pi))
-	  (- (* (/ 1 pi) xmod2pi) 1)))))
+(define-macro (tri-wave x)
+  `(let ((xmod2pi (- ,x (* TWOPI (floor (/ ,x TWOPI))))))
+     (if (< xmod2pi PI)
+         (+ 1.0 (* (/ -1.0 PI) xmod2pi))
+         (- (* (/ 1.0 PI) xmod2pi) 1.0))))
 
 (macro (trir args)
    (if (> (length args) 4)
-       `(+ ,(caddr args) (* ,(cadddr args) (tri-wave (* 2pi (+ beat ,(cadr args)) ,(car (cddddr args))))))
-       `(+ ,(cadr args) (* ,(caddr args) (tri-wave (* 2pi beat ,(cadddr args)))))))
+       `(+ ,(caddr args) (* ,(cadddr args) (tri-wave (* TWOPI (+ beat ,(cadr args)) ,(car (cddddr args))))))
+       `(+ ,(cadr args) (* ,(caddr args) (tri-wave (* TWOPI beat ,(cadddr args)))))))
 
-
-
-; creates a rhythm of a given length
-; a tactus is provided and a percentage of synconization (from 0 - 1)
-; a rhythm-list defines which rhythm values can be used
-;
-; (define rlst (make-rhythm 4 1 .2 '(1/3 1/2 1/4)))
+;; creates a rhythm of a given length a tactus is provided and a
+;; percentage of synconization (from 0 - 1) a rhythm-list defines
+;; which rhythm values can be used
+;;
+;; (define rlst (make-rhythm 4 1 .2 '(1/3 1/2 1/4)))
 
 
 (define make-rhythm
@@ -748,7 +663,7 @@
 ;; synchronous IPC
 
 
-(define *ipc:remote-process-name-map* '()) ;(objc:make-dictionary))
+(define *ipc:remote-process-name-map* '())
 
 (define ipc:set-local-remote-mapping
    (lambda (local-name remote-name)
@@ -819,20 +734,20 @@
         return-val))))
 
 (define ipc:map
-  (lambda (func process-lst . args-lists)
+  (lambda (process-lst func . args-list)
     (let* ((callback-proc (ipc:get-process-name))
            (results '())
            (loopK '()))
       (let ((pos (call/cc (lambda (kk) (set! loopK kk) 0))))
         (if (< pos (length process-lst))
             (let ((z (list-ref process-lst pos))
-                  (ags (if (null? args-lists) #f (list-ref args-lists pos))))
+                  (ags (if (null? args-list) #f (list (list-ref (car args-list) pos)))))
               (let loop ((i *ipc:active-label-cnt*))
                 (if (not (null? (vector-ref *ipc:active-labels* i)))
                     (loop (modulo (+ i 1) *ipc:active-label-buffer-size*))
                     (set! *ipc:active-label-cnt* i)))
               (apply ipc:call-async z 'ipc:sync-receive callback-proc
-                     *ipc:active-label-cnt* func (if (null? args-lists) '() ags))
+                     *ipc:active-label-cnt* func (if (null? args-list) '() ags))
               (let ((return-val (call/cc (lambda (k)
                                            (vector-set! *ipc:active-labels* *ipc:active-label-cnt* k)
                                            (loopK (+ pos 1))))))
@@ -869,12 +784,14 @@
               proc-list
               arg-lists)))
 
+(define-macro (ipc:eval proc expr)
+  `(ipc:eval-string ,proc ,(sexpr->string expr)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (io:osc:receive time address . args)
    (print-notification 'override 'io:osc:receive 'to 'handle 'osc 'events:)
-   (println (objc:make-date time) address args))
-
+   (println time address args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; LIST HELPER FUNCTIONS
@@ -927,6 +844,11 @@
   (if (null? lst)
       accum
       (foldl func (func accum (car lst)) (cdr lst))))
+
+(define (scan proc val lst)
+    (if (null? lst)
+        '()
+        (cons (proc val (car lst)) (scan proc (proc val (car lst)) (cdr lst)))))
 
 ;; jumble returns a randomized version of lst
 (define jumble
@@ -1086,12 +1008,67 @@
 
 (define limit-range range-limit)
 
-(define printf
-   (lambda (format . args)
-      (let ((str (apply objc:string:with-format format args)))
-	 (print (objc:nsstring->string str))
-	 str)))
+;; string formatting macro, taken from SRFI-28 (see
+;; http://srfi.schemers.org/srfi-28/srfi-28.html)
 
+;; --Specification--
+;; format format-string [obj ...] -> string
+
+;;     Accepts a message template (a Scheme String), and processes it,
+;;     replacing any escape sequences in order with one or more
+;;     characters, the characters themselves dependent on the
+;;     semantics of the escape sequence encountered.
+
+;;     An escape sequence is a two character sequence in the string
+;;     where the first character is a tilde '~'. Each escape code's
+;;     meaning is as follows:
+
+;;         ~a The corresponding value is inserted into the string as
+;;            if printed with display.
+;;         ~s The corresponding value is inserted into the string as
+;;            if printed with write.
+;;         ~% A newline is inserted.
+;;         ~~ A tilde '~' is inserted.
+
+;;     ~a and ~s, when encountered, require a corresponding Scheme
+;;     value to be present after the format string. The values
+;;     provided as operands are used by the escape sequences in order.
+;;     It is an error if fewer values are provided than escape
+;;     sequences that require them.
+
+;;     ~% and ~~ require no corresponding value.
+(define format
+  (lambda (format-string . objects)
+    (let ((buffer (open-output-string)))
+      (let loop ((format-list (string->list format-string))
+                 (objects objects))
+        (cond ((null? format-list) (get-output-string buffer))
+              ((char=? (car format-list) #\~)
+               (if (null? (cdr format-list))
+                   (error 'format "Incomplete escape sequence")
+                   (case (cadr format-list)
+                     ((#\a)
+                      (if (null? objects)
+                          (error 'format "No value for escape sequence")
+                          (begin
+                            (display (car objects) buffer)
+                            (loop (cddr format-list) (cdr objects)))))
+                     ((#\s)
+                      (if (null? objects)
+                          (error 'format "No value for escape sequence")
+                          (begin
+                            (write (car objects) buffer)
+                            (loop (cddr format-list) (cdr objects)))))
+                     ((#\%)
+                      (newline buffer)
+                      (loop (cddr format-list) objects))
+                     ((#\~)
+                      (write-char #\~ buffer)
+                      (loop (cddr format-list) objects))
+                     (else
+                      (error 'format "Unrecognized escape sequence")))))
+              (else (write-char (car format-list) buffer)
+                    (loop (cdr format-list) objects)))))))
 
 (define list-position
    (lambda (obj lst)
@@ -1146,23 +1123,18 @@
 			  (and (vector? x)
 			       (eqv? (vector-ref x 0) ',s)))))))))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define bench
-   (lambda (func . args)
-      (let ((t (clock))
-	    (res (apply func args)))
-	 (println "benchmark time :" (- (clock) t))
-	 res)))
+  (lambda (func . args)
+    (let* ((t (clock:clock))
+          (res (apply func args)))
+      (- (clock:clock) t))))
 
 (define-macro (benchmark expr)
-   `(let ((t (clock))
-	  (res ,expr))
-       (println "benchmark time:" (- (clock) t))
-       res))
-
+  `(let* ((t (clock:clock))
+          (res ,expr))
+     (- (clock:clock) t)))
 
 (define sys:livecoding-error-hook?
    (lambda (on?)
@@ -1170,13 +1142,12 @@
 	  (set! *error-hook* '())
 	  (set! *error-hook* throw))))
 
-
 ;; this for buffered version
 (define _dsp:set!
   (lambda (zerolatency? name . args)
     (println 'zerolatency: zerolatency?)
     (let* ((nn (if (symbol? name) (symbol->string name) name))
-           (ft (llvm:get-function-args-withoutzone nn))
+           (ft (impc:ti:get-closure-arg-types nn))
            (ct (if ft
                    (map (lambda (x) (impc:ir:get-type-from-str x)) ft)
                    (print-error 'Function name 'does 'not 'exist 'or 'is 'not 'compiled))))
@@ -1243,7 +1214,7 @@
   (let ((zerolatency (if (boolean? (car names))
                          (car names)
                          #t))
-        (lst (map (lambda (n) (symbol->string n))
+        (lst (map (lambda (n) (symbol->string (eval `(,n 'xtlang))))
                   (if (boolean? (car names))
                       (cdr names)
                       names))))
@@ -1256,32 +1227,6 @@
     (let ((base (regex:matched file-path "(.*)/(.*)\\.(.*)")))
       (and (not (null? base))
            (cdr base)))))
-
-;; needed for precomp.
-
-;; should be a cons pair e.g. '(libGLU .
-;; "/System/Library/Frameworks/OpenGL.framework/OpenGL")
-(define *sys:precomp:current-load-dylib-info* #f)
-
-(define sys:precomp:set-dylib-name-info
-  (lambda (symbol-name dylib-path)
-    ;; is there a better way to check if a file exists?
-    (set! *sys:precomp:current-load-dylib-info*
-          (cons symbol-name dylib-path))))
-
-
-;; Check if (prebuilt) lib exists in runtime/lib first, otherwise
-;; search LDPATH as usual
-(define sys:load-dylib
-  (lambda (dylib-path)
-    (let ((dylib (sys:open-dylib dylib-path)))
-      (if dylib
-          (begin (impc:compiler:print-dylib-loading-details-to-log dylib-path)
-                 dylib)
-          (begin (print-with-colors 'red 'default #t
-                                    (print "Error"))
-                 (print ": could not load " dylib-path " dynamic library\n")
-                 #f)))))
 
 ;;;;;;;;;;;;;;;;;
 ;; comlist.xtm ;;
@@ -1569,6 +1514,17 @@
 			       (else (rem-dup (cdr lst) (cons (car lst) nlst)))))))
       (lambda (lst)
 	 (rem-dup lst '()))))
+;;;@ keep only MEMBERs of a list which occur more than once
+(define cl:duplicates
+  (lambda (lst)
+    (let loop ((rem lst)
+               (dupes '()))
+      (if (null? rem)
+          (reverse dupes)
+          (loop (cdr rem)
+                (if (member (car rem) (cdr rem))
+                    (cons (car rem) dupes)
+                    dupes))))))
 
 ;@
 (define cl:list*
@@ -1732,36 +1688,6 @@
 	 (list->string (cl:sort! (string->list seq) less?)))
 	(else (cl:sort! (append seq '()) less?))))
 
-;; for eldoc integration
-
-(define get-eldoc-string
-  (lambda (name)
-    (let* ((sym (string->symbol name))
-           (docstring (assoc-strcmp sym *impc:docstrings*))
-           (types (assoc-strcmp sym *impc:closuretypes*))
-           (form (assoc-strcmp sym *impc:closurebodies*)))
-      ;; xtlang function
-      (if (or docstring types form)
-          (list 'docstring
-                '(lang . xtlang)
-                (cons 'name name)
-                (cons 'args (if form (sexpr->string (cadadr form)) '()))
-                (cons 'type (if types (cdr types) '()))
-                (cons 'docstring (if docstring (cdr docstring) '())))
-          (if (and (defined? sym)
-                   (not (macro? (eval sym))))
-              ;; scheme function
-              (let ((form (get-closure-code (eval sym))))
-                (list 'docstring
-                      '(lang . scheme)
-                      (cons 'name name)
-                      (cons 'args (if form (sexpr->string (cadr form)) '()))
-                      ;; no types for scheme
-                      (cons 'type '())
-                      ;; no docstrings for scheme at the moment
-                      (cons 'docstring '())))
-              (list 'docstring))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Load which safely breaks on calling sys:load-escape
 ;;
@@ -1799,6 +1725,7 @@
   (lambda (path)
     (car (regex:split path "[.]"))))
 
+;; this is incredibly slow! use sys:slurp-file instead
 (define file->string
   (lambda (path)
     (let ((in (open-input-file path))
@@ -1821,29 +1748,31 @@
 
 (define sys:load
   (lambda (path . quiet?)
-    (let ((in (open-input-file path))
+    (let ((file-string (or (sys:slurp-file path)
+                           (sys:slurp-file (string-append (sys:share-dir) "/" path))))
           (cnt 0))
-      (if (not in)
+      (if (not file-string)
           (if (or (null? quiet?) (not (car quiet?)))
               (begin (print-with-colors 'red 'default #t (print "File Error"))
                      (print " couldn't find file ")
                      (print-with-colors 'blue 'default #f (print path "\n"))
                      #f)
               #f)
-          (let ((msg (call/cc
+          (let ((input (open-input-string file-string))
+                (msg (call/cc
                       (lambda (k)
                         (set! *sys:load-escape-stack* (cons k *sys:load-escape-stack*))
                         ""))))
             (if (string=? msg "")
                 (begin                  
-                  (let loop ((sexpr (read in)))
+                  (let loop ((sexpr (read input)))
                     (if (not (eof-object? sexpr))
                         (begin
                           (set! *global-sysload-evals* (cons sexpr *global-sysload-evals*))
                           (set! *global-sysload-evals* (list-head *global-sysload-evals* 10))
                           (eval (car *global-sysload-evals*) (interaction-environment))
-                          (loop (read in)))))
-                  (close-input-port in)
+                          (loop (read input)))))
+                  (close-input-port input)
                   (set! *sys:load-escape-stack* (cdr *sys:load-escape-stack*))
                   #t)
                 (let ((words (regex:split msg " ")))
@@ -1851,8 +1780,15 @@
                       (begin (print-with-colors 'yellow 'default #t (print "sys:load notification "))
                              (for-each (lambda (w) (print w "")) words)
                              (println)))
-                  (close-port in)
+                  (close-port input)
                   #f)))))))
+
+;; load, then wait 10s and quit
+(define sys:load-then-quit
+  (lambda (filename delay-in-sec)
+    (and
+     (sys:load filename)
+     (callback (+ (now) (* *second* delay-in-sec)) quit 0))))
 
 (define range
   (lambda args
@@ -1865,254 +1801,26 @@
 				(lambda (i) (+ (car args) (* i (caddr args))))))
 	  (else (println 'bad 'range!) '()))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PRECOMP STUFF ;;;;;;;;;;;;;;;;;;;;;;;
+;; (define-macro (inc x y)
+;;   `(set! ,x (+ ,x ,y)))
 
-;; this can be moved elsewhere, but should be loaded on startup
+;; (define-macro (dec x y)
+;;   `(set! ,x (- ,x ,y)))
 
-(define-macro (sys:precomp:suppress-precomp-do . forms)
-       `(let ((precomp-port *sys:precomp:current-output-port*))
-          (set! *sys:precomp:current-output-port* #t)
-          ,@forms
-          ;; whatever happens, set the port back to the original value
-          (set! *sys:precomp:current-output-port* precomp-port)))
+;; (define-macro (min x y)
+;;   `(if (< ,x ,y) ,x ,y))
 
-(define sys:precomp:compile-current-module
-  (lambda (module-name move-into-place? exit-on-error?)
-    (let ((ext-llvm-dir (cptr->string (get_llvm_path))))
-      (if (string=? "" ext-llvm-dir)
-          (begin (print-with-colors 'red 'default #t (print "Error"))
-                 (print ": you must set the environment variable ")
-                 (print-with-colors 'green 'default #f (print "EXT_LLVM_DIR"))
-                 (print " to point to your LLVM directory before you can precompile xtlang code.\n")
-                 (error "")))
-      (let* ((platform (sys:platform))
-             (bitcode-path (if (string=? platform "Windows")
-                               (string-append ".\\msvc\\tmp\\" module-name ".ll")
-                               (string-append "/tmp/" module-name ".bc")))
-             (asm-path (if (string=? platform "Windows")
-                           (string-append ".\\msvc\\tmp\\" module-name ".obj")
-                           (string-append "/tmp/" module-name ".s")))
-             (win-libs (if (string=? platform "Windows")
-                           (let* ((dirlist (sys:directory-list "./msvc/tmp/"))
-                                  (liblist (cl:remove-if-not (lambda (s) (regex:match? s "\\.lib$")) dirlist))
-                                  (linklist (cl:remove-if (lambda (s)
-                                                            (regex:match? s (string-append module-name ".lib$")))
-                                                          liblist))
-                                  (strlist (string-append " " (string-join linklist " ") " ")))
-                             strlist)
-                           ""))
-             (shlib-path
-              (cond ((string=? platform "Linux")
-                     (string-append "/tmp/" module-name ".so"))
-                    ((string=? platform "OSX")
-                     (string-append "/tmp/" module-name ".dylib"))
-                    ((string=? platform "Windows")
-                     (string-append ".\\msvc\\tmp\\" module-name ".dll"))
-                    (else "")))
-             (compilation-command-a
-              (if (string=? platform "Windows")
-                  (string-append
-                   ext-llvm-dir
-                   "/bin/Release/llc -O3 -tailcallopt -filetype obj "
-                   bitcode-path)
-                  (string-append
-                   ext-llvm-dir
-                   "/bin/llc -O3 -relocation-model=pic -tailcallopt "
-                   bitcode-path)))
-             (compilation-command-b
-              (if (string=? platform "Windows")
-                  (string-append "link "
-                                 ;; " /FORCE:UNRESOLVED "
-                                 " /MACHINE:x64 /DLL /OUT:"
-                                 shlib-path
-                                 win-libs
-                                 " opengl32.lib "
-                                 " Glu32.lib "
-                                 " .\\msvc\\x64\\Release\\extempore.lib"                                 
-                                 " .\\msvcrt.lib "                                 
-                                 asm-path "\n")
-                  (string-append
-                   (cond ((string=? platform "Linux")
-                          "gcc -O3 --shared -fPIC -g ")
-                         ((string=? platform "OSX")
-                          (string-append "clang -O3 -dynamiclib -undefined dynamic_lookup ")))
-                   asm-path
-                   " -o " shlib-path "\n"))))
-        ;; (if (string=? platform "Windows")
-        ;;     (print-error 'Sorry, 'this 'function 'is 'not 'available 'on 'your 'platform))
-        (begin (print "Looking for ")
-               (print-with-colors 'magenta 'default #t (print "llc"))
-               (print " in " ext-llvm-dir "\n"))
-        ;; print further instructions
-        (command (string-append "rm " bitcode-path " " asm-path " " shlib-path))
-        (llvm:export-module bitcode-path)
+;; (define-macro (max x y)
+;;   `(if (> ,x ,y) ,x ,y))
 
-        (let ((res1 0)
-              (res2 0))
-          (print "LLC command:\n " compilation-command-a "\n\n")
-          (set! res1 (command compilation-command-a))
-          (if (<> res1 0)
-              (begin (print-with-colors 'red 'default #t
-                                        (println "LLC Failed!. exit code" res1))
-                     (if exit-on-error? (quit 1))))
-          (print "CC command:\n " compilation-command-b "\n\n")          
-          (set! res2 (command compilation-command-b))
-          (if (<> res2 0)
-              (begin (print-with-colors 'red 'default #t
-                                        (println "CC Failed!. exit code" res2))
-                     (if exit-on-error? (quit 1)))                                        
-              (begin (print "Succesfully compiled ")
-                     (print-with-colors 'blue 'default #t (print shlib-path))
-                     (print "\n\n")
-                     (if move-into-place?
-                         (if (= (command (string-append "mv " shlib-path " libs")) 0)
-                             (begin (print "Moved ")
-                                    (print-with-colors 'blue 'default #t (print shlib-path)) (print " into libs/ directory.\n\n"))
-                             (print-with-colors 'red 'default #t
-                                                (print "Error moving " shlib-path " into libs/ directory.")))))))))))
+(define-macro (clamp x minval maxval)
+  `(if (> ,x ,maxval) ,maxval
+       (if (< ,x ,minval) ,minval
+           ,x)))
 
-(define sys:precomp:insert-header
-  (lambda (libname)
-    (if (output-port? *sys:precomp:current-output-port*)
-        (begin
-          (display (string-append "(sys:load-preload-check '" (substring libname 3) ")\n")
-                   *sys:precomp:current-output-port*)
-          (display (string-append "(define *xtmlib-" (substring libname 3) "-loaded* (now))\n")
-                   *sys:precomp:current-output-port*)
-          (display "(set! *sys:precomp:prev-compiler-message-level* *impc:compiler:message:level*)\n(set! *impc:compiler:message:level* 'low)\n"
-                   *sys:precomp:current-output-port*)
-          (display (string-append "(define " libname " (sys:open-dylib \"libs/" libname
-                                  (cond ((string=? (sys:platform) "Linux") ".so\"))\n")
-                                        ((string=? (sys:platform) "Windows") ".dll\"))\n")
-                                        ((string=? (sys:platform) "OSX") ".dylib\"))\n")))
-                   *sys:precomp:current-output-port*)
-          (display (string-append "(if (not " libname ") (begin (print-with-colors 'red 'default #t (print \"Error\")) (print \": could not load " libname " dynamic library\\n\") (error \"\")))\n")
-                   *sys:precomp:current-output-port*)
-          (display (string-append "(print \"Loading \")\n(print-with-colors 'magenta 'default #t (print \""
-                                  libname "\"))\n(print \" library...\\n\")\n")
-                   *sys:precomp:current-output-port*)))))
 
-(define sys:precomp:insert-footer
-  (lambda (libname)
-    (if (output-port? *sys:precomp:current-output-port*)
-        (begin
-          (display (string-append "(print-with-colors 'green 'default #t (print \"Loaded \"))\n(print-with-colors 'blue 'default #t (print \"" libname "\"))\n")
-                   *sys:precomp:current-output-port*)
-          (display (string-append "(print \" library in\" (* 1.0 (/ (- (now) *xtmlib-" (substring libname 3) "-loaded*) *second*)) \"seconds\\n\")\n")
-                   *sys:precomp:current-output-port*)
-          (display (string-append "(define *xtmlib-" (substring libname 3) "-loaded* (now))\n")
-                   *sys:precomp:current-output-port*)
-          (display "(set! *impc:compiler:message:level* *sys:precomp:prev-compiler-message-level*)\n"
-                   *sys:precomp:current-output-port*)))))
 
-;; if precompiling, insert arbitrary sexp (remember to quote!) into
-;; the precomp .xtm file, otherwise do nothing
-(define sys:precomp:insert-sexp
-  (lambda (sexp)
-    (if (output-port? *sys:precomp:current-output-port*)
-        (display (string-append (sexpr->string sexp) "\n")
-                 *sys:precomp:current-output-port*))))
-
-(define sys:precomp:print-compilation-details
-  (lambda (start-time)
-    (print-with-colors 'yellow 'default #t
-                       (print "Total compile time: "))
-    (print (* 1.0 (/ (- (now) start-time) *minute*)) "minutes\n\n")
-    
-    ;; (println 'sym-name-stack-size: (length *impc:ir:sym-name-stack*))
-    (print-with-colors 'cyan 'default #f (print " type-aliases: "))
-    (println (length *impc:ir:type-aliases*))
-    (print-with-colors 'cyan 'default #f (print "   gpolytypes: "))
-    (println (length *impc:ir:gpolytypes*))
-    (print-with-colors 'cyan 'default #f (print "    polytypes: "))
-    (println (length *impc:ir:polytypes*))
-    (print-with-colors 'cyan 'default #f (print "       gpolys: "))
-    (println (length *impc:ir:gpolys*))
-    (print-with-colors 'cyan 'default #f (print "        polys: "))
-    (println (length *impc:ir:polys*))
-    (print-with-colors 'cyan 'default #f (print "       vtypes: "))
-    (println (length *impc:ti:vtypes*))
-    (print-with-colors 'cyan 'default #f (print "gtypemappings: "))
-    (println (length *impc:ti:generic-type-mappings*))))
-
-(define sys:precomp:compile-xtm-file
-  (lambda (lib-path move-into-place? exit-when-done? exit-on-error?)
-    ;; is there a better way to check if a file exists?
-    (let ((start-time (now))
-          (in-file-port (open-input-file lib-path)))
-      (if (not in-file-port)
-          (begin (print-with-colors 'red 'default #t
-                                    (print "Error:"))
-                 (print " no .xtm file at" lib-path "\n"))
-          (let* ((res (close-port in-file-port))
-                 (libname (filename-from-path lib-path))
-                 (libname-no-extension (string-append "xtm" (filename-strip-extension libname)))
-                 (precomp-file-path (string-append "" "libs/" libname)))
-            (if (not (sys:load-preload-check (string->symbol libname-no-extension)))
-                (begin (print "Precomp file not written ")
-                       (close-port *sys:precomp:current-output-port*)
-                       (set! *sys:precomp:current-output-port* #f))
-                (begin
-                  ;; if the preload check passes
-                  (set! *sys:precomp:current-output-port* (open-output-file precomp-file-path))
-                  (set! *sys:precomp:func-defs-in-mod* '())
-                  (if (sys:precomp:currently-compiling?)
-                      (begin
-                        ;; this is the 'success' branch
-                        (set! *sys:precomp:current-lib-name* libname-no-extension)
-                        ;; (sys:precomp:insert-header libname-no-extension)
-                        (sys:load lib-path)
-                        (sys:precomp:compile-current-module libname-no-extension move-into-place? exit-on-error?)
-                        ;; (sys:precomp:insert-footer libname-no-extension)
-                        (close-port *sys:precomp:current-output-port*)
-                        (set! *sys:precomp:current-lib-name* "xtmdylib")
-                        (if  *sys:precomp:current-output-port*
-                             (begin (set! *sys:precomp:current-output-port* #f)
-                                    (print "Successfully wrote precomp file to ")
-                                    (print-with-colors 'green 'default #f (print precomp-file-path "\n"))
-                                    (sys:precomp:print-compilation-details start-time)
-                                    (if exit-when-done? (quit 0)))
-                             (begin (print-with-colors 'red 'default #t (print "Error:"))
-                                    (print " something went wrong in writing the output file ")
-                                    (print-with-colors 'red 'default #t (print precomp-file-path "\n"))
-                                    (if exit-when-done? (quit 1)))))
-                      (begin (print-with-colors 'red 'default #t
-                                                (print "Error:"))
-                             (print " cannot write precomp file at " precomp-file-path "\n")
-                             (if exit-when-done? (quit 2)))))))))))
-
-(define sys:run-tests
-  (lambda (test-files print? quit-on-exit?)
-    (sys:load "libs/core/test.xtm" 'quiet)
-    (xtmtest-reset-results)
-    (if (string? test-files)
-        (set! test-files (list test-files)))
-    (let ((start (now)))
-      (for-each (lambda (tf)
-                  (sys:load tf))
-                test-files)
-      
-      (if print? (xtmtest-print-results))
-      (print "\nCompleted ")
-      (print-with-colors 'blue 'default #t
-                         (print (apply + (map (lambda (lab) (- (length lab) 1))
-                                              *xtmtest-results*))))
-      (print " tests in ")
-      (let ((dur-sec (/ (- (now) start) *au:samplerate* 1.0)))
-        (print-with-colors 'yellow 'default #t
-                           (print (if (> dur-sec 60) (/ dur-sec 60) dur-sec)))
-        (print (if (> dur-sec 60)
-                   " minutes.\n\n"
-                   " seconds.\n\n"))))
-    (if quit-on-exit?
-        (quit (if (cl:some (lambda (label-list)
-                             (and (not (equal? (car label-list) 'correct))
-                                  (> (length label-list) 1)))
-                           *xtmtest-results*)
-                  (begin (print-with-colors 'red 'default #t
-                                            (print "Some tests failed :(\n"))
-                         1)
-                  (begin (print-with-colors 'green 'default #t
-                                            (print "All tests passed :)\n"))
-                         0))))))
+;; load the test infrastructure on startup - it's so important to
+;; minimise the friction for testing things (and adding new tests to
+;; the test suite)
+(load (string-append (sys:share-dir) "/libs/core/test.xtm"))

@@ -3,21 +3,12 @@
 (sys:load-preload-check 'kinect2)
 (define *xtmlib-kinect2-loaded* #f)
 
-(sys:precomp:insert-header "xtmkinect2")
+(impc:aot:insert-header "xtmkinect2")
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'libkinect2
- (cond ((string=? (sys:platform) "Windows")
-        "xtmkinect.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
-
-;; load the dylib
-(define libkinect2
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib libkinect2
+  (cond ((string=? (sys:platform) "Windows")
+         "xtmkinect.dll")))
 
 (bind-alias TrackingState i32)
 (bind-alias JointType i32)
@@ -95,7 +86,7 @@
                           ((= type JointType_HandTipRight) "HandTipRight")
                           ((= type JointType_ThumbRight) "ThumbRight")
                           (else "Err"))))
-          (printout "<" (Str name) "\t[" (tref pos 0) "," (tref pos 1) "," (tref pos 2) "]\t" (Str track) ">")
+          (printout "<" (String name) "\t[" (tref pos 0) "," (tref pos 1) "," (tref pos 2) "]\t" (String track) ">")
           void))))
 
 (bind-poly print Joint_print)
@@ -197,7 +188,7 @@
       void)))
       
 
-(sys:precomp:insert-footer "xtmkinect2")
+(impc:aot:insert-footer "xtmkinect2")
 (define *xtmlib-kinect2-loaded* #t)
 
 ;; (bind-func send-skeleton-osc  

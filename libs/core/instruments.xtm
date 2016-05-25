@@ -14,15 +14,16 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/instruments.xtm" 'quiet)
+(sys:load "libs/aot-cache/instruments.xtm" 'quiet)
 (sys:load-preload-check 'instruments)
-(define *xtmlib-instruments-loaded* #t)
 
-(sys:precomp:suppress-precomp-do
+(define *xtmlib-instruments-loaded* #f)
+
+(impc:aot:suppress-aot-do
  (sys:load "libs/core/audio_dsp.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/audio_dsp.xtm"))
+(impc:aot:insert-forms (sys:load "libs/core/audio_dsp.xtm" 'quiet))
 
-(sys:precomp:insert-header "xtminstruments")
+(impc:aot:insert-header "xtminstruments")
 
 ;; making and playing notes
 
@@ -60,40 +61,6 @@
       ff)))
 
 
-;; NOTE!
-;; (* 5.0 SAMPLERATE) is time padding
-;; it is used because the decay length of the note may go
-;; beyond the duration.
-;; however making it longer means using more memory
-;; it's a trade off!
-(bind-func xtm_play_note
-  (lambda (time inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* freq amp dur nargs:i64 dargs)
-    (if (> freq 10.0)        
-        (let ((f (inst.new_note:[i64,i64,SAMPLE,i64,SAMPLE,i64,SAMPLE*]*)))
-          (f time freq dur amp nargs dargs)
-          ;; so that we only copy an integer from memzone
-          1)
-        1)))
-
-;; playnote wrapper
-;; (define-macro (play-note time inst pitch vol dur . args)  
-;;   (let ((nargs (length args)))
-;;     `(let ((duration (* 1.0 ,dur))
-;;            (dargs (sys:make-cptr ,(* (if (audio_64bit) 8 4) nargs))) 
-;;            (native (llvm:get-native-closure ,(symbol->string inst))))
-;;        (if (audio_64bit)
-;;            (dotimes (i ,nargs) (cptr:set-double dargs (* i 8) (eval (list-ref ',args i))))
-;;            (dotimes (i ,nargs) (cptr:set-float dargs (* i 4) (eval (list-ref ',args i)))))
-;;        (if (cptr? native)
-;;            (_play_note time
-;;                        native
-;;                        (midi2frq (* 1.0 ,pitch))
-;;                        (/ (exp (/ ,vol 26.222)) 127.0)
-;;                        duration
-;;                        ,nargs
-;;                        dargs)
-;;            (print-error 'No 'inst 'named ,(symbol->string inst))))))
-
 ;; make synth defaults
 (bind-func default_note_c
   (lambda (data:NoteInitData* nargs:i64 dargs:SAMPLE*)
@@ -108,7 +75,33 @@
   (lambda (in:SAMPLE time:i64 chan:i64 dat:SAMPLE*)
     in))
 
-;; (bind-instrument definst default_note_c default_fx)
+
+(bind-func xtm_play_note
+  (lambda (time inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* freq amp dur nargs:i64 dargs)
+    (if (> freq 10.0)        
+        (let ((f (inst.new_note:[i64,i64,SAMPLE,i64,SAMPLE,i64,SAMPLE*]*)))
+          (f time freq dur amp nargs dargs)
+          ;; so that we only copy an integer from memzone
+          1)
+        1)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;play for use with native beat shceduler
+;;
+
+(bind-func xtm_play
+  (lambda (offset:double bsched:[void]* inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]*
+                    pitch:double vol:double dur:double
+                    num:i64 mem:SAMPLE*)
+    (let ((bpm (bsched.bpm)))
+      (xtm_play_note (+ (now) (dtoi64 (* offset (/ 60.0 bpm) SRd)))
+                     inst
+                     (midi2frq (convert pitch))
+                     (convert (/ (exp (/ vol 26.222)) 127.0))
+                     (dtoi64 (* dur (/ 60.0 bpm) SRd))
+                     num mem))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -178,21 +171,19 @@
             (oscr (square_c 0.1))
             (o1 (osc_c 0.0))
             (oscl2 (square_c (random)))
-            (nval (if (> nargs 0) (pref dargs 0) 50.0))
             (lpfl (lpf_c))
             (lpfr (lpf_c))	  
             (oscr2 (square_c (random)))
-            (ramp 0.0)
             (a:SAMPLE (+ 1.0 (* 0.02 (random))))
             (b:SAMPLE (+ 1.0 (* 0.02 (random)))))
         (lambda (time:i64 chan:i64 freq:SAMPLE amp:SAMPLE)
           (if (= chan 0)
-              (* amp (lpfl (+ (oscl 0.3 freq nval)
-                              (oscl2 0.3 (+ freq a) nval))
+              (* amp (lpfl (+ (oscl 0.3 freq)
+                              (oscl2 0.3 (+ freq a)))
                            (+ 550.0 (* amp 8000.0))
                            (+ res 0.2)))
-              (* amp (lpfr (+ (oscr 0.2 freq nval)
-                              (oscr2 0.2 (* freq b) nval))
+              (* amp (lpfr (+ (oscr 0.2 freq)
+                              (oscr2 0.2 (* freq b)))
                            (+ 500.0 (* amp 10000.0))
                            res))))))))
 
@@ -242,15 +233,16 @@
           (pset! freq_smudge i (* 3.0 (random))))
         (lambda (time:i64 chan:i64 freq:SAMPLE amp:SAMPLE)
           (if (< chan 2)
-              (let ((sum 0.0))
+              (let ((total 0.0))
                 (dotimes (i num_drawbars)
                   ;; (printf "i = %lld" i)
-                  (set! sum (+ sum (* (/ (pref drawbar_pos i) 8.0)
-                                      ((pref tonewheel (+ (* 2 i) chan))
-                                       amp
-                                       (+ (* freq (pref freq_ratio i))
-                                          (pref freq_smudge i)))))))
-                (/ sum (convert num_drawbars)))))))))
+                  (set! total (+ total (* (/ (pref drawbar_pos i) 8.0)
+                                          ((pref tonewheel (+ (* 2 i) chan))
+                                           amp
+                                           (+ (* freq (pref freq_ratio i))
+                                              (pref freq_smudge i)))))))
+                (/ total (convert num_drawbars)))
+              0.0))))))
 
 (bind-func organ_fx 100000
   (let ((flanl (flanger_c 1.0 0.0 0.6 1.0))
@@ -363,8 +355,8 @@
         (o2 (osc_c (* 0.5 SPI))) 
         (cl (chorus_c 0.0))
         (cr (chorus_c 0.314))
-        (del1 (delay_c (convert (/ SRf 2.0))))
-        (del2 (delay_c (convert (/ SRf 3.0))))
+        (del1 (delay_c (convert (/ (convert (llvm_samplerate) double) 2.0))))
+        (del2 (delay_c (convert (/ (convert (llvm_samplerate) double) 3.0))))
         (lpfl (lpf_c))
         (lpfr (lpf_c))
         (res 0.4)        
@@ -456,13 +448,13 @@
   (let ((cl (chorus_mc_c 2 0.0))
         (lpf (lpf_mc_c 2))
         (del (delay_t_st_c
-              (convert (* SRf (/ 1.0 2.1)))
-              (convert (* SRf (/ 1.0 2.0))) 0))
+              (convert (* (convert (llvm_samplerate) double) (/ 1.0 2.1)))
+              (convert (* (convert (llvm_samplerate) double) (/ 1.0 2.0))) 0))
         (h (hann_t_mc_c 0)))
     (lambda (in:SAMPLE time:i64 chan:i64 dat:SAMPLE*)
       (del chan (* 1.0
                    (lpf chan (cl chan in 1.0 0.6)
-                        (+ 350.0 (* 3000.0 (h chan time (convert (* SRf 8.)))))
+                        (+ 350.0 (* 3000.0 (h chan time (convert (* (convert (llvm_samplerate) double) 8.)))))
                         0.75))
            time 0.8 0.5))))
 
@@ -522,8 +514,10 @@
 
 ;; load the scheme macros (e.g. bind-instrument)
 (sys:load "libs/core/instruments-scm.xtm")
-;; make sure we load them with precompiled code as well
-(sys:precomp:insert-sexp
- '(sys:load "libs/core/instruments-scm.xtm"))
+;; make sure we load them with AOT-compiled code as well
+(impc:aot:insert-forms
+ (sys:load "libs/core/instruments-scm.xtm"))
 
-(sys:precomp:insert-footer "xtminstruments")
+(impc:aot:insert-footer "xtminstruments")
+
+(define *xtmlib-instruments-loaded* #t)

@@ -22,7 +22,7 @@
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLEXTD. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
 * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
 * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
@@ -40,13 +40,14 @@
 #include <sstream>
 #include <math.h>
 
-#ifndef TARGET_OS_WINDOWS
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #include <stdlib.h>
 
 #ifdef EXT_BOOST
-// header boost/asio.h from OSC.h
+#include <thread>
+#include <chrono>
 #else
 #include <sys/errno.h>
 #include <sys/types.h>
@@ -241,7 +242,7 @@ namespace extemp {
   int get_message_length(std::string& typetags, char* args)
   {
     int pos = 0;
-    for(int i=1; i<typetags.size(); ++i) {
+    for(unsigned i=1; i<typetags.size(); ++i) {
       if(typetags[i] == 'i') {
         pos += 4;
       }else if(typetags[i] == 'f'){
@@ -280,7 +281,7 @@ namespace extemp {
       ss << "(" << fname << " " << std::fixed << std::showpoint << std::setprecision(23) << t << " \"" << address << "\"";
     }
     //ss << "(io:osc:receive " << std::fixed << std::showpoint << std::setprecision(23) << t << " \"" << address << "\"";
-    for(int i=1; i<typetags.size(); ++i) {
+    for(unsigned i=1; i<typetags.size(); ++i) {
       if(typetags[i] == 'i') {
         int osc_int = 0;
         pos += OSC::getOSCInt(args+pos,&osc_int);
@@ -306,11 +307,11 @@ namespace extemp {
         pos += OSC::getOSCTimestamp(args+pos, &timestamp);
         ss << " " << timestamp;
         // }else if(typetags[i] == 'b'){
-        // 	NSData* osc_data;
-        // 	pos += OSC::getOSCData(args+pos, &osc_data);
-        // 	char str[64];
-        // 	sprintf(str,"%p",osc_data);
-        // 	ss << " \"" << str << "\"";
+        //  NSData* osc_data;
+        //  pos += OSC::getOSCData(args+pos, &osc_data);
+        //  char str[64];
+        //  sprintf(str,"%p",osc_data);
+        //  ss << " \"" << str << "\"";
 
         //}else if(typetags[i] == ',') {
         //if it's a comma just skip over it
@@ -330,7 +331,7 @@ namespace extemp {
 #ifdef _OSC_DEBUG_
       std::cout << "SEND SCHEME: " << ss.str() << std::endl;
 #endif
-      SchemeProcess::I(_sc)->createSchemeTask(new std::string(ss.str()),"OSC TASK",5);
+      _sc->m_process->createSchemeTask(new std::string(ss.str()), "OSC TASK", SchemeTask::Type::LOCAL_PROCESS_STRING);
     } else {
       printf("No OSC Registered\n");
     }
@@ -348,7 +349,7 @@ namespace extemp {
     std::stringstream ss;
     ss << "(" << fname << " " << std::fixed << std::showpoint << std::setprecision(23) << t << " \"" << address << "\"";
     //ss << "(io:osc:receive " << std::fixed << std::showpoint << std::setprecision(23) << t << " \"" << address << "\"";
-    for(int i=1; i<typetags.size(); ++i) {
+    for(unsigned i=1; i<typetags.size(); ++i) {
       if(typetags[i] == 'i') {
         int osc_int = 0;
         pos += OSC::getOSCInt(args+pos,&osc_int);
@@ -374,11 +375,11 @@ namespace extemp {
         pos += OSC::getOSCTimestamp(args+pos, &timestamp);
         ss << " " << timestamp;
         // }else if(typetags[i] == 'b'){
-        // 	NSData* osc_data;
-        // 	pos += OSC::getOSCData(args+pos, &osc_data);
-        // 	char str[64];
-        // 	sprintf(str,"%p",osc_data);
-        // 	ss << " \"" << str << "\"";
+        //  NSData* osc_data;
+        //  pos += OSC::getOSCData(args+pos, &osc_data);
+        //  char str[64];
+        //  sprintf(str,"%p",osc_data);
+        //  ss << " \"" << str << "\"";
 
         //}else if(typetags[i] == ',') {
         //if it's a comma just skip over it
@@ -398,7 +399,7 @@ namespace extemp {
 #ifdef _OSC_DEBUG_
       std::cout << "SEND SCHEME: " << ss.str() << std::endl;
 #endif
-      scm->createSchemeTask(new std::string(ss.str()),"OSC TASK",5);
+      scm->createSchemeTask(new std::string(ss.str()), "OSC TASK", SchemeTask::Type::LOCAL_PROCESS_STRING);
     } else {
       printf("No OSC Registered\n");
     }
@@ -499,7 +500,7 @@ namespace extemp {
         //if(reply_length > 0) sendto(osc->getSocketFD(), reply, reply_length, 0, (struct sockaddr*)osc->getClientAddress(), osc->sizeOfClientAddress());
       }else{
 #ifdef EXT_BOOST
-        boost::this_thread::sleep(boost::posix_time::microseconds(1000));
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
 #else
         usleep(1000);
 #endif
@@ -520,7 +521,7 @@ namespace extemp {
     // while(true){
     //   io_service->run();
     // }
-	  return NULL;
+    return NULL;
   }
 #else
 
@@ -528,7 +529,7 @@ namespace extemp {
   // 2 = successfully completed loading slip packet
   // 1 = still filling packet + active escape is ON
   // 0 = still filling packet + active escape is OFF
-  // -1 = bad packet 
+  // -1 = bad packet
   int parse_osc_slip_data(std::vector<char>* data, char* buf, int res, bool active_escape) {
     std::vector<char>::iterator it = data->end();
     // copy buf into data
@@ -559,7 +560,7 @@ namespace extemp {
 
   int process_osc_data(SchemeProcess* scm, OSC* osc, struct sockaddr_in client_address, char* args, long length) {
     //printf("Processing osc data %lld:%p\n",length,args);
-    if(length > 0 && args != NULL) { 
+    if(length > 0 && args != NULL) {
       // process the OSC data (should be its own method)
       double timestamp;
       long oscpos = 0;
@@ -638,19 +639,15 @@ namespace extemp {
     SchemeProcess* scm = sop->scm_p;
     OSC* osc = sop->osc_p;
 
-    //CAGuard& guard = scm->getGuard();
-    EXTMonitor& guard = scm->getGuard();
-    std::queue<SchemeTask>& taskq = scm->getQueue();
-
     int socket_fd = *(osc->getSocketFD());
 
     if(socket_fd < 0){
-      ascii_text_color(1,1,10);
+      ascii_error();
       printf("Bad TCP-OSC socket: %s\n", strerror(errno));
-      ascii_text_color(0,7,10);
+      ascii_normal();
       return obj_p;
     }
-    
+
     struct sockaddr_in client_address;
     int client_address_size = sizeof(client_address);
 
@@ -687,9 +684,9 @@ namespace extemp {
           }
           pos++;
         }
-        ascii_text_color(1,1,10);
+        ascii_error();
         printf("%s SERVER ERROR: %s\n",scm->getName().c_str(),strerror(errno));
-        ascii_text_color(0,7,10);
+        ascii_normal();
         continue;
       }
       if(FD_ISSET(socket_fd, &c_rfd)) { //check if we have any new accpets on our server socket
@@ -708,7 +705,7 @@ namespace extemp {
       }
       std::vector<int>::iterator pos = client_sockets.begin();
       std::vector<char> oscpacket;
-      
+
       while(pos != client_sockets.end()) { // check through all fd's for matches against FD_ISSET
         if(FD_ISSET(*pos, &c_rfd)) { //see if any client sockets have data for us
           int sock = *pos;
@@ -718,26 +715,26 @@ namespace extemp {
               FD_CLR(sock, &rfd);
               delete(data_map[sock]);
               data_map[sock] = 0;
-              ascii_text_color(1,3,10);
+              ascii_warning();
               std::cout << "Closed TCP-OSC Socket" << std::endl;
-              ascii_text_color(0,7,10);
+              ascii_normal();
               pos = client_sockets.erase(pos);
               close(sock);
               break;
             }else if(res < 0){
-              ascii_text_color(1,1,10);
+              ascii_error();
               printf("Error with socket read for TCP OSC socket: %s",strerror(errno));
-              ascii_text_color(0,7,10);
+              ascii_normal();
               pos++;
               break;
-            }            
+            }
             bool fullbuf = (res == BUFLEN) ? true : false;
-            // first check to see if we are currently 
+            // first check to see if we are currently
             // NOT *in* a valid osc SLIP packet
             char* bufptr = &buf[0];
-            if(!data_packet[sock]) {             
+            if(!data_packet[sock]) {
               for(; res>0; res--,bufptr++) {
-                if(*bufptr==SLIP_END) {                  
+                if(*bufptr==SLIP_END) {
                   data_packet[sock] = true;
                   bufptr++;
                   res--;
@@ -750,21 +747,21 @@ namespace extemp {
               }
             }
 
-            // OK from here we can assume that we are 
+            // OK from here we can assume that we are
             // in a valid OSC SLIP packet and can start
             // loading up data_map[sock]
             int result = parse_osc_slip_data(data_map[sock],bufptr,res,data_active_escape[sock]);
-            
+
             if(result == 2) { // complete osc packet
               //printf("full osc packet\n");
               process_osc_data(scm, osc, client_address, data_map[sock]->data(), data_map[sock]->size());
               data_map[sock]->clear();
               data_active_escape[sock] = false;
-              data_packet[sock] = false;              
+              data_packet[sock] = false;
             }else if(result == -1){ // bad osc packet
-              ascii_text_color(1,1,10);
+              ascii_error();
               printf("Bad SLIP OSC Packet!!!!!\n");
-              ascii_text_color(0,7,10);
+              ascii_normal();
               data_map[sock]->clear();
               data_active_escape[sock] = false;
               data_packet[sock] = false;
@@ -772,16 +769,16 @@ namespace extemp {
               if(result == 0) data_active_escape[sock] = false;
               else data_active_escape[sock] = true;
             }else{
-              ascii_text_color(1,1,10);
+              ascii_error();
               printf("Unknown return type from parse_osc_slip_data!!!!!\n");
-              ascii_text_color(0,7,10);
+              ascii_normal();
               data_map[sock]->clear();
               data_active_escape[sock] = false;
               data_packet[sock] = false;
             }
-            
+
             // let's leave out the 10M catchall for the moment
-            
+
             // if last read was a full res
             // then try to keep reading from current connection
             // otherwise break, and try a new connection
@@ -820,7 +817,7 @@ namespace extemp {
   }
 #endif
 
-  OSC::OSC() : threadOSC(), message_length(0), started(false)
+  OSC::OSC() : threadOSC(&osc_mesg_callback, this, "OSC"), message_length(0), started(false)
   {
 #ifdef EXT_BOOST
     io_service = new boost::asio::io_service;
@@ -855,7 +852,7 @@ namespace extemp {
       str->push_back('\0');
     }
     const char* str_d = str->data();
-    for(int i=0;i<str->length();++i) {
+    for(unsigned i=0;i<str->length();++i) {
       data[i] = str_d[i];
     }
     return str->length();
@@ -870,7 +867,7 @@ namespace extemp {
     str_cnt += (4 - (int)fmod((double)str_cnt,4.0));
 
     //added because we need to quote quotes to add to scheme expressions
-    for(int i=0;i<str->length();i++)
+    for(unsigned i=0;i<str->length();i++)
       {
         if(str->at(i)=='"')
           {
@@ -947,7 +944,7 @@ namespace extemp {
 
   int OSC::setOSCTimestamp(char* data, double d)
   {
-#ifdef TARGET_OS_WINDOWS
+#ifdef _WIN32
     uint32_t seconds = (uint32_t) d;
 #else
     uint32_t seconds = trunc(d);
@@ -1045,7 +1042,6 @@ namespace extemp {
 #endif
     OSC* osc = OSC::I(_sc);
     int ret = 0;
-    int tmpsize = 1024;
     int items = list_length(_sc,arg);
     for(int i=0;i<items;++i) {
       if(is_string(pair_car(arg))) {
@@ -1265,7 +1261,7 @@ namespace extemp {
     memset(osc->fname,0,256);
     char* name = string_value(pair_cadr(args));
     strcpy(osc->fname,name);
-    
+
     // should we use native callback?
     if(pair_cddr(args) != _sc->NIL && is_cptr(pair_caddr(args))) {
       osc->setNative( (int(*)(char*,char*,char*,int)) cptr_value(pair_caddr(args)));
@@ -1285,7 +1281,7 @@ namespace extemp {
 
     if(osc->getConnectionType() == OSC_UDP_TYPE){
 
-      SchemeProcess* scm = extemp::SchemeProcess::I(_sc);
+      SchemeProcess* scm = _sc->m_process;
       scm->addGlobalCptr((char*)"*io:osc:send-msg*",mk_cb(osc,OSC,sendOSC));
 
 #ifdef EXT_BOOST
@@ -1322,7 +1318,7 @@ namespace extemp {
         std::cout << "Error opening OSC socket"<< std::endl;
       }
       int broadcastEnable=1;
-      int ret = setsockopt(socket_fd, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable));
+      setsockopt(socket_fd, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)); // TODO: error check?
 
       fcntl(socket_fd, F_SETFL, O_NONBLOCK); //set to non-blocking socket
 
@@ -1338,7 +1334,7 @@ namespace extemp {
       osc->setClientAddressSize(sizeof(*osc_client_address));
 #endif
       if(!osc->getStarted()) {
-        osc->getThread().create(&osc_mesg_callback, osc);
+        osc->getThread().start();
         osc->setStarted(true);
       }
       osc->sc = _sc;
@@ -1348,10 +1344,10 @@ namespace extemp {
     // TCP setup
     if(osc->getConnectionType() == OSC_TCP_TYPE){
 
-      SchemeProcess* scm = extemp::SchemeProcess::I(_sc);
+      SchemeProcess* scm = _sc->m_process;
       scm->addGlobalCptr((char*)"*io:osc:send-msg*",mk_cb(osc,OSC,sendOSC));
 
-      // SchemeProcess* scm = new extemp::SchemeProcess(std::string(UNIV::PWD), std::string("tcp-osc-server"), port, 0);
+      // SchemeProcess* scm = new extemp::SchemeProcess(UNIV::SHARE_DIR, std::string("tcp-osc-server"), port, 0);
       // scm->start();
       // scm->addGlobalCptr((char*)"*io:osc:send-msg*",mk_cb(osc,OSC,sendOSC));
 
@@ -1406,20 +1402,20 @@ namespace extemp {
 
       osc->setSocketFD(socket_fd);
 
-      ascii_text_color(1,3,10);
+      ascii_warning();
       printf("Started TCP-OSC server on port %d\n", port);
-      ascii_text_color(0,7,10);
+      ascii_normal();
 
 #endif
       if(!osc->getStarted()) {
         scm_osc_pair* sop = new scm_osc_pair;
         sop->scm_p = scm;
         sop->osc_p = osc;
-        osc->getThread().create(&tcp_osc_server_thread, sop);
+        osc->getThread().start(&tcp_osc_server_thread, sop);
         osc->setStarted(true);
       }
       osc->sc = _sc;
-      return _sc->NIL;
     }
+    return _sc->NIL;
   }
 } //End Namespace

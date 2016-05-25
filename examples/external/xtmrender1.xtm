@@ -1,67 +1,59 @@
+;;; xtmrender1.xtm -- using the Extempore 3D rendering pipeline
 
-;; xtmrender1.xtm
-;;
-;; using the default xtm OpenGL pipeline
-;;
 ;; Author: Andrew Sorensen
 ;; Keywords: extempore
-;;
-;;
-;; you can download the molecule obj model from:
-;;
-;; http://extempore.moso.com.au/extras/molecule.obj
-;;
+;; Required dylibs: libGL, libglfw3, libassimp, libsoil
+
+;;; Commentary:
+
+;; the peppino model (and other Extempore "assets") are available from
+;; http://extempore.moso.com.au/extras/assets.tgz
 
 ;;; Code:
 
-;; make sure you include / on the end
-(define path "assets/models/")
+(sys:load "libs/external/glfw3.xtm")
 
-(define fullscreen #f)
-;; (define width 1920.0)
-;; (define height 1200.0)
-(define width 1024.0)
-(define height 768.0)
+(bind-val width i32 1024)
+(bind-val height i32 768)
 
-(bind-val width float width)
-(bind-val height float height)
+(bind-val window GLFWwindow*
+  ;; some of the shaders in the graphics pipeline use older glsl
+  ;; versions, so we need a "compatibility" graphics context
+  (begin
+    (glfwSetErrorCallback (convert (get_native_fptr glfw_error_callback)))
+    (glfw_init_and_create_interaction_compatibility_window width height)))
 
-;; setup opengl
-(define glctx (gl:make-ctx ":0.0" fullscreen 0.0 0.0 width height))
-
-;; first try to load from prebuilt stdlib
-;; (sys:load "libs/xtm.xtm")
-;; failing that compile on-the-fly
-(sys:load "libs/core/math.xtm")
-(sys:load "libs/external/opengl.xtm")
-(sys:load "libs/external/shaders.xtm")
 (sys:load "libs/external/assimp.xtm")
 
-;; for models
 (bind-func render:XTMRENDERCB
   (lambda (frame shader m v p data)
     (rotate_matrix m (* .1 (i64tof frame)) 0.0 1.0 0.0)
-    (xtm_draw_model (cast data xtm_node*) shader m v p)
+    (xtm_draw_model (convert data xtm_node*) shader m v p)
     void))
 
 (bind-func gl_render
   (lambda (model:xtm_node*)
-    (xtm_render null render null null (cast model i8*))
-    void))
+    (if (null? model)
+        (println "gl_render recieved null pointer for model - did you load the model successfully?")
+        (begin (xtm_render null render:XTMRENDERCB null null (convert model i8*))
+               void))))
 
-;; standard impromptu callback
-(define opengl-loop
-  (lambda (time dur model degree)
-    (let ((v (now)))
-      (gl_render model)
-      (gl:swap-buffers glctx)
-      )
-    (callback (+ time (* dur .1)) 'opengl-loop (+ time dur) dur model (+ degree .5))))
+(bind-val peppino xtm_node*
+  (assimp_load_model (cstring (cat2 (String (sys_sharedir)) (String "/assets/models/"))) "peppino.dae" aiProcess_Triangulate))
 
-(define peppino (assimp_load_model path "/peppino.dae" aiProcess_Triangulate))
+(xtm_render_setup
+ (call-as-xtlang (glfw_get_framebuffer_width window))
+ (call-as-xtlang (glfw_get_framebuffer_height window)))
 
-(xtm_render_setup (real->integer width) (real->integer height))
- 
-(opengl-loop (now) 2000 peppino 70.0)
+(bind-func gl_draw_loop
+  (lambda (time:i64 delta_t:double)
+    (gl_render peppino)
+    ;; swap buffers
+    (glfwPollEvents)
+    (glfwSwapBuffers window)
+    ;; set next frame callback
+    (let ((next_time (+ time (convert (* 44100. delta_t)))))
+      (callback next_time gl_draw_loop next_time delta_t))))
 
-                            
+;; and to start it running...
+(gl_draw_loop (now) (/ 1.0 30.0)) ;; 30fps

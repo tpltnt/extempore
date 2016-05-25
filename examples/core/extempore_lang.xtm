@@ -848,11 +848,11 @@
 ;; compiling this will stop the callbacks
 ;;
 ;; of course we need to keep the type
-;; signature the same [void,i64,i64]*
+;; signature the same [i1,i64,i64]*
 ;;
 (bind-func test34
   (lambda (time:i64 count:i64)
-    void))
+    #t))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -939,6 +939,11 @@
 ;; i8* is value  --- list_t* is next
 (bind-type list_t <i64,list_t*>)
 
+;; check for pointer address equality
+(bind-func xtm_equal
+  (lambda (list1:list_t* list2:list_t*)
+    (= (cast list1 i8*) (cast list2 i8*))))
+
 ;; remove value from front of list
 (bind-func dequeue
   (lambda (queue:|2,list_t*|*)
@@ -1015,22 +1020,22 @@
 
 ;; start 5 new processes
 ;; ipc:bind-func work in each
-;; (define procs
-;;   (map (lambda (n p)
-;; 	 (ipc:new n p)
-;; 	 (ipc:bind-func n 'work)
-;; 	 n)
-;;        (list "proc-a" "proc-b" "proc-c" "proc-d" "proc-e")
-;;        (list 7097 7096 7095 7094 7093)))
+(define procs
+  (map (lambda (n p)
+         (ipc:new n p)
+         (ipc:bind-func n 'work)
+         n)
+       (list "proc-a" "proc-b" "proc-c" "proc-d" "proc-e")
+       (list 7097 7096 7095 7094 7093)))
 
 ;; ;; call work using ipc:mapcall
 ;; ;;
 ;; ;; ipc:mapcall calls a given function on 'n'
 ;; ;; number of processes and then blocks waiting
 ;; ;; until it receives 'n' results.
-;; (println 'result:
-;; 	 (ipc:mapcall 'work procs
-;; 		      '(1) '(2) '(3) '(4) '(5)))
+(println 'result:
+	 (ipc:map procs 'work
+		      '(1 2 3 4 5)))
 
 
 
@@ -1041,9 +1046,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; extempore supports ad-hoc polymorphism
-;; at some stage in the future this will
-;; be implicit - but for the moment
-;; it is explicitly defined using bind-poly
 
 ;; ad-hoc polymorphism allows you to provide
 ;; different specialisations depending on
@@ -1052,22 +1054,17 @@
 ;; implementations each with a uniqute
 ;; type.
 
-(bind-func my-func-1
+(bind-func myprint
   (lambda (a:i8*)
     (printf "%s\n" a)))
 
-(bind-func my-func-2
+(bind-func myprint
   (lambda (a:i8* b:i8*)
     (printf "%s %s\n" a b)))
 
-(bind-func my-func-3
+(bind-func myprint
   (lambda (a:i8* b:i8* c:i8*)
     (printf "%s %s %s\n" a b c)))
-
-;; bind these three functions to poly 'print'
-(bind-poly myprint my-func-1)
-(bind-poly myprint my-func-2)
-(bind-poly myprint my-func-3)
 
 (bind-func test44
   (lambda (a b c)
@@ -1078,18 +1075,15 @@
 (test44 "extempore's" "polymorphism" "rocks")
 
 
-;; polys can Also specialize
+;; can also specialize
 ;; on the return type
-(bind-func my-func-4
+(bind-func sqrd
   (lambda (a:double)
     (* a a)))
 
-(bind-func my-func-5
+(bind-func sqrd
   (lambda (a:double)
     (dtoi64 (* a a))))
-
-(bind-poly sqrd my-func-4)
-(bind-poly sqrd my-func-5)
 
 ;; specialize on [i64,double]*
 ;;
@@ -1155,15 +1149,15 @@
         (f2:/4,float/* (alloc))
         (i:i32 0)
         (p_ 0.225)
-        (b_ (dtof (/ 4.0 PI)))
-        (c_ (dtof (/ -4.0 (* PI PI)))))
+        (b_ (dtof (/ 4.0 3.141592)))
+        (c_ (dtof (/ -4.0 (* 3.141592 3.141592)))))
     (dotimes (i 4) (vset! p i p_) (vset! b i b_) (vset! c i c_))
     (lambda (x:/4,float/)
       ;; no SIMD for abs yet!
-      (dotimes (i 4) (vset! f1 i (fabsf (vref x i))))
+      (dotimes (i 4) (vset! f1 i (fabs (vref x i))))
       (let ((y (+ (* b x) (* c x f1))))
         ;; no SIMD for abs yet!
-        (dotimes (i 4) (vset! f2 i (fabsf (vref y i))))
+        (dotimes (i 4) (vset! f2 i (fabs (vref y i))))
         (+ (* p (- (* y f2) y)) y)))))
 
 (bind-func vcosf4
@@ -1175,19 +1169,19 @@
         (f2:/4,float/* (alloc))
         (i:i32 0)
         (p_ 0.225)
-        (d_ (dtof (/ PI 2.0)))
-        (b_ (dtof (/ 4.0 PI)))
-        (c_ (dtof (/ -4.0 (* PI PI)))))
+        (d_ (dtof (/ 3.141592 2.0)))
+        (b_ (dtof (/ 4.0 3.141592)))
+        (c_ (dtof (/ -4.0 (* 3.141592 3.141592)))))
     (dotimes (i 4)
       (vset! p i p_) (vset! b i b_) (vset! c i c_) (vset! d i d_))
     (lambda (x:/4,float/)
       ;; offset x for cos
       (set! x (+ x d))
       ;; no SIMD for abs yet!
-      (dotimes (i 4) (vset! f1 i (fabsf (vref x i))))
+      (dotimes (i 4) (vset! f1 i (fabs (vref x i))))
       (let ((y (+ (* b x) (* c x f1))))
         ;; no SIMD for abs yet!
-        (dotimes (i 4) (vset! f2 i (fabsf (vref y i))))
+        (dotimes (i 4) (vset! f2 i (fabs (vref y i))))
         (+ (* p (- (* y f2) y)) y)))))
 
 

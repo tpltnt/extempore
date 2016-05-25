@@ -11,66 +11,25 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/glib.xtm" 'quiet)
+(sys:load "libs/aot-cache/glib.xtm" 'quiet)
 (sys:load-preload-check 'glib)
 (define *xtmlib-glib-loaded* #f)
 
-(sys:precomp:suppress-precomp-do
- (sys:load "libs/core/std.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/base/base.xtm"))
+(impc:aot:insert-forms (sys:load "libs/base/base.xtm" 'quiet))
 
-(sys:precomp:insert-header "xtmglib")
+(impc:aot:insert-header "xtmglib")
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'libglib
- (cond ((string=? (sys:platform) "OSX")
-        "libglib-2.0.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libglib-2.0.so")
-       ((string=? (sys:platform) "Windows")
-        "libglib-2.0-0.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib libglib
+  (cond ((string=? (sys:platform) "OSX")
+         "libglib-2.0.dylib")
+        ((string=? (sys:platform) "Linux")
+         (list "libglib-2.0.so" "libglib-2.0.so.0"))
+        ((string=? (sys:platform) "Windows")
+         "libglib-2.0-0.dll")))
 
-;; load the dylib
-(define libglib
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(if (or (eq? #f libglib)
-	(not libglib)) 
-    (sys:load-escape "Could not load 'glib' dynamic library"))
-
-
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'libgobject
- (cond ((string=? (sys:platform) "OSX")
-        "libgobject-2.0.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libgobject-2.0.so")
-       ((string=? (sys:platform) "Windows")
-        "libgobject-2.0-0.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
-
-;; load the dylib
-(define libgobject
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(if (or (eq? #f libgobject)
-	(not libgobject)) 
-    (sys:load-escape "Could not load 'gobject' dynamic library"))
-
-;; some GLib type aliases
-;; note that some of these differ from GLib's actual implementation!
-(bind-alias GHashFunc i8*)
-(bind-alias GEqualFunc i8*)
-(bind-alias GHashTable i8*) ;; GHashTable in GLib is actually an opaque struct (not pointer to struct)
 (bind-alias GRegex i8*) ;; GRegex in GLib is actually an opaque struct (not pointer to struct)
 (bind-alias GMatchInfo i8*) ;; GMatchInfo in GLib is actually an opaque struct (not pointer to struct)
 (bind-alias GDir i8) ;; GDir is an opaque struct
@@ -86,7 +45,6 @@
 (bind-alias glong i64)
 (bind-alias gfloat float)
 (bind-alias gssize i64)
-(bind-alias gsize i64)
 (bind-alias gint64 i64)
 (bind-alias guint64 i64)
 (bind-alias gint16 i16)
@@ -97,22 +55,23 @@
 (bind-alias gboolean i32) ;; WARNING GLib defines this as i32
 (bind-alias GQuark i32)
 (bind-alias GRegexMatchFlags i32)
+(bind-alias gsize size_t)
 ;(bind-alias GObject i8) ;; opaque struct
 (bind-alias GObjectClass i8) ;; opaque struct
 (bind-alias GObjectConstructParam i8) ;; opaque struct
 (bind-alias GType i64)
-(bind-type GArray <gchar*,guint>)
-(bind-type GByteArray <i8*,guint>)
-(bind-type GPtrArray <gpointer*,guint>)
-(bind-type GMutex <gpointer>)
-(bind-type GCond <gpointer>)
-(bind-alias gsize size_t)
 ;(bind-alias GValue i8) ;; opaque struct
 (bind-alias GMainLoop i8) ;; opaque struct
 (bind-alias GCallback [void]*) ;; callback
 (bind-alias GFreeFunc [void,gpointer]*)
 (bind-alias GData i8) ;; opaque
-;; some types
+
+;; types
+(bind-type GArray <gchar*,guint>)
+(bind-type GByteArray <i8*,guint>)
+(bind-type GPtrArray <gpointer*,guint>)
+(bind-type GMutex <gpointer>)
+(bind-type GCond <gpointer>)
 (bind-type GTypeClass <GType>)
 (bind-type GTypeInstance <GTypeClass*>)
 (bind-type GTypeInterface <GType,GType>)
@@ -157,28 +116,28 @@
 (bind-val G_FILE_TEST_IS_EXECUTABLE i32 8)
 (bind-val G_FILE_TEST_EXISTS i32 16)
 
-(if (string=? "Windows" (sys:platform))
-    (begin 
-      (bind-lib libglib g_file_test_utf8 [gboolean,gchar*,i32]*)
-      (bind-lib libglib g_rename_utf8 [i32,gchar*,gchar*]*)
-      (bind-lib libglib g_remove_utf8 [i32,gchar*]*)
-      (bind-lib libglib g_chdir_utf8 [i32,gchar*]*)
-      (bind-lib libglib g_mkdir_utf8 [i32,gchar*,int]*)            
-      (bind-lib libglib g_dir_open_utf8 [GDir*,gchar*,guint,GError**]*)
-      (bind-lib libglib g_dir_close [void,GDir*]*)
-      (bind-lib libglib g_dir_read_name_utf8 [gchar*,GDir*]*)
-      (bind-lib libglib g_dir_rewind [void,GDir*]*)
-      )
-    (begin
-      (bind-lib libglib g_file_test [gboolean,gchar*,i32]*)
-      (bind-lib libglib g_rename [i32,gchar*,gchar*]*)
-      (bind-lib libglib g_remove [i32,gchar*]*)
-      (bind-lib libglib g_chdir [i32,gchar*]*)
-      (bind-lib libglib g_mkdir [i32,gchar*,i32]*)      
-      (bind-lib libglib g_dir_open [GDir*,gchar*,guint,GError**]*)
-      (bind-lib libglib g_dir_close [void,GDir*]*)
-      (bind-lib libglib g_dir_read_name [gchar*,GDir*]*)
-      (bind-lib libglib g_dir_rewind [void,GDir*]*)))
+(unix-or-Windows
+ (begin
+   (bind-lib libglib g_file_test [gboolean,gchar*,i32]*)
+   (bind-lib libglib g_rename [i32,gchar*,gchar*]*)
+   (bind-lib libglib g_remove [i32,gchar*]*)
+   (bind-lib libglib g_chdir [i32,gchar*]*)
+   (bind-lib libglib g_mkdir [i32,gchar*,i32]*)
+   (bind-lib libglib g_dir_open [GDir*,gchar*,guint,GError**]*)
+   (bind-lib libglib g_dir_close [void,GDir*]*)
+   (bind-lib libglib g_dir_read_name [gchar*,GDir*]*)
+   (bind-lib libglib g_dir_rewind [void,GDir*]*))
+ ;; on Windows, use utf8 versions
+ (begin
+   (bind-lib libglib g_file_test_utf8 [gboolean,gchar*,i32]*)
+   (bind-lib libglib g_rename_utf8 [i32,gchar*,gchar*]*)
+   (bind-lib libglib g_remove_utf8 [i32,gchar*]*)
+   (bind-lib libglib g_chdir_utf8 [i32,gchar*]*)
+   (bind-lib libglib g_mkdir_utf8 [i32,gchar*,int]*)
+   (bind-lib libglib g_dir_open_utf8 [GDir*,gchar*,guint,GError**]*)
+   (bind-lib libglib g_dir_close [void,GDir*]*)
+   (bind-lib libglib g_dir_read_name_utf8 [gchar*,GDir*]*)
+   (bind-lib libglib g_dir_rewind [void,GDir*]*)))
 
 ;; regex stuff
 (bind-lib libglib g_match_info_matches [gboolean,GMatchInfo]*)
@@ -210,7 +169,55 @@
 (bind-lib libglib g_free [void,gpointer]*)
 (bind-lib libglib g_malloc [gpointer,gsize]*)
 
-;; GObject stuff
+;; Main loop
+(bind-lib libglib g_main_loop_new [GMainLoop*,i8*,gboolean]*)
+(bind-lib libglib g_main_loop_run [void,GMainLoop*]*)
+(bind-lib libglib g_main_loop_quit [void,GMainLoop*]*)
+(bind-lib libglib g_main_loop_is_running [gboolean,GMainLoop*]*)
+(bind-lib libglib g_main_loop_unref [void,GMainLoop*]*)
+(bind-lib libglib g_main_context_iteration [gboolean,i8*,gboolean]*)
+
+;; type string stuff
+(bind-lib libglib g_string_new [GString*,gchar*]*)
+
+;; hash tables
+(bind-alias GHashTable i8)
+(bind-alias GHashFunc [guint,gconstpointer]*)
+(bind-alias GEqualFunc [gboolean,gconstpointer,gconstpointer]*)
+
+;; hash and equal functions for g_hash_table_new
+(bind-lib libglib g_direct_equal [gboolean,gconstpointer,gconstpointer]*)
+(bind-lib libglib g_direct_hash [guint,gconstpointer]*)
+(bind-lib libglib g_str_equal [gboolean,gconstpointer,gconstpointer]*)
+(bind-lib libglib g_str_hash [guint,gconstpointer]*)
+(bind-lib libglib g_int_equal [gboolean,gconstpointer,gconstpointer]*)
+(bind-lib libglib g_int_hash [guint,gconstpointer]*)
+(bind-lib libglib g_int64_equal [gboolean,gconstpointer,gconstpointer]*)
+(bind-lib libglib g_int64_hash [guint,gconstpointer]*)
+(bind-lib libglib g_double_equal [gboolean,gconstpointer,gconstpointer]*)
+(bind-lib libglib g_double_hash [guint,gconstpointer]*)
+
+(bind-lib libglib g_hash_table_new [GHashTable*,GHashFunc,GEqualFunc]*)
+(bind-lib libglib g_hash_table_insert [void,GHashTable*,gpointer,gpointer]*)
+(bind-lib libglib g_hash_table_replace [void,GHashTable*,gpointer,gpointer]*)
+;; (bind-lib g gglib_hash_table_add [void,GHashTable*,gpointer]*)
+;; (bind-lib g gglib_hash_table_contains [gboolean,GHashTable*,gconstpointer]*)
+(bind-lib libglib g_hash_table_size [guint,GHashTable*]*)
+(bind-lib libglib g_hash_table_lookup [gpointer,GHashTable*,gconstpointer]*)
+(bind-lib libglib g_hash_table_remove [gboolean,GHashTable*,gconstpointer]*)
+(bind-lib libglib g_hash_table_remove_all [void,GHashTable*]*)
+
+;; GObject library
+
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib libgobject
+  (cond ((string=? (sys:platform) "OSX")
+         "libgobject-2.0.dylib")
+        ((string=? (sys:platform) "Linux")
+         (list "libgobject-2.0.so" "libgobject-2.0.so.0"))
+        ((string=? (sys:platform) "Windows")
+         "libgobject-2.0-0.dll")))
+
 (bind-lib libgobject g_object_ref [gpointer,gpointer]*)
 (bind-lib libgobject g_object_unref [void,gpointer]*)
 (bind-lib libgobject g_object_set_data [void,GObject*,gchar*,gpointer]*)
@@ -226,16 +233,6 @@
 (bind-lib libgobject g_signal_connect_object [gulong,gpointer,gchar*,GCallback,gpointer,i32]*)
 (bind-lib libgobject g_signal_emitv [void,GValue*,guint,GQuark,GValue*]*)
 (bind-lib libgobject g_signal_lookup [guint,gchar*,GType]*)
-
-
-;; Main loop
-(bind-lib libglib g_main_loop_new [GMainLoop*,i8*,gboolean]*)
-(bind-lib libglib g_main_loop_run [void,GMainLoop*]*)
-(bind-lib libglib g_main_loop_quit [void,GMainLoop*]*)
-(bind-lib libglib g_main_loop_is_running [gboolean,GMainLoop*]*)
-(bind-lib libglib g_main_loop_unref [void,GMainLoop*]*)
-(bind-lib libglib g_main_context_iteration [gboolean,i8*,gboolean]*)
-
 
 ;; value and TYPE STUFF
 (bind-lib libgobject g_value_init [GValue*,GValue*,GType]*)
@@ -282,36 +279,6 @@
 (bind-lib libgobject g_type_init [void]*)
 (bind-lib libgobject g_type_name [gchar*,GType]*)
 
-;; type string stuff
-(bind-lib libglib g_string_new [GString*,gchar*]*)
-
-;; hash tables
-(bind-alias GHashTable i8)
-(bind-alias GHashFunc [guint,gconstpointer]*)
-(bind-alias GEqualFunc [gboolean,gconstpointer,gconstpointer]*)
-
-;; hash and equal functions for g_hash_table_new
-(bind-lib libglib g_direct_equal [gboolean,gconstpointer,gconstpointer]*)
-(bind-lib libglib g_direct_hash [guint,gconstpointer]*)
-(bind-lib libglib g_str_equal [gboolean,gconstpointer,gconstpointer]*)
-(bind-lib libglib g_str_hash [guint,gconstpointer]*)
-(bind-lib libglib g_int_equal [gboolean,gconstpointer,gconstpointer]*)
-(bind-lib libglib g_int_hash [guint,gconstpointer]*)
-(bind-lib libglib g_int64_equal [gboolean,gconstpointer,gconstpointer]*)
-(bind-lib libglib g_int64_hash [guint,gconstpointer]*)
-(bind-lib libglib g_double_equal [gboolean,gconstpointer,gconstpointer]*)
-(bind-lib libglib g_double_hash [guint,gconstpointer]*)
-
-(bind-lib libglib g_hash_table_new [GHashTable*,GHashFunc,GEqualFunc]*)
-(bind-lib libglib g_hash_table_insert [void,GHashTable*,gpointer,gpointer]*)
-(bind-lib libglib g_hash_table_replace [void,GHashTable*,gpointer,gpointer]*)
-;; (bind-lib g gglib_hash_table_add [void,GHashTable*,gpointer]*)
-;; (bind-lib g gglib_hash_table_contains [gboolean,GHashTable*,gconstpointer]*)
-(bind-lib libglib g_hash_table_size [guint,GHashTable*]*)
-(bind-lib libglib g_hash_table_lookup [gpointer,GHashTable*,gconstpointer]*)
-(bind-lib libglib g_hash_table_remove [gboolean,GHashTable*,gconstpointer]*)
-(bind-lib libglib g_hash_table_remove_all [void,GHashTable*]*)
-
 
 ;; ;; GSocket stuff
 ;; (bind-alias GSocket i8)
@@ -332,29 +299,29 @@
     void))
 
 
-;; 2 is shift
-(bind-val G_TYPE_INVALID GType (g_type_fundamental 0))
-(bind-val G_TYPE_NONE GType (g_type_fundamental  1))
-(bind-val G_TYPE_INTERFACE GType (g_type_fundamental  2))
-(bind-val G_TYPE_CHAR GType (g_type_fundamental  3))
-(bind-val G_TYPE_UCHAR GType (g_type_fundamental  4))
-(bind-val G_TYPE_BOOLEAN GType (g_type_fundamental  5))
-(bind-val G_TYPE_INT GType (g_type_fundamental  6))
-(bind-val G_TYPE_UINT GType (g_type_fundamental  7))
-(bind-val G_TYPE_LONG GType (g_type_fundamental  8))
-(bind-val G_TYPE_ULONG GType (g_type_fundamental  9))
-(bind-val G_TYPE_INT64 GType (g_type_fundamental  10))
-(bind-val G_TYPE_UINT64 GType (g_type_fundamental  11))
-(bind-val G_TYPE_ENUM GType (g_type_fundamental  12))
-(bind-val G_TYPE_FLAGS GType (g_type_fundamental  13))
-(bind-val G_TYPE_FLOAT GType (g_type_fundamental  14))
-(bind-val G_TYPE_DOUBLE GType (g_type_fundamental  15))
-(bind-val G_TYPE_STRING GType (g_type_fundamental  16))
-(bind-val G_TYPE_POINTER GType (g_type_fundamental  17))
-(bind-val G_TYPE_BOXED GType (g_type_fundamental  18))
-(bind-val G_TYPE_PARAM GType (g_type_fundamental  19))
-(bind-val G_TYPE_OBJECT GType (g_type_fundamental  20))
-(bind-val G_TYPE_VARIANT GType (g_type_fundamental  21))
+;; fundamental stride is 2^2=4
+(bind-val G_TYPE_INVALID GType (* 4 0))
+(bind-val G_TYPE_NONE GType (* 4 1))
+(bind-val G_TYPE_INTERFACE GType (* 4 2))
+(bind-val G_TYPE_CHAR GType (* 4 3))
+(bind-val G_TYPE_UCHAR GType (* 4 4))
+(bind-val G_TYPE_BOOLEAN GType (* 4 5))
+(bind-val G_TYPE_INT GType (* 4 6))
+(bind-val G_TYPE_UINT GType (* 4 7))
+(bind-val G_TYPE_LONG GType (* 4 8))
+(bind-val G_TYPE_ULONG GType (* 4 9))
+(bind-val G_TYPE_INT64 GType (* 4 10))
+(bind-val G_TYPE_UINT64 GType (* 4 11))
+(bind-val G_TYPE_ENUM GType (* 4 12))
+(bind-val G_TYPE_FLAGS GType (* 4 13))
+(bind-val G_TYPE_FLOAT GType (* 4 14))
+(bind-val G_TYPE_DOUBLE GType (* 4 15))
+(bind-val G_TYPE_STRING GType (* 4 16))
+(bind-val G_TYPE_POINTER GType (* 4 17))
+(bind-val G_TYPE_BOXED GType (* 4 18))
+(bind-val G_TYPE_PARAM GType (* 4 19))
+(bind-val G_TYPE_OBJECT GType (* 4 20))
+(bind-val G_TYPE_VARIANT GType (* 4 21))
 
 (bind-func gchar_alloc
   (lambda (value)
@@ -672,7 +639,6 @@
       (g_value_set_boxed gv value)
       gv)))
 
-
 (bind-func sys_g_file_test
   (lambda (path)
     (g_file_test path G_FILE_TEST_EXISTS)))
@@ -709,11 +675,41 @@
   (lambda ()
     (g_get_current_dir)))
 
+;; need to figure out how to get these to work with new AOT adhoc poly stuff
 
-(sys:load "libs/external/glib-scm.xtm")
-;; make sure we load them with precompiled code as well
-(sys:precomp:insert-sexp
- '(sys:load "libs/external/glib-scm.xtm"))
+;; (impc:aot:do-or-emit
+;;  (define sys:username (lambda () (cptr->string (sys_g_get_user_name)))))
+;; (impc:aot:do-or-emit
+;;  (define sys:hostname (lambda () (cptr->string (sys_g_get_host_name)))))
+;; (impc:aot:do-or-emit
+;;  (define sys:home-directory (lambda () (cptr->string (sys_g_get_home_dir)))))
+;; (impc:aot:do-or-emit
+;;  (define sys:getcwd (lambda () (cptr->string (sys_g_get_current_dir)))))
+;; (impc:aot:do-or-emit
+;;  (define sys:pwd (lambda () (cptr->string (sys_g_get_current_dir)))))
+;; (impc:aot:do-or-emit
+;;  (define sys:cwd (lambda () (cptr->string (sys_g_get_current_dir)))))
+;; (impc:aot:do-or-emit
+;;  (define sys:rename sys_g_rename))
+;; (impc:aot:do-or-emit
+;;  (define sys:remove sys_g_remove))
+;; (impc:aot:do-or-emit
+;;  (define sys:mv sys_g_rename))
+;; (impc:aot:do-or-emit
+;;  (define sys:rm sys_g_remove))
+;; (impc:aot:do-or-emit
+;;  (define sys:mkdir sys_g_mkdir))
+;; (impc:aot:do-or-emit
+;;  (define sys:file-exists? sys_g_file_test))
+;; (impc:aot:do-or-emit
+;;  (define sys:chdir sys_g_chdir))
+;; (impc:aot:do-or-emit
+;;  (define (sys:cd path)
+;;    (if (null? path)
+;;        (sys_g_chdir (sys:home-directory))
+;;        (sys_g_chdir path))))
+;; (impc:aot:do-or-emit
+;;  (define sys:ls (lambda () (sys:directory-list "."))))
 
-(sys:precomp:insert-footer "xtmglib")
+(impc:aot:insert-footer "xtmglib")
 (define *xtmlib-glib-loaded* #t)

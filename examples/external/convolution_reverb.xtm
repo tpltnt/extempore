@@ -18,11 +18,10 @@
 
 ;;; Code:
 
-;; try loading xtm.xtm first
-;; (sys:load "libs/xtm.xtm")
-;; failing that fall through to these
 (sys:load "libs/external/audio_dsp_ext.xtm")
 (sys:load "libs/external/instruments_ext.xtm")
+
+(default-audio-setup)
 
 ;; just for processing sampler
 (bind-func dsp1:DSP
@@ -54,7 +53,7 @@
 (dsp:set! #f dspsum dsp1)
 
 ;; load up the sampler!
-(load-sampler sampler "~/Documents/samples/soprano/")
+(load-sampler sampler "assets/samples/piano/")
 
 (sampler.release 5000)
 (sampler.attack 2000)
@@ -79,7 +78,7 @@
 (bind-func console_print
   (lambda (cpu:double rmsl:double rmsr:double)
     (ascii_text_color 0 0 1)
-    (printf "Load:%f RMS: %f %f \r" (* 100. cpu) rmsl rmsr)
+    (printf "Load:%f RMS: %f %f \n" (* 100. cpu) rmsl rmsr)
     void))
 
 ;; blank lines

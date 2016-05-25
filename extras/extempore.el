@@ -1,12 +1,11 @@
-;;; extempore.el --- Emacs major mode for Extempore source files
-
-;; Author: Ben Swift <benjamin.j.swift@gmail.com>
+;;; extempore-mode.el --- Emacs major mode for Extempore source files
+;; Author: Ben Swift <ben@benswift.me>
 ;; Keywords: Extempore
+;; Version: 1.0
+;; Keywords: lisp, extempore
+;; URL: http://github.com/extemporelang/extempore-emacs-mode
 
-;; Adapted from: scheme.el by Bill Rozas and Dave Love
-;; Also includes some work done by Hector Levesque and Andrew Sorensen
-
-;; Copyright (c) 2011-2014, Andrew Sorensen
+;; Copyright (c) 2011-2015, Andrew Sorensen
 
 ;; All rights reserved.
 
@@ -41,29 +40,31 @@
 ;; A major mode for editing Extempore code. See the Extempore project
 ;; page at http://github.com/digego/extempore for more details.
 
+;; History
+
+;; Adapted from: scheme.el by Bill Rozas and Dave Love
+;; Also includes some work done by Hector Levesque and Andrew Sorensen
+
 ;; Installation:
 
-;; To set up Emacs to automatically load this major mode for any .xtm
-;; files, add the following lines to your .emacs
+;; Install via package.el with
 
-;; (autoload 'extempore-mode "/path/to/extempore/extras/extempore.el" "" t)
-;; (autoload 'extempore-repl "/path/to/extempore/extras/extempore.el" "" t)
-;; (add-to-list 'auto-mode-alist '("\\.xtm$" . extempore-mode))
+;; (package-install-file "/path/to/extempore-mode.el")
 
 ;; Currently, extempore.el requires Emacs 24, because it inherits from
 ;; prog-mode (via lisp-mode)
 
 ;;; Code:
-
+
 (require 'lisp-mode)
+(require 'thingatpt)
 (require 'eldoc)
-;; to support both 24.3 and earlier
-(unless (require 'cl-lib nil t)
-  (require 'cl))
+(require 'cl-macs)
+(require 'subr-x)
 
 (defvar extempore-mode-syntax-table
   (let ((st (make-syntax-table))
-	(i 0))
+        (i 0))
     ;; Symbol constituents
     (while (< i ?0)
       (modify-syntax-entry i "_   " st)
@@ -101,7 +102,7 @@
     (modify-syntax-entry ?# "'   " st)
     (modify-syntax-entry ?\\ "\\   " st)
     st))
-
+
 (defvar extempore-mode-abbrev-table nil)
 (define-abbrev-table 'extempore-mode-abbrev-table ())
 
@@ -125,7 +126,6 @@
     ("func" ;; bind-lib-func
      "(bind-lib-func\\s-+\\(\\S-+\\)\\s-+\\(\\S-+\\)\\_>" 2))
   "Imenu generic expression for Extempore mode.  See `imenu-generic-expression'.")
-
 
 (defun extempore-mode-variables ()
   (set-syntax-table extempore-mode-syntax-table)
@@ -184,7 +184,7 @@
     smap)
   "Keymap for Extempore mode.
 All commands in `lisp-mode-shared-map' are inherited by this map.")
-
+
 ;;;###autoload
 (define-derived-mode extempore-mode prog-mode "Extempore"
   "Major mode for editing Extempore code. This mode has been
@@ -199,6 +199,9 @@ To send the current definition to a running Extempore process, use
 \\[extempore-send-definition].
 "
   (extempore-mode-variables))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.xtm$" . extempore-mode))
 
 (defgroup extempore nil
   "Editing Extempore code."
@@ -241,10 +244,15 @@ See `run-hooks'."
   :type 'boolean
   :group 'extempore)
 
-(defcustom user-extempore-directory nil
-  "Location of the extempore directory."
+(defcustom extempore-share-directory nil
+  "Location of the extempore directory.
+
+Used to be called `user-extempore-directory'"
   :type 'string
   :group 'extempore)
+
+(defalias 'user-extempore-directory 'extempore-share-directory
+  "Deprecated: use extempore-share-directory instead")
 
 (defcustom extempore-program-args nil
   "Arguments to pass to the extempore process started by `extempore-run'."
@@ -312,51 +320,6 @@ To restore the old C-x prefixed versions, add something like this to your .emacs
                  (dabbrev-expand nil)
                (indent-for-tab-command)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; generate function name lists from source files
-;;
-;; scheme ones from OPDefines.h
-;; xtlang from llvm.ti
-;; (these files need to be open in buffers for the below functions to
-;; work properly)
-;;
-;; this stuff is currently a bit fragile, so I've hardcoded in the
-;; names as they stand at 14/7/12
-
-(defun extempore-find-scheme-names (names)
-  (if (re-search-forward "\".*\"" nil t)
-      (extempore-find-scheme-names
-       (cons (buffer-substring-no-properties
-              (+ (car (match-data)) 1)
-              (- (cadr (match-data)) 1))
-             names))
-    (delete-dups names)))
-
-;; (setq extempore-scheme-names
-;;       (cl-set-difference
-;;        (with-current-buffer "OPDefines.h"
-;;          (goto-char (point-min))
-;;          (extempore-find-scheme-names '()))
-;;        extempore-builtin-names))
-
-(defun extempore-find-xtlang-names (names)
-  (if (re-search-forward "(\\(member\\|equal\\?\\|eq\\?\\) \\((car ast)\\|ast\\) \'" nil t)
-      (let ((syms (read (thing-at-point 'sexp))))
-        (extempore-find-xtlang-names
-         (if (listp syms)
-             (append syms names)
-           (cons syms names))))
-    (delete-dups (mapcar 'symbol-name names))))
-
-;; (setq extempore-xtlang-names
-;;       (cl-set-difference
-;;        (with-current-buffer "llvmti.xtm"
-;;          (goto-char (point-min))
-;;          (extempore-find-xtlang-names '()))
-;;        (append extempore-builtin-names
-;;                extempore-scheme-names)
-;;        :test 'string-equal))
-
 (defconst extempore-font-lock-keywords-scheme
   ;; scheme language builtin & function names - used for font locking
   ;; (colouring).
@@ -364,10 +327,10 @@ To restore the old C-x prefixed versions, add something like this to your .emacs
   ;; but shouldn't be relied on as an Extempore language reference.
   (eval-when-compile
     (let ((extempore-builtin-names '("or" "and" "let" "lambda" "if" "else" "dotimes" "doloop" "while" "cond" "begin" "syntax-rules" "syntax" "map" "do" "letrec-syntax" "letrec" "eval" "apply" "quote" "quasiquote" "let-syntax" "let*" "for-each" "case" "call-with-output-file" "call-with-input-file" "call/cc" "call-with-current-continuation" "memzone" "letz" "catch"))
-          (extempore-scheme-names '("set!" "caaaar" "cdaaar" "cadaar" "cddaar" "caadar" "cdadar" "caddar" "cdddar" "caaadr" "cdaadr" "cadadr" "cddadr" "caaddr" "cdaddr" "cadddr" "cddddr" "caaar" "cdaar" "cadar" "cddar" "caadr" "cdadr" "caddr" "cdddr" "caar" "cdar" "cadr" "cddr" "car" "cdr" "print" "println" "printout" "load" "gensym" "tracing" "make-closure" "defined?" "inexact->exact" "exp" "log" "sin" "cos" "tan" "asin" "acos" "atan" "sqrt" "expt" "floor" "ceiling" "truncate" "round" "+" "-" "*" "/" "%" "bitwise-not" "bitwise-and" "bitwise-or" "bitwise-eor" "bitwise-shift-left" "bitwise-shift-right" "quotient" "remainder" "modulo" "car" "cdr" "cons" "set-car!" "set-cdr!" "char->integer" "integer->char" "char-upcase" "char-downcase" "symbol->string" "atom->string" "string->symbol" "string->atom" "sexpr->string" "string->sexpr" "real->integer" "make-string" "string-length" "string-ref" "string-set!" "string-append" "substring" "vector" "make-vector" "vector-length" "vector-ref" "vector-set!" "not" "boolean?" "eof-object?" "null?" "=" "<" ">" "<=" ">=" "member" "equal?" "eq?" "eqv?" "symbol?" "number?" "string?" "integer?" "real?" "rational?" "char?" "char-alphabetic?" "char-numeric?" "char-whitespace?" "char-upper-case?" "char-lower-case?" "port?" "input-port?" "output-port?" "procedure?" "pair?" "list?" "environment?" "vector?" "cptr?" "eq?" "eqv?" "force" "write" "write-char" "display" "newline" "error" "reverse" "list*" "append" "put" "get" "quit" "new-segment" "oblist" "sexp-bounds-port" "current-output-port" "open-input-file" "open-output-file" "open-input-output-file" "open-input-string" "open-output-string" "open-input-output-string" "close-input-port" "close-output-port" "interaction-environment" "current-environment" "read" "read-char" "peek-char" "char-ready?" "set-input-port" "set-output-port" "length" "assq" "get-closure-code" "closure?" "macro?" "macro-expand" "foldl" "foldr")))
+          (extempore-scheme-names '("set!" "caaaar" "cdaaar" "cadaar" "cddaar" "caadar" "cdadar" "caddar" "cdddar" "caaadr" "cdaadr" "cadadr" "cddadr" "caaddr" "cdaddr" "cadddr" "cddddr" "caaar" "cdaar" "cadar" "cddar" "caadr" "cdadr" "caddr" "cdddr" "caar" "cdar" "cadr" "cddr" "car" "cdr" "print" "println" "printout" "load" "gensym" "tracing" "make-closure" "defined?" "inexact->exact" "exp" "log" "sin" "cos" "tan" "asin" "acos" "atan" "sqrt" "expt" "floor" "ceiling" "truncate" "round" "+" "-" "*" "/" "%" "bitwise-not" "bitwise-and" "bitwise-or" "bitwise-eor" "bitwise-shift-left" "bitwise-shift-right" "quotient" "remainder" "modulo" "car" "cdr" "cons" "set-car!" "set-cdr!" "char->integer" "integer->char" "char-upcase" "char-downcase" "symbol->string" "atom->string" "string->symbol" "string->atom" "sexpr->string" "string->sexpr" "real->integer" "make-string" "string-length" "string-ref" "string-set!" "string-append" "substring" "vector" "make-vector" "vector-length" "vector-ref" "vector-set!" "not" "boolean?" "eof-object?" "null?" "=" "<" ">" "<=" ">=" "member" "equal?" "eq?" "eqv?" "symbol?" "number?" "string?" "integer?" "real?" "rational?" "char?" "char-alphabetic?" "char-numeric?" "char-whitespace?" "char-upper-case?" "char-lower-case?" "port?" "input-port?" "output-port?" "procedure?" "pair?" "list?" "environment?" "vector?" "cptr?" "eq?" "eqv?" "force" "write" "write-char" "display" "emit" "newline" "error" "reverse" "list*" "append" "put" "get" "quit" "new-segment" "oblist" "sexp-bounds-port" "current-output-port" "open-input-file" "open-output-file" "open-input-output-file" "open-input-string" "open-output-string" "open-input-output-string" "close-input-port" "close-output-port" "interaction-environment" "current-environment" "read" "read-char" "peek-char" "char-ready?" "set-input-port" "set-output-port" "length" "assq" "get-closure-code" "closure?" "macro?" "macro-expand" "foldl" "foldr")))
       (list
        ;; other type annotations (has to be first in list)
-       '(":[^ \t)]?+"
+       '(":[]{}[[:alnum:]_<>,*:/|!-]+"
          (0 font-lock-type-face))
        ;; built-ins
        (list
@@ -379,8 +342,11 @@ To restore the old C-x prefixed versions, add something like this to your .emacs
        ;; float and int literals
        '("\\_<[-+]?[/.[:digit:]]+?\\_>"
          (0 font-lock-constant-face))
-       ;; hex literals
-       '("\\_<#[xob][[:digit:]]+?\\_>"
+       ;; hex/oct/binary literals
+       '("\\_<#[xob][0-9a-fA-F]+?\\_>"
+         (0 font-lock-constant-face))
+       ;; scientific notation e.g. 1 million = 1e6
+       '("\\_<[[:digit:]]+?e[[:digit:]]+?\\_>"
          (0 font-lock-constant-face))
        ;; hack to make sure / gets highlighted as a function
        '("\\_</\\_>"
@@ -406,54 +372,64 @@ To restore the old C-x prefixed versions, add something like this to your .emacs
   ;; This list is curated by hand - it's usually pretty up to date,
   ;; but shouldn't be relied on as an Extempore language reference.
   (eval-when-compile
-    (let ((extempore-xtlang-names '("random" "afill!" "pfill!" "tfill!" "vfill!" "array-fill!" "pointer-fill!" "tuple-fill!" "vector-fill!" "free" "array" "tuple" "list" "~" "cset!" "cref" "&" "bor" "ang-names" "<<" ">>" "nil" "printf" "sprintf" "null" "now" "pset!" "pref-ptr" "vset!" "vref" "aset!" "aref" "aref-ptr" "tset!" "tref" "tref-ptr" "salloc" "halloc" "zalloc" "alloc" "schedule" "expf" "logf" "sinf" "cosf" "tanf" "asinf" "acosf" "atanf" "sqrtf" "exptf" "floorf" "ceilingf" "truncatef" "roundf" "llvm_printf" "push_zone" "pop_zone" "memzone" "callback" "llvm_sprintf" "make-array" "array-set!" "array-ref" "array-ref-ptr" "pointer-set!" "pointer-ref" "pointer-ref-ptr" "stack-alloc" "heap-alloc" "zone-alloc" "make-tuple" "tuple-set!" "tuple-ref" "tuple-ref-ptr" "closure-set!" "closure-ref" "pref" "pdref" "impc_null" "bitcast" "void" "ifret" "ret->" "clrun->" "make-env-zone" "make-env" "<>")))
+    (let ((extempore-xtlang-names '("random" "afill!" "pfill!" "tfill!" "vfill!" "array-fill!" "pointer-fill!" "tuple-fill!" "vector-fill!" "free" "array" "tuple" "list" "~" "cset!" "cref" "&" "bor" "ang-names" "<<" ">>" "nil" "printf" "sprintf" "null" "now" "pset!" "pref-ptr" "vset!" "vref" "aset!" "aref" "aref-ptr" "tset!" "tref" "tref-ptr" "salloc" "halloc" "zalloc" "alloc" "schedule" "exp" "log" "sin" "cos" "tan" "asin" "acos" "atan" "sqrt" "expt" "floor" "ceiling" "truncate" "round" "llvm_printf" "push_zone" "pop_zone" "memzone" "callback" "llvm_sprintf" "make-array" "array-set!" "array-ref" "array-ref-ptr" "pointer-set!" "pointer-ref" "pointer-ref-ptr" "stack-alloc" "heap-alloc" "zone-alloc" "make-tuple" "tuple-set!" "tuple-ref" "tuple-ref-ptr" "closure-set!" "closure-ref" "pref" "pdref" "impc_null" "bitcast" "void" "ifret" "ret->" "clrun->" "make-env-zone" "make-env" "<>")))
       (list
-       ;; definitions
-       ;; closure type annotations (i.e. specified with a colon)
-       '("(\\(bind-\\(func\\|poly\\)\\)\\s-+\\([^ \t:]+\\)\\(:[^ \t)]?+\\)?"
-         (1 font-lock-keyword-face)
-         (3 font-lock-function-name-face)
-         (4 font-lock-type-face prepend t))
-       ;; (list
-       ;;  (concat
-       ;;   "(\\(bind-\\(func\\|poly\\)\\)\\_>"
-       ;;   ;; Any whitespace and declared object.
-       ;;   "\s-*"
-       ;;   "\\(\\sw+\\)?")
-       ;;  '(1 font-lock-keyword-face)
-       ;;  '(3 font-lock-function-name-face))
-       ;; important xtlang functions
+       ;; xtlang "keywords"
        (list
         (regexp-opt extempore-xtlang-names 'symbols)
         '(1 font-lock-function-name-face))
-       ;; bind-type/alias
-       '("(\\(bind-\\(type\\|alias\\)\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]+\\))"
+       ;; bind-func
+       '("(\\(bind-func\\)\\s-+\\([[:alnum:]_-]+\\)"
          (1 font-lock-keyword-face)
-         (3 font-lock-function-name-face)
-         (4 font-lock-type-face t))
-       ;; bind-lib
-       '("(\\(bind-lib\\)\\s-+\\(\\S-+\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]+\\))"
+         (2 font-lock-function-name-face))
+       '("(\\(bind-poly\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([[:alnum:]_-]+\\)"
          (1 font-lock-keyword-face)
-         (2 font-lock-constant-face)
-         (3 font-lock-function-name-face)
-         (4 font-lock-type-face t))
-       ;; bind-lib-func(-no-scm)
-       '("(\\(bind-lib-func\\|bind-lib-func-no-scm\\|bind-lib-type\\)\\s-+\\(\\S-+\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]+\\)"
-         (1 font-lock-keyword-face)
-         (2 font-lock-constant-face)
-         (3 font-lock-function-name-face)
-         (4 font-lock-type-face t))
-       ;; bind-val
-       '("(\\(bind-val\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]?+\\)"
+         (2 font-lock-constant-face t)
+         (3 font-lock-function-name-face))
+       
+       ;; bind-alias
+       '("(\\(bind-alias\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|-]+\\)"
          (1 font-lock-keyword-face)
          (2 font-lock-function-name-face)
-         (3 font-lock-type-face t))
-       ;; bind-lib-val
-       '("(\\(bind-lib-val\\)\\s-+\\(\\S-+\\)\\s-+\\(\\S-+\\)\\s-+\\([^ \t)]+\\))"
+         (3 font-lock-type-face))
+       ;; bind-type
+       '("(\\(bind-type\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|!-]+\\)"
+         (1 font-lock-keyword-face)
+         (2 font-lock-function-name-face)
+         (3 font-lock-type-face))
+       ;; bind-dylib
+       '("(\\(bind-dylib\\)\\s-+\\([[:alnum:]_-]+\\)"
+         (1 font-lock-keyword-face)
+         (2 font-lock-constant-face))
+       ;; bind-lib
+       '("(\\(bind-lib\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|-]+\\)"
          (1 font-lock-keyword-face)
          (2 font-lock-constant-face)
          (3 font-lock-function-name-face)
-         (4 font-lock-type-face t))
+         (4 font-lock-type-face))
+       ;; bind-lib-type
+       '("(\\(bind-lib-type\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|-]+\\)"
+         (1 font-lock-keyword-face)
+         (2 font-lock-constant-face)
+         (3 font-lock-function-name-face)
+         (4 font-lock-type-face))
+       ;; bind-lib-func
+       '("(\\(bind-lib-func\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|-]+\\)"
+         (1 font-lock-keyword-face)
+         (2 font-lock-constant-face)
+         (3 font-lock-function-name-face)
+         (4 font-lock-type-face))
+       ;; bind-val
+       '("(\\(bind-val\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|-]+\\)"
+         (1 font-lock-keyword-face)
+         (2 font-lock-function-name-face)
+         (3 font-lock-type-face))
+       ;; bind-lib-val
+       '("(\\(bind-lib-val\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([[:alnum:]_-]+\\)\\s-+\\([]{}[[:alnum:]_<>,*:/|-]+\\)"
+         (1 font-lock-keyword-face)
+         (2 font-lock-constant-face)
+         (3 font-lock-function-name-face)
+         (4 font-lock-type-face))
        ;; cast
        '("(\\(cast\\|convert\\)\\s-+\\S-+\\s-+\\([^ \t)]?+\\))"
          (1 font-lock-keyword-face)
@@ -461,8 +437,7 @@ To restore the old C-x prefixed versions, add something like this to your .emacs
        ;; convert
        '("(\\(convert\\)\\s-+\\S-+)"
          (1 font-lock-keyword-face))
-         ;; cast, constrain-generic, specialize-generic
-       '("(\\(constrain-generic\\|specialize-generic\\|specialize-type\\)\\s-+\\(\\S-+\\)\\s-+\\([^)]?+\\))"
+       '("(\\(constrain-genericfunc\\|specialize-genericfunc\\|specialize-generictype\\)\\s-+\\(\\S-+\\)\\s-+\\([^)]?+\\))"
          (1 font-lock-keyword-face)
          (2 font-lock-function-name-face)
          (3 font-lock-type-face))
@@ -576,7 +551,7 @@ indentation."
 	      (method
                (funcall method state indent-point normal-indent)))))))
 
-
+
 ;;; 'let' is different in Scheme/xtlang
 
 (defun would-be-symbol (string)
@@ -588,13 +563,6 @@ indentation."
   (let ((the-end (point)))
     (backward-sexp 1)
     (buffer-substring (point) the-end)))
-
-;; This is correct but too slow.
-;; The one below works almost always.
-;;(defun extempore-let-indent (state indent-point)
-;;  (if (would-be-symbol (next-sexp-as-string))
-;;      (extempore-indent-specform 2 state indent-point)
-;;      (extempore-indent-specform 1 state indent-point)))
 
 (defun extempore-let-indent (state indent-point normal-indent)
   (skip-chars-forward " \t")
@@ -615,18 +583,19 @@ indentation."
 (put 'lambda 'extempore-indent-function 1)
 (put 'memzone 'extempore-indent-function 1)
 (put 'bind-func 'extempore-indent-function 'defun)
+(put 'bind-poly 'extempore-indent-function 'defun)
+(put 'bind-type 'extempore-indent-function 'defun)
+(put 'bind-val 'extempore-indent-function 'defun)
+(put 'bind-lib 'extempore-indent-function 'defun)
+(put 'bind-dylib 'extempore-indent-function 'defun)
 (put 'let 'extempore-indent-function 'extempore-let-indent)
 (put 'letz 'extempore-indent-function 'extempore-let-indent)
 (put 'let* 'extempore-indent-function 'extempore-let-indent)
 (put 'letrec 'extempore-indent-function 'extempore-let-indent)
-;; (put 'let-values 'extempore-indent-function 1) ; SRFI 11
-;; (put 'let*-values 'extempore-indent-function 1) ; SRFI 11
-;; (put 'sequence 'extempore-indent-function 0) ; SICP, not r4rs
 (put 'let-syntax 'extempore-indent-function 1)
 (put 'letrec-syntax 'extempore-indent-function 1)
 (put 'syntax-rules 'extempore-indent-function 1)
 (put 'syntax-case 'extempore-indent-function 2) ; not r5rs
-
 (put 'call-with-input-file 'extempore-indent-function 1)
 (put 'with-input-from-file 'extempore-indent-function 1)
 (put 'with-input-from-port 'extempore-indent-function 1)
@@ -635,7 +604,7 @@ indentation."
 (put 'with-output-to-port 'extempore-indent-function 1)
 (put 'call-with-values 'extempore-indent-function 1) ; r5rs?
 (put 'dynamic-wind 'extempore-indent-function 3) ; r5rs?
-
+
 
 ;;; SLIP escape codes
 ;; END       ?\300    /* indicates end of packet */
@@ -647,10 +616,10 @@ indentation."
   (message (extempore-slip-unescape-string str)))
 
 ;; connection management
-
 (make-variable-buffer-local 'mode-line-process)
 (setq mode-line-process nil)
 (make-variable-buffer-local 'extempore-connection-list)
+(defvar extempore-connection-list)
 (setq extempore-connection-list nil)
 
 (defun extempore-update-mode-line ()
@@ -687,14 +656,15 @@ indentation."
 
 (defun extempore-new-connection (host port)
   (if (extempore-get-connection host port)
-      (message "Already connected to %s on port %d" host port)
-      (let ((proc (open-network-stream "extempore" nil host port)))
+      (message "Already connected to Extempore at %s:%d" host port)
+    (let ((proc (with-demoted-errors (open-network-stream "extempore" nil host port))))
         (if proc
             (progn
               (set-process-coding-system proc 'iso-latin-1-unix 'iso-latin-1-unix)
               (set-process-filter proc #'extempore-minibuffer-echo-filter)
               (add-to-list 'extempore-connection-list proc t)
-              (extempore-update-mode-line))))))
+              (extempore-update-mode-line))
+          (message "Could not connect to Extempore at %s:%d" host port)))))
 
 (defun extempore-disconnect (host port)
   "Terminate a specific connection to an Extempore process"
@@ -746,6 +716,34 @@ indentation."
            "Port: " (cl-remove-duplicates (append '("7099" "7098") extempore-connect-port-history-list) :test #'string=) nil nil nil 'extempore-connect-port-history-list (number-to-string extempore-default-port)))))
   (extempore-sync-connections)
   (extempore-new-connection host port))
+
+(defvar extempore-multiple-connection-list nil)
+
+(defun extempore-connect-multiple ()
+  "connect to multiple extempore processes
+
+`extempore-multiple-connection-list' should be of the form
+((\"hostname1\" . port1) (\"hostname2\" . port2)) etc."
+  (interactive)
+  (if (local-variable-p 'extempore-multiple-connection-list)
+      (dolist (host-port extempore-multiple-connection-list)
+        (extempore-connect (car host-port) (cdr host-port)))))
+
+(defun extempore-connect-port-range (host start count step)
+  (interactive
+   (list (ido-completing-read
+          "Hostname: " (cl-remove-duplicates (cons extempore-default-host extempore-connect-host-history-list) :test #'string=) nil nil nil 'extempore-connect-host-history-list extempore-default-host)
+         (string-to-number
+          (ido-completing-read
+           "Starting port: " (cl-remove-duplicates (append '("7099" "7098") extempore-connect-port-history-list) :test #'string=) nil nil nil 'extempore-connect-port-history-list (number-to-string extempore-default-port)))
+         (string-to-number
+          (ido-completing-read
+           "Number of ports: " nil))
+         (string-to-number
+          (ido-completing-read
+           "Port step: " nil nil nil "1"))))
+  (dotimes (port count)
+    (extempore-connect host (+ start (* step port)))))
 
 (defun extempore-connect-or-disconnect (prefix)
   (interactive "P")
@@ -801,19 +799,11 @@ indentation."
 (defun extempore-make-crlf-evalstr (evalstr)
   (concat evalstr "\r\n"))
 
-(defun extempore-make-osc-evalstr (evalstr)
-  (concat (extempore-make-osc-string "/caas/eval")
-          (extempore-make-osc-string ",s")
-          (extempore-make-osc-string evalstr)))
 
 (defun extempore-make-slip-evalstr (evalstr)
   (extempore-slip-escape-string evalstr))
 
-(defun extempore-make-slip-osc-evalstr (evalstr)
-  (extempore-slip-escape-string (extempore-make-osc-evalstr evalstr)))
-
 ;; sending code to the Extempore compiler
-
 ;; from http://emacswiki.org/emacs/ElispCookbook
 (defun chomp (str)
   "Chomp leading and tailing whitespace from STR."
@@ -830,23 +820,13 @@ indentation."
     (overlay-put overlay 'face face-sym)
     overlay))
 
-;; overlay for highlighting currently evaluated region or line
-(setq extempore-blink-overlay
-      (extempore-make-blink-overlay 'extempore-blink-face))
-;; slave buffer version
-(setq extempore-sb-blink-overlay
-      (extempore-make-blink-overlay 'extempore-sb-blink-face))
+(defvar extempore-blink-overlay (extempore-make-blink-overlay 'extempore-blink-face)
+  "overlay for highlighting currently evaluated region or line")
+
+(defvar extempore-sb-blink-overlay (extempore-make-blink-overlay 'extempore-sb-blink-face) "slave buffer version")
 
 ;; for blinking evals in slave buffers (see `extempore-sb-mode')
-(make-variable-buffer-local 'extempore-sb-eval-markers)
-
-(defun extempore-blink-region (overlay start end &optional buf)
-  (move-overlay overlay start end buf)
-  (if extempore-sb-mode
-      (setq extempore-sb-eval-markers (cons start end)))
-  (redisplay)
-  (sleep-for extempore-blink-duration)
-  (delete-overlay overlay))
+(defvar-local extempore-sb-eval-markers nil)
 
 ;; sending definitions (code) from the Emacs buffer
 
@@ -919,7 +899,7 @@ to continue it."
 (defun extempore-repl-toggle-current-language ()
   "toggle between scheme and xtlang"
   (interactive)
-  (if (equalp extempore-repl-current-language 'scheme)
+  (if (eq extempore-repl-current-language 'scheme)
       (setq-local extempore-repl-current-language 'xtlang)
     (setq-local extempore-repl-current-language 'scheme))
   (extempore-repl-reset-prompt))
@@ -929,7 +909,7 @@ to continue it."
                       ;; if in xtlang mode (and not bind-{func,val,
                       ;; etc.} ing), wrap expression in a
                       ;; `call-as-xtlang' form
-                      (format (if (and (equalp extempore-repl-current-language 'xtlang)
+                      (format (if (and (eq extempore-repl-current-language 'xtlang)
                                        (not (string-match "^ *(bind-" string)))
                                   "(call-as-xtlang %s)\r"
                                 "%s\r")
@@ -938,7 +918,7 @@ to continue it."
 (defun extempore-repl-propertized-prompt-string ()
   (let ((proc (get-buffer-process (current-buffer))))
     (format "\n%s<%s> "
-            (if (equalp extempore-repl-current-language 'xtlang)
+            (if (eq extempore-repl-current-language 'xtlang)
                 (propertize "xtlang" 'font-lock-face 'font-lock-variable-name-face)
               (propertize "scheme" 'font-lock-face 'font-lock-type-face))
             (let ((host (process-contact proc :host))
@@ -958,10 +938,7 @@ to continue it."
 (defun extempore-repl-preoutput-filter (string)
   (format "%s %s %s"
           (propertize "=>" 'font-lock-face 'font-lock-comment-face)
-          (propertize (if (and (equalp extempore-repl-current-language 'xtlang)
-                               (> (length string) 2))
-                          (substring string 1 -2)
-                        (substring string 0 -1))
+          (propertize (substring string 0 -1)
                       'font-lock-face
                       'font-lock-string-face)
           (extempore-repl-propertized-prompt-string)))
@@ -1047,23 +1024,17 @@ If there is a process already running in `*extempore*', switch to that buffer.
 \(Type \\[describe-mode] in the process buffer for a list of commands.)"
 
   (interactive (list (read-string "Run Extempore: extempore " extempore-program-args)))
-  (unless user-extempore-directory
-    (error "Error: `user-extempore-directory' not set!\n\nNote that this var used to be called `extempore-path', so you may need to update your .emacs"))
+  (unless extempore-share-directory
+    (error "Error: `extempore-share-directory' not set!\n\nNote that this var used to be called `user-extempore-directory', so you may need to update your .emacs"))
   (if (not (comint-check-proc "*extempore*"))
       (let* ((default-directory (file-name-as-directory
-                                 (expand-file-name user-extempore-directory)))
-            (runtime-directory (concat default-directory "runtime"))
-            (full-args (if (string-match "--runtime" program-args)
-                           program-args
-                           (concat  "--runtime=" runtime-directory " " program-args)
-                           ))
-            )
-        (message (concat "Running extempore with: " full-args))
-        (set-buffer (apply #'make-comint "extempore" (concat default-directory "extempore") nil
-                           (split-string-and-unquote full-args)))
+                                 (expand-file-name extempore-share-directory)))
+             (runtime-directory (concat default-directory "runtime")))
+        (message (concat "Running extempore with: " program-args))
+        (set-buffer (apply #'make-comint "extempore" "extempore" nil
+                           (split-string-and-unquote program-args)))
         (inferior-extempore-mode))
-      (message "extempore is already running in *extempore* buffer.")
-      )
+    (message "extempore is already running in *extempore* buffer."))
   (setq extempore-buffer "*extempore*"))
 
 (defun extempore-stop ()
@@ -1084,7 +1055,7 @@ If there is a process already running in `*extempore*', switch to that buffer.
            (concat (buffer-substring-no-properties start end) "\r\n")))
         (extempore-blink-region extempore-blink-overlay start end)
         (sleep-for extempore-blink-duration))
-    (error "Buffer %s is not connected to an Extempore process.  You can connect with `M-x extempore-connect' (C-c C-j)" (buffer-name))))
+    (error "This buffer is not connected to an Extempore process - you can connect it with `M-x extempore-connect' (C-c C-j)")))
 
 (defun extempore-send-definition ()
   "Send the current definition to the inferior Extempore process."
@@ -1127,13 +1098,6 @@ If there is a process already running in `*extempore*', switch to that buffer.
 Then switch to the process buffer."
   (interactive)
   (extempore-send-definition)
-  (switch-to-extempore t))
-
-(defun extempore-send-buffer-or-region-and-go (start end)
-  "Send the current region to the inferior Extempore process.
-Then switch to the process buffer."
-  (interactive "r")
-  (extempore-send-bufer-or-region start end)
   (switch-to-extempore t))
 
 (defvar extempore-prev-l/c-dir/file nil
@@ -1247,62 +1211,48 @@ command to run."
         ;; send the documentation request
         (if extempore-connection-list
             (process-send-string (car extempore-connection-list)
-                                 (format  "(get-eldoc-string \"%s\")\r\n" fnsym)))
+                                 (format  "(if (defined? 'xtmdoc-documentation-function) (xtmdoc-documentation-function \"%s\"))\r\n" fnsym)))
         ;; always return nil; docstring comes back through the process
         ;; filter
         nil)))
-
-(defun extempore-propertize-arg-string (arg-string)
-  (let ((single-vararg-p (not (string= (substring arg-string 0 1) "("))))
-    (if (not single-vararg-p)
-        (setq arg-string (substring arg-string 1 -1)))
-    (format
-     (if single-vararg-p "%s" "(%s)")
-     (mapconcat (lambda (arg)
-                  (let ((res (split-string arg ":" :omit-nulls)))
-                    (if (= (length res) 1)
-                        (car res)
-                      (concat (car res) (propertize (concat ":" (cadr res))
-                                                    'face 'font-lock-type-face)))))
-                (split-string arg-string " " :omit-nulls)
-                " "))))
 
 (defun extempore-process-docstring-form (form)
   (if form
       (let ((max-eldoc-string-length 120)
             (eldoc-string
-             (concat (propertize (cdr (assoc 'name form))
+             (concat (propertize (cdr (assoc 'category form))
+                                 'face 'font-lock-keyword-face)
+                     " "
+                     (propertize (cdr (assoc 'name form))
                                  'face 'font-lock-function-name-face)
                      ""
                      (and (cdr (assoc 'type form))
                           (concat ":" (propertize (cdr (assoc 'type form))
                                                   'face 'font-lock-type-face)))
-                     " ("
-                     (propertize "lambda" 'face 'font-lock-keyword-face)
                      " "
-                     (and (cdr (assoc 'args form))
-                          (extempore-propertize-arg-string (cdr (assoc 'args form))))
-                     " ..."))
+                     (format "%s" (or (cdr (assoc 'args form))
+                                      "()"))))
             (docstring (cdr (assoc 'docstring form))))
         (message
          "%s"
          (concat eldoc-string
-                 (if docstring
+                 (if (and docstring (< (length eldoc-string) max-eldoc-string-length))
                      (concat " - " (propertize (if (> (+ (length docstring)
                                                          (length eldoc-string))
-                                                      (- max-eldoc-string-length 6))
+                                                      (- max-eldoc-string-length 17))
                                                    (concat (substring docstring 0 (- max-eldoc-string-length
                                                                                      (length eldoc-string)
-                                                                                     6))
+                                                                                     17))
                                                            "...")
                                                  docstring)
                                                'face 'font-lock-string-face))))))))
 
 (defun extempore-minibuffer-echo-filter (proc retstr)
   (let ((str (replace-regexp-in-string "[%\n]" "" (substring retstr 0 -1))))
-    (if (and (> (length str) 9)
-             (string= "(docstring" (substring str 0 10)))
-        (extempore-process-docstring-form (cdr-safe (ignore-errors (read str))))
+    (if (and (> (length str) 16)
+             (string= "(xtmdoc-docstring" (substring str 0 17)))
+        (if (not (string= "(xtmdoc-docstring-nodocstring)" str))
+            (extempore-process-docstring-form (cdr-safe (ignore-errors (read str)))))
       (message str))))
 
 (add-hook 'extempore-mode-hook
@@ -1312,7 +1262,6 @@ command to run."
                    'extempore-eldoc-documentation-function)))
 
 ;; misc bits and pieces
-
 (defun xpb1 (name duration)
   (interactive "sName: \nsDuration: ")
   (insert (concat "(define " name
@@ -1322,7 +1271,6 @@ command to run."
 		  "(" name " (*metro* 'get-beat 4) " duration ")")))
 
 ;; for greek symbol lambdas: from emacs-starter-kit
-
 (if extempore-use-pretty-lambdas
     (font-lock-add-keywords
      nil `(("(?\\(lambda\\>\\)"
@@ -1338,9 +1286,10 @@ command to run."
 	(progn (kill-word 1)
 	       (insert (number-to-string (string-to-number hex-str 16)))))))
 
+;; nb. it appears flycheck does not like the case macro, and will complain about malformed functions
 (defun note-to-midi (str)
   (if (string-match "\\([a-gA-G]\\)\\(#\\|b\\)?\\(-?[0-9]\\)" str)
-      (let ((pc (case (mod (- (mod (string-to-char (match-string 1 str))
+      (let ((pc (cl-case (mod (- (mod (string-to-char (match-string 1 str))
                                     16) 3) 7)
                    ((0) 0) ((1) 2) ((2) 4) ((3) 5) ((4) 7) ((5) 9) ((6) 11)))
              (offset (+ 12 (* (string-to-number (match-string 3 str))
@@ -1356,7 +1305,7 @@ command to run."
   (let ((note-str (looking-at "\\([a-gA-G]\\)\\(#\\|b\\)?\\([0-9]\\)")))
     (if note-str
         (let* ((data (match-data))
-               (pc (case (mod (- (mod (string-to-char (buffer-substring
+               (pc (cl-case (mod (- (mod (string-to-char (buffer-substring
                                                        (nth 2 data)
                                                        (nth 3 data)))
                                       16) 3) 7)
@@ -1374,7 +1323,6 @@ command to run."
                                0))))))))
 
 ;; interactive repeated evaluation of defun under point
-
 (defvar extempore-repeated-eval-timer nil)
 
 (defun extempore-start-repeated-eval (time-interval)
@@ -1389,7 +1337,6 @@ command to run."
   (setq extempore-repeated-eval-timer nil))
 
 ;; processing compiler output for .xtmh files
-
 (defun extempore-process-compiler-output (libname)
   (interactive "slibname: ")
   (unless (region-active-p)
@@ -1432,532 +1379,11 @@ command to run."
                    (point-max))
       (message "Processed output copied to kill ring."))))
 
-;;;;;;;;;;;;;;;;
-;; animations ;;
-;;;;;;;;;;;;;;;;
-
-(define-minor-mode extempore-tr-animation-mode
-  "This minor mode automatically logs all keystrokes (and
-  extempore code sent for evaluation) in all Extempore buffers."
-  :global t
-  :init-value nil
-  :lighter " ExAnim"
-  :keymap nil
-  :group 'extempore
-
-  (if extempore-tr-animation-mode
-      (extempore-start-tr-animation)
-    (extempore-stop-tr-animation)))
-
-(defun extempore-beginning-of-defun-function (&optional arg)
-  (beginning-of-defun arg))
-
-(defun extempore-end-of-defun-function (&optional arg)
-  (end-of-defun arg))
-
-;; these could all be made more elegant using (sexp-at-point) to read
-;; in the actual s-expressions, but this is probably a bit quicker
-
-(defun extempore-scheme-defun-name ()
-  (save-excursion
-    (looking-at "(\\(define-\\(\\|macro\\)\\)\\s-+\\([^ \t\n:]+\\)")
-    (match-string 3)))
-
-(defun extempore-inside-scheme-defun-p ()
-  (save-excursion
-    (extempore-beginning-of-defun-function)
-    (extempore-scheme-defun-name)))
-
-(defun extempore-xtlang-defun-name ()
-  (save-excursion
-    (looking-at "(\\(bind-\\(func\\|val\\|type\\|alias\\|poly\\|lib\\|instrument\\|sampler\\)\\)\\s-+\\([^ \t\n:]+\\)")
-    (match-string 3)))
-
-(defun extempore-inside-xtlang-defun-p ()
-  (save-excursion
-    (extempore-beginning-of-defun-function)
-    (extempore-xtlang-defun-name)))
-
-(defun extempore-inside-tr-defun-p ()
-  (save-excursion
-    (extempore-end-of-defun-function)
-    (search-backward ")" nil t 2)
-    (looking-at "(callback")))
-
-(defun extempore-find-defn-bounds (name)
-  "Find the definition of the function `name'."
-  (save-excursion
-    (goto-char (point-max))
-    (if (re-search-backward
-         (concat "(\\(\\(bind-func\\)\\|\\(define\\)\\)\\s-+" name "[ \t\n:]")
-         nil t)
-        (cons (match-beginning 0) (1- (match-end 0)))
-      nil)))
-
-;; flash overlay
-
-(defun extempore-make-tr-flash-overlay (name bounds)
-  (if bounds
-      (let ((overlay (make-overlay (car bounds)
-                                   (cdr bounds)
-                                   nil t nil)))
-        ;; (overlay-put overlay 'face '(:inverse-video t))
-        (overlay-put overlay 'evaporate t)
-        (overlay-put overlay 'priority 2)
-        overlay)))
-
-(defun extempore-update-tr-flash-overlay (overlay flag)
-  (if flag
-      (overlay-put overlay 'face '(:inverse-video t))
-    (overlay-put overlay 'face '(:inverse-video nil)))
-  nil)
-
-;; clock overlay
-
-(defun extempore-make-tr-clock-overlay (name bounds)
-  (if bounds
-      (let* ((defun-start (car bounds))
-             (overlay (make-overlay defun-start
-                                    (1+ defun-start)
-                                    nil t nil)))
-        (overlay-put overlay 'face '(:underline t :overline t))
-        (overlay-put overlay 'evaporate t)
-        (overlay-put overlay 'priority 1)
-        overlay)))
-
-(defun extempore-update-tr-clock-overlay (overlay val beg end)
-  (move-overlay overlay
-                beg
-                (min end (max (1+ beg) (round (+ beg (* val (- end beg))))))))
-
-;; tetris-overlay
-
-(defvar extempore-tetris-anim-str "*")
-
-(defun extempore-make-tr-tetris-overlay (name bounds)
-  (if bounds
-      (let* ((tetris-lh-point (cdr bounds))
-             (tetris-rh-point fill-column)
-             (defun-start (car bounds))
-             (overlay (make-overlay defun-start
-                                    (1+ defun-start)
-                                    nil t nil)))
-        (overlay-put overlay 'face '(:underline t :overline t))
-        (overlay-put overlay 'evaporate t)
-        overlay)))
-
-(defun extempore-update-tr-tetris-overlay (overlay val beg end)
-  (move-overlay overlay
-                beg
-		(min end (max (1+ beg) (round (+ beg (* val (- end beg))))))))
-
-
-(defvar extempore-tr-anim-alist nil
-  "List of TR animations.
-
-Each element is a list, with a name as the first element, and then a list
-of vectors as the cdr:
-
-  (fn-name [flash-overlay clock-overlay delta-t time-to-live flash-frames-to-live] ...)
-
-You shouldn't have to modify this list directly, use
-`extempore-add-new-anim-to-name' and
-`extempore-delete-tr-anim' instead.")
-
-(defun extempore-delete-tr-anim (name)
-  (cl-delete-if (lambda (x) (string= name (car x)))
-                extempore-tr-anim-alist))
-
-(defun extempore-create-anim-vector (delta-t)
-  (vector (extempore-make-tr-clock-overlay name bounds)
-          (extempore-make-tr-flash-overlay name bounds)
-          delta-t    ; total time
-          delta-t  ; time-to-live
-          0))        ; flash-frames to live
-
-(defun extempore-add-new-anim-to-name (name delta-t)
-  (let ((bounds (extempore-find-defn-bounds name))
-        (anim-list (extempore-get-tr-anims-for-name name)))
-    (if bounds
-        (if anim-list
-            (setcdr anim-list
-                    (cons (extempore-create-anim-vector delta-t)
-                          (cdr anim-list)))
-          (add-to-list 'extempore-tr-anim-alist
-                       (list name (extempore-create-anim-vector delta-t)))))))
-
-(defun extempore-get-tr-anims-for-name (name)
-  (assoc name extempore-tr-anim-alist))
-
-(defun extempore-get-active-tr-anims (anim-list)
-  (cl-remove-if-not (lambda (x) (aref x 3)) anim-list))
-
-(defun extempore-get-dormant-tr-anims (anim-list)
-  (cl-remove-if (lambda (x) (aref x 3)) anim-list))
-
-(defun extempore-reactivate-tr-anim (anim delta-t)
-  (aset anim 2 delta-t)
-  (aset anim 3 delta-t))
-
-(defun extempore-trigger-tr-anim (name delta-t)
-  (let ((anim-list (extempore-get-tr-anims-for-name name)))
-    (if anim-list
-        (let ((dormant-anims (extempore-get-dormant-tr-anims anim-list)))
-          (if dormant-anims
-              (extempore-reactivate-tr-anim (car dormant-anims) delta-t)
-            (extempore-add-new-anim-to-name name delta-t)))
-      (extempore-add-new-anim-to-name name delta-t))))
-
-;; animate the overlays
-
-(defvar extempore-tr-animation-update-period (/ 1.0 20))
-
-(defun extempore-tr-update-anims ()
-  (dolist (anim (apply #'append (mapcar #'cdr extempore-tr-anim-alist)))
-    (let ((ttl (aref anim 3))
-	  (ftl (aref anim 4))
-	  (flash-overlay (aref anim 1)))
-      ;; update ttl value
-      (if (numberp ttl)
-	  (setq ttl (aset anim 3 (- ttl extempore-tr-animation-update-period))))
-      ;; finish 'flash' animation
-      (if (> ftl 0)
-	  (progn (if (= ftl 1)
-		     (progn (extempore-update-tr-flash-overlay flash-overlay nil)
-			    (extempore-update-tr-clock-overlay (aref anim 0)
-						 0.0
-						 (overlay-start flash-overlay)
-						 (overlay-end flash-overlay))
-			    (aset anim 3 nil)))
-		 (aset anim 4 (- ftl 1)))
-	(if (numberp ttl)
-	    ;; trigger 'flash' animation
-	    (if (<= ttl 0)
-		(progn
-		  ;; num of frames the flash overlay lives for
-		  (aset anim 4 2)
-		  (extempore-update-tr-flash-overlay flash-overlay t))
-	      ;; update the 'clock' overlay
-	      (extempore-update-tr-clock-overlay (aref anim 0)
-						 (/ (- (aref anim 2)
-						       (aref anim 3))
-						    (aref anim 2))
-						 (overlay-start flash-overlay)
-						 (overlay-end flash-overlay))
-	      ))))))
-
-;; managing the animation timer
-
-(defvar extempore-tr-animation-timer nil)
-
-(defun extempore-stop-tr-animation-timer ()
-  (message "Cancelling TR animiation timer.")
-  (if extempore-tr-animation-timer
-      (cancel-timer extempore-tr-animation-timer))
-  (remove-overlays)
-  (setq extempore-tr-animation-timer nil
-	extempore-tr-anim-alist nil))
-
-(defun extempore-start-tr-animation-timer ()
-  (if extempore-tr-animation-timer
-      (progn (extempore-stop-tr-animation-timer)
-	     (message "Restarting TR animation timer."))
-    (message "Starting TR animation timer."))
-  (setq extempore-tr-animation-timer
-	(run-with-timer 0
-			extempore-tr-animation-update-period
-			'extempore-tr-update-anims)))
-
-;;  UDP server for recieving animation triggers
-
-(defvar extempore-tr-anim-udp-server nil)
-
-(defcustom extempore-tr-anim-udp-server-port 7097
-  "Port for the the extempore TR-animation UDP server."
-  :type 'integer
-  :group 'extempore)
-
-(defun extempore-tr-animation-filter (proc str)
-  (if (string= (extempore-extract-osc-address str) "/anim")
-      (eval (read (substring str (extempore-osc-args-index str))))))
-
-(defun extempore-create-tr-anim-server (port)
-  (make-network-process
-   :name "tr-anim-server"
-   ;; :buffer (current-buffer)
-   :coding 'binary
-   :service port
-   :type 'datagram
-   :family 'ipv4
-   :server t
-   :filter #'extempore-tr-animation-filter))
-
-(defun extempore-stop-tr-anim-osc-server ()
-  (if extempore-tr-anim-udp-server
-      (progn (delete-process extempore-tr-anim-udp-server)
-             (setq extempore-tr-anim-udp-server nil)
-             (message "Deleting UDP listener."))))
-
-(defun extempore-start-tr-anim-osc-server ()
-  (extempore-stop-tr-anim-osc-server)
-  (progn (setq extempore-tr-anim-udp-server
-               (extempore-create-tr-anim-server
-                extempore-tr-anim-udp-server-port))
-         (message "Starting UDP listener for animation messages.")))
-
-;; high-level control of TR animations: these are the functions that
-;; the programmer should use to turn things on/off
-
-(defun extempore-start-tr-animation ()
-  (extempore-sync-connections)
-  (if extempore-connection-list
-      (progn (extempore-start-tr-animation-timer)
-             (extempore-start-tr-anim-osc-server))
-    (message "Can't start TR animations: this buffer has no active connections to an Extempore process.")))
-
-(defun extempore-stop-tr-animation ()
-  (extempore-stop-tr-animation-timer)
-  (extempore-stop-tr-anim-osc-server))
-
-;;;;;;;;;;;;;;;;
-;; exvis mode ;;
-;;;;;;;;;;;;;;;;
-
-(unless (require 'osc nil t)
-  (warn "OSC library not found.\nThis isn't a problem for normal use, but the ExVis minor mode will be disabled."))
-
-(defvar exvis-osc-client nil
-  "OSC client used for sending messages to `exvis-osc-host'")
-(defvar exvis-osc-host (cons "127.0.0.1" 9880)
-  "(HOST . PORT) pair")
-
-(define-minor-mode exvis-mode
-  "a minor mode for code visualisation. Requires a visualisation
-backend in Extempore."
-  :global t
-  :init-value nil
-  :lighter " ExVis"
-  :keymap nil
-  :group 'extempore
-
-  (if exvis-mode
-      (exvis-start)
-    (exvis-stop)))
-
-(defun exvis-start ()
-  (unless exvis-osc-client
-    (setq exvis-osc-client
-          (osc-make-client (car exvis-osc-host)
-                           (cdr exvis-osc-host))))
-  (add-hook 'post-command-hook 'exvis-post-command-hook)
-  (exvis-advise-functions))
-
-(defun exvis-stop ()
-  (remove-hook 'post-command-hook 'exvis-post-command-hook)
-  (exvis-unadvise-functions)
-  (delete-process exvis-osc-client)
-  (setq exvis-osc-client nil))
-
-;; here are the different OSC messages in the spec
-
-;; get this file from https://github.com/Sarcasm/posn-on-screen/blob/master/posn-on-screen.el
-(load (concat user-extempore-directory "extras/posn-on-screen.el") :noerror)
-
-(defun exvis-send-cursor-message (cursor-pos pos-screen-min pos-screen-max pos-x pos-y)
-  (if exvis-osc-client
-      (osc-send-message exvis-osc-client
-                        "/interface/cursor"
-                        cursor-pos pos-screen-min pos-screen-max pos-x pos-y)))
-
-(defun exvis-send-code-message (code)
-  (if exvis-osc-client
-      (osc-send-message exvis-osc-client
-                        "/interface/code"
-                        code)))
-
-(defun exvis-send-evaluation-message (evaluated-code)
-  (if exvis-osc-client
-      (osc-send-message exvis-osc-client
-                        "/interface/evaluate"
-                        evaluated-code)))
-
-;; (defun exvis-send-error-message (error-message)
-;;   (osc-send-message exvis-osc-client
-;;                     "/interface/error"
-;;                     error-message))
-
-(defun exvis-send-focus-message (buffer-or-name)
-  (if (and exvis-osc-client
-           (equal (with-current-buffer buffer-or-name major-mode)
-                  'extempore-mode))
-      (osc-send-message exvis-osc-client
-                        "/interface/focus"
-                        (if (bufferp buffer-or-name)
-                            (buffer-name buffer-or-name)
-                          buffer-or-name))))
-
-(defun exvis-post-command-hook ()
-  (let (deactivate-mark)
-    (if (and (equal major-mode 'extempore-mode)
-             (symbolp this-command)
-             (string-match (regexp-opt '("sp-" "-line" "-word" "-char" "end-of-" "beginning-of-" "insert"))
-                           (symbol-name this-command)))
-        (let ((posn (get-point-pixel-position)))
-          (exvis-send-cursor-message (point)
-                                     (window-start)
-                                     (window-end)
-                                     (car posn)
-                                     (cdr posn))
-          (exvis-send-code-message
-           (buffer-substring-no-properties (point-min) (point-max)))))))
-
-(defun exvis-advise-functions ()
-  "Advise (via defadvice) the relevant functions to send the OSC messages"
-  ;; evaluate
-  (defadvice extempore-send-region (before exvis-advice activate)
-    (exvis-send-evaluation-message
-     (let ((args (ad-get-args 0)))
-       (if args
-           (apply #'buffer-substring-no-properties args)))))
-  ;; focus
-  (defadvice switch-to-buffer (before exvis-advice activate)
-    (let ((buffer-or-name (ad-get-arg 0)))
-      (if buffer-or-name
-          (exvis-send-focus-message buffer-or-name)))))
-
-(defun exvis-unadvise-functions ()
-  "Remove exvis advice from functions"  
-  (with-demoted-errors
-    (ad-remove-advice #'extempore-send-region 'before 'exvis-advice)
-    (ad-remove-advice #'switch-to-buffer 'before 'exvis-advice)))
-
-;;;;;;;;;;;;;;;;;;;;;;
-;; extempore logger ;;
-;;;;;;;;;;;;;;;;;;;;;;
-
-(define-minor-mode exlog-mode
-  "This minor mode automatically logs all keystrokes (and
-  extempore code sent for evaluation) in all Extempore buffers."
-  :global t
-  :init-value nil
-  :lighter " Log"
-  :keymap nil
-  :group 'extempore
-
-  (if exlog-mode
-      (exlog-start-logging)
-    (exlog-stop-logging)))
-
-(defun exlog-start-logging ()
-  (add-hook 'pre-command-hook 'exlog-pre-command-hook)
-  (call-interactively 'exlog-log-comment)
-  (exlog-advise-functions exlog-special-functions))
-
-(defun exlog-stop-logging ()
-  (remove-hook 'pre-command-hook 'exlog-pre-command-hook)
-  (call-interactively 'exlog-log-comment)
-  (exlog-write-log-buffer)
-  (exlog-unadvise-functions exlog-special-functions))
-
-(defun exlog-new-session ()
-  (interactive)
-  (if (get-buffer "*exlog*")
-      (call-interactively 'exlog-stop-logging))
-  (exlog-start-logging))
-
-;; advise functions for logging
-
-(defun exlog-advise-functions (func-list)
-  "Advise (via defadvice) the key extempore-mode functions"
-  (mapc (lambda (function)
-          (ad-add-advice
-           function
-           '(exlog-advice
-             nil t
-             (advice . (lambda ()
-                         (let ((args (ad-get-args 0)))
-                           (exlog-log-command
-                            real-this-command
-                            current-prefix-arg
-                            (if (member real-this-command
-                                        '(extempore-send-definition
-                                          extempore-send-region
-                                          extempore-send-buffer))
-                                (buffer-substring-no-properties
-                                 (car args) (cadr args))
-                              args))))))
-           'after 'first)
-          (ad-activate function))
-        func-list))
-
-(defun exlog-unadvise-functions (func-list)
-  "Remove advice from special extempore-mode functions"
-  (mapc (lambda (function)
-          (ad-remove-advice function 'after 'exlog-advice))
-        func-list))
-
-(defvar exlog-special-functions
-  '(extempore-send-region
-    extempore-connect
-    extempore-disconnect)
-  "A list of extempore-mode functions to specifically instrument for logging")
-
-(defun exlog-yasnippet-hook ()
-  (exlog-log-command 'yas-expand
-                     nil
-                     (buffer-substring-no-properties yas-snippet-beg yas-snippet-end)))
-
-(add-hook 'yas-after-exit-snippet-hook
-          'exlog-yasnippet-hook)
-
-(defun exlog-log-comment (comment)
-  (interactive "sAny comments about this particular session? ")
-  (exlog-write-log-entry (buffer-name) 'user-comment nil comment))
-
-(defun exlog-write-log-entry (bname command event args)
-  (with-current-buffer (get-buffer-create "*exlog*")
-    (insert
-     (format "(#inst \"%s\" %s %s %s %s)\n"
-             (format-time-string "%Y-%m-%dT%T.%3N")
-             bname
-             command
-             event
-             (if (stringp args) (prin1-to-string args) args)))))
-
-(defun exlog-log-command (command event args)
-  (if (and (equal major-mode 'extempore-mode)
-           (symbolp command))
-    (exlog-write-log-entry (buffer-name)
-                           (symbol-name command)
-                           event
-                           args)))
-
-(defun exlog-pre-command-hook ()
-  (let (deactivate-mark)
-    (exlog-log-command real-this-command last-input-event current-prefix-arg)))
-
-;; writing command list to file
-
-(defun exlog-write-log-buffer ()
-  (let ((logfile-name (concat (or user-extempore-directory user-emacs-directory)
-                              "keylogs/"
-                              (format-time-string "%Y%m%dT%H%M%S-")
-                              user-login-name
-                              ".keylog"))
-        (log-buffer (get-buffer "*exlog*")))
-    (if log-buffer
-        (with-current-buffer log-buffer
-          (write-region nil nil logfile-name nil nil nil t)
-          (kill-buffer log-buffer)
-          (async-shell-command (format "gzip %s" logfile-name))
-          (message "Writing Extempore keylog file to %s" logfile-name)
-          (run-with-timer 1 nil 'kill-buffer "*Async Shell Command*"))
-      (message "No log buffer found."))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extempore slave buffer minor mode ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar extempore-sb-mode)
 (define-minor-mode extempore-sb-mode
   "This minor allows emacs to create a 'slave' buffer on
 another (potentially remote) emacs instance.
@@ -1975,6 +1401,15 @@ buffer."
   (if extempore-sb-mode
       (call-interactively #'extempore-sb-start)
     (extempore-sb-stop)))
+
+(defun extempore-blink-region (overlay start end &optional buf)
+  (move-overlay overlay start end buf)
+  (if extempore-sb-mode
+      (setq extempore-sb-eval-markers (cons start end)))
+  (redisplay)
+  (sleep-for extempore-blink-duration)
+  (delete-overlay overlay))
+
 
 (defcustom extempore-sb-server-port 8420
   "Port for the the extempore slave buffer server."
@@ -2091,14 +1526,14 @@ If you don't want to be prompted for this name each time, set the
 ;; `extempore-sb-partial-data' is for handling buffer text recieved by
 ;; the filter in multiple chunks
 (make-variable-buffer-local 'extempore-sb-partial-data)
-(setq extempore-sb-partial-data nil)
+(defvar extempore-sb-partial-data nil)
 
 (defun extempore-sb-server-filter (proc str)
   (let ((proc-buf (process-buffer proc)))
     (if (null proc-buf)
         (let ((data (ignore-errors (read str))))
 	  (if (and data (string= (car data) "esb-data"))
-	      (extempore-sb-create-slave-buffer proc (cadr data) (caddr data))))
+	      (extempore-sb-create-slave-buffer proc (cadr data) (nth 2 data))))
       (with-current-buffer proc-buf
         (setq extempore-sb-partial-data (concat extempore-sb-partial-data str))
 	(if (not (ignore-errors (string= (substring extempore-sb-partial-data 0 11)
@@ -2169,6 +1604,7 @@ If you don't want to be prompted for this name each time, set the
 
 (make-variable-buffer-local 'extempore-sb-push-timer)
 
+(defvar extempore-sb-push-timer)
 (defun extempore-sb-start-timer (buf time-interval)
   (setq extempore-sb-push-timer
         (run-with-timer 0 time-interval #'extempore-sb-sync-slave-buffer buf)))
@@ -2213,22 +1649,6 @@ If you don't want to be prompted for this name each time, set the
   (if (extempore-sb-slave-buffer-p (current-buffer))
       (extempore-sb-stop-pushing-current-buffer)
     (call-interactively #'extempore-sb-push-current-buffer)))
-
-;; on OSX, say command can generate output files
-
-(defun extempore-write-voice-files (string voice)
-  (interactive
-   (list (read-from-minibuffer "String: ")
-         (ido-completing-read "Voice: "
-                              '("Agnes" "Albert" "Alex" "Bad News" "Bahh" "Bells" "Boing" "Bruce" "Bubbles" "Cellos" "Deranged" "Fred" "Good News" "Hysterical" "Junior" "Kathy" "Pipe Organ" "Princess" "Ralph" "Trinoids" "Vicki" "Victoria" "Whisper" "Zarvox")
-                              nil
-                              t)))
-  (mkdir (format "speech-samples/%s" voice) t)
-  (dolist (word (split-string string " "))
-    (shell-command (format "say --output-file=speech-samples/%s/%s-22kHz.aiff --voice %s %s" voice word voice word))
-    ;; upsample to 44.1kHz
-    (shell-command (format "sox speech-samples/%s/%s-22kHz.aiff speech-samples/%s/%s.aiff rate 44100" voice word voice word))
-    (shell-command (format "rm speech-samples/%s/%s-22kHz.aiff" voice word))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; extempore-parser ;;
@@ -2329,7 +1749,7 @@ If you don't want to be prompted for this name each time, set the
           ((= (length elements) 3)
            (concat (extempore-parser-map-c-type-to-xtlang-type
                     (concat (car elements) " " (cadr elements)))
-                   (extempore-parser-extract-pointer-string (caddr elements))))
+                   (extempore-parser-extract-pointer-string (nth 2 elements))))
           (t (message "cannot parse arg string: \"%s\"" arg-str)
              ""))))
 
@@ -2362,8 +1782,21 @@ If you don't want to be prompted for this name each time, set the
         (replace-match
          (save-match-data
            (format "(%s %s)"
-                   (match-string-no-properties 1)
+                   (string-trim-left (match-string-no-properties 1))
                    (replace-regexp-in-string "[, ]+" " " (match-string-no-properties 2))))
+         nil :literal)
+        (indent-for-tab-command))))
+
+(defun extempore-parser-process-function-arg-names ()
+  (interactive)
+  (if (re-search-forward "\s*(\\([^(]*?\\));?" nil :noerror)
+      (progn
+        (replace-match
+         (save-match-data
+           (format "(%s)"
+                   (mapconcat (lambda (str) (car-safe (reverse (string-utils-split str "[ \f\t\n\r\v*]+" nil :omit-nulls))))
+                              (string-utils-split (match-string-no-properties 1) "[][,]+" :omit-nulls)
+                              " ")))
          nil :literal)
         (indent-for-tab-command))))
 
@@ -2374,7 +1807,7 @@ If you don't want to be prompted for this name each time, set the
   (while (re-search-forward (format "^%s[ ]?\\(?:const \\|unsigned \\|extern \\)*\\([\\*[:word:]_]*\\) \\([\\*[:word:]_]*\\)[ ]?(\\(\\(?:.\\|\n\\)*?\\))"
                                     (if (string= ignore-tokens "")
                                         ""
-                                      (concat (regexp-opt (split-string ignore-tokens " " t) "?"))))
+                                      (concat (regexp-opt (split-string ignore-tokens " " t)) "?")))
                             nil
                             t)
     (if (not (looking-back ";;.*" (line-beginning-position)))
@@ -2434,6 +1867,6 @@ If you don't want to be prompted for this name each time, set the
     (goto-char (point-min))
     (call-interactively parse-fn)))
 
-(provide 'extempore)
+(provide 'extempore-mode)
 
-;;; extempore.el ends here
+;;; extempore-mode.el ends here

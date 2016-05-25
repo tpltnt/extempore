@@ -11,58 +11,25 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/horde3d.xtm" 'quiet)
+(sys:load "libs/aot-cache/horde3d.xtm" 'quiet)
 (sys:load-preload-check 'horde3d)
 
-(sys:precomp:suppress-precomp-do
- (sys:load "libs/core/std.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/base/base.xtm"))
+(impc:aot:insert-forms (sys:load "libs/base/base.xtm" 'quiet))
 
 ;; set the path to the Horde3D directory
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'hordelib
- (cond ((string=? (sys:platform) "OSX")
-        "/Library/Frameworks/Horde3D.framework/Horde3D")
-       ((string=? (sys:platform) "Linux")
-        "libHorde3D.so")
-       ((string=? (sys:platform) "Windows")
-        "Horde3D.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib hordelib
+  (cond ((string=? (sys:platform) "OSX")
+         "/Library/Frameworks/Horde3D.framework/Horde3D")
+        ((string=? (sys:platform) "Linux")
+         "libHorde3D.so")
+        ((string=? (sys:platform) "Windows")
+         "Horde3D.dll")))
 
-;; load the dylib
-(define hordelib
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(if (or (eq? #f hordelib)
-	(not hordelib)) 
-    (sys:load-escape "Could not load 'Horde3D' dynamic library"))
-
-(sys:precomp:set-dylib-name-info
- 'hordeutlib
- (cond ((string=? (sys:platform) "OSX")
-        "/Library/Frameworks/Horde3DUtils.framework/Horde3DUtils")
-       ((string=? (sys:platform) "Linux")
-        "libHorde3DUtils.so")
-       ((string=? (sys:platform) "Windows")
-        "Horde3DUtils.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
-
-(define hordeutlib
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(if (or (eq? #f hordeutlib)
-	(not hordeutlib)) 
-    (sys:load-escape "Could not load 'Horde3DUtils' dynamic library"))
-
-(sys:precomp:insert-header "xtmhorde3d")
+(impc:aot:insert-header "xtmhorde3d")
 
 (define *xtmlib-horde3d-loaded* #f)
 
@@ -126,6 +93,14 @@
 (bind-lib hordelib h3dGetCameraProjMat [void,i32,float*]*)
 (bind-lib hordelib h3dCastRay [i32,i32,float,float,float,float,float,float,i32]*)
 (bind-lib hordelib h3dGetCastRayResult [i1,i32,i32*,float*,float*]*)
+
+(bind-dylib hordeutlib
+  (cond ((string=? (sys:platform) "OSX")
+         "/Library/Frameworks/Horde3DUtils.framework/Horde3DUtils")
+        ((string=? (sys:platform) "Linux")
+         "libHorde3DUtils.so")
+        ((string=? (sys:platform) "Windows")
+         "Horde3DUtils.dll")))
 
 ;; horde utils
 (bind-lib hordeutlib h3dutDumpMessages [i1]*)
@@ -281,4 +256,4 @@
 
 (define *xtmlib-horde3d-loaded* #t)
 
-(sys:precomp:insert-footer "xtmhorde3d")
+(impc:aot:insert-footer "xtmhorde3d")

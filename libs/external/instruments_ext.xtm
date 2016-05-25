@@ -17,7 +17,7 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/instruments_ext.xtm" 'quiet)
+(sys:load "libs/aot-cache/instruments_ext.xtm" 'quiet)
 (sys:load-preload-check 'instruments_ext)
 (define *xtmlib-instruments_ext-loaded* #t)
 
@@ -27,13 +27,13 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(sys:precomp:suppress-precomp-do
+(impc:aot:suppress-aot-do
  (sys:load "libs/core/instruments.xtm")
  (sys:load "libs/external/sndfile.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/instruments.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/external/sndfile.xtm"))
+(impc:aot:insert-forms (sys:load "libs/core/instruments.xtm" 'quiet))
+(impc:aot:insert-forms (sys:load "libs/external/sndfile.xtm" 'quiet))
 
-(sys:precomp:insert-header "xtminstruments_ext")
+(impc:aot:insert-header "xtminstruments_ext")
 
 ;; helper function for adding sample data to sampler
 ;; this assumes stereo files at the moment!!
@@ -45,9 +45,9 @@
 ;; ;; this reads 5000 frames starting 1000 frames into the file
 ;; (set-sampler-data sampler "/tmp/piano-C.aif" 60 1000 5000)
 (bind-func set_sample_data_
-  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* fname index:i64 offset lgth bank:i32 printdata:i32)
-    (let ((info:sf_info* (salloc))
-          (audiofile (sf_open fname 16 info))
+  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* filename index:i64 offset lgth bank:i32 print_p:i64)
+    (let ((info:SF_INFO* (salloc))
+          (audiofile (sf_open filename SFM_READ info))
           (channels:i64 (convert (tref info 2)))
           (num (if (= 0 lgth)
                    (- (tref info 0) offset)
@@ -57,9 +57,9 @@
                 (samples:|20,|128,SAMPLE*||* (inst.samples))
                 (samples_channels:|20,|128,i64||* (inst.samples_channels))
                 (samples_length:|20,|128,i64||* (inst.samples_length))
-                (samples_read (read_audio_data fname adat (* offset channels) num printdata))
-                (olddat (if (<> 0 (pref (aref-ptr samples_length bank) index))
-                            (bitcast (pref (aref-ptr samples bank) index) i8*)
+                (samples_read (sf_read_file_into_buffer filename adat (* offset channels) num (i64toi1 print_p)))
+                (olddat (if (<> 0 (aref (aref-ptr samples_length bank) index))
+                            (bitcast (aref (aref-ptr samples bank) index) i8*)
                             null)))
             ;;(printf "%lld samples read into: %lld\n" samples_read index)
             (aset! (aref-ptr samples_length bank) index (/ samples_read channels)) ;num)
@@ -78,8 +78,8 @@
     (let ((samples:|20,|128,SAMPLE*||* (inst.samples))
           (samples_channels:|20,|128,i64||* (inst.samples_channels))
           (samples_length:|20,|128,i64||* (inst.samples_length))          
-          (olddat (if (<> 0 (pref (aref-ptr samples_length bank) index))
-                      (bitcast (pref (aref-ptr samples bank) index) i8*)
+          (olddat (if (<> 0 (aref (aref-ptr samples_length bank) index))
+                      (bitcast (aref (aref-ptr samples bank) index) i8*)
                       null)))
       (aset! (aref-ptr samples_length bank) index 0)
       (aset! (aref-ptr samples_channels bank) index 0)
@@ -92,56 +92,10 @@
 ;; helper functions for setting an individual samples offset
 ;; i.e. set sample index 60 to start at 40000 samples into the audio buffer
 (bind-func set_sample_offset_
-  (lambda (sampler:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* index:i64 offset:i64)
-    (let ((offsets:|128,i64|* (sampler.samples_offsets)))
-      (pset! offsets index offset)
+  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* index:i64 bank:i64 offset:i64)
+    (let ((offsets:|20,|128,i64||* (inst.samples_offsets)))
+      (aset! (aref-ptr offsets bank) index offset)
       1)))
-
-
-;; linear sampler
-;;
-;; faster but noisy
-;; (bind-func sampler_note_linear_c
-;;   (lambda (samples:|128,SAMPLE*|* samples_length:|128,i64|* samples_offsets:|128,i64|* index pan:SAMPLE offset:i64)
-;;     (let ((idx_freq:SAMPLE (midi2frq (convert index)))
-;;           (phase:SAMPLE (convert (+ offset (pref samples_offsets index))))) ;; phase unit is audio frames
-;;       (lambda (time:i64 chan:i64 freq:SAMPLE amp:SAMPLE)
-;;         (let ((rate (/ freq idx_freq))
-;;               (pos:SAMPLE (if (= chan 0) ;; only increment once per frame
-;;                               (set! phase (+ phase rate))
-;;                               phase))
-;;               (posi:i64 (convert (floor pos))) 
-;;               (posx (+ (* posi 2) chan))
-;;               (lgth:i64 (convert (- (pref samples_length index) 10)))
-;;               (dat (pref samples index)))
-;;           (* amp (if (> posi lgth) 0.0 (pref dat posx))))))))
-
-
-;; hermite sampler  (multi-channels version)
-;;
-;; slower but less noisy (default)
-;; (bind-func sampler_note_hermite_c
-;;   (lambda (samples:|128,SAMPLE*|* samples_length:|128,i64|* samples_offsets:|128,i64|* samples_channels:|128,i64|* index pan:SAMPLE offset:SAMPLE)
-;;     (let ((idx_freq (midi2frq (convert index)))
-;;           (channels:i64 (convert (pref samples_channels index)))
-;;           (phase (+ offset (convert (pref samples_offsets index))))) ;; phase unit is audio frames
-;;       (lambda (time:i64 chan:i64 freq:SAMPLE amp:SAMPLE)
-;;         (let ((rate (/ freq idx_freq))              
-;;               (pos:SAMPLE (if (= chan 0) ;; only increment once per frame
-;;                        (set! phase (+ phase rate))
-;;                        phase))
-;;               (posi:i64 (convert (floor pos)))
-;;               (posx (+ (* posi channels) (if (< chan channels) chan 0)))
-;;               (lgth:i64 (- (pref samples_length index) 10))
-;;               (dat (pref samples index)))
-;;           (if (< (fabs (- rate 1.0)) 0.01)
-;;               (if (> posi lgth) 0.0 (* amp (panner chan pan) (pref dat posx)))
-;;               (let ((y1 (if (or (> posi lgth) (< posi 1)) 0.0 (pref dat (- posx channels))))
-;;                     (x0 (if (> posi lgth) 0.0 (pref dat posx)))
-;;                     (x1 (if (> (+ posi 1) lgth) 0.0 (pref dat (+ posx channels))))
-;;                     (x2 (if (> (+ posi 2) lgth) 0.0 (pref dat (+ posx (* 2 channels))))))
-;;                 (* (panner chan pan)
-;;                    amp (hermite_interp (modulo pos 1.0) y1 x0 x1 x2)))))))))
 
 
 ;; linear sampler
@@ -150,9 +104,9 @@
 (bind-func sampler_note_linear_c
   (lambda (samples:|128,SAMPLE*|* samples_length:|128,i64|* samples_offsets:|128,i64|* index pan:SAMPLE offset:i64 rev:i1)
     (let ((idx_freq:SAMPLE (midi2frq (convert index)))
-          (phase:SAMPLE (convert (+ offset (pref samples_offsets index))))) ;; phase unit is audio frames
+          (phase:SAMPLE (convert (+ offset (aref samples_offsets index))))) ;; phase unit is audio frames
       (if (and rev (< phase 0.01))
-          (set! phase (convert (- (pref samples_length index) 10))))      
+          (set! phase (convert (- (aref samples_length index) 10))))      
       (lambda (time:i64 chan:i64 freq:SAMPLE amp:SAMPLE)
         (let ((rate (/ freq idx_freq))
               (pos:SAMPLE (if (= chan 0) ;; only increment once per frame
@@ -162,8 +116,8 @@
                               phase))
               (posi:i64 (convert (floor pos))) 
               (posx (+ (* posi 2) chan))
-              (lgth:i64 (convert (- (pref samples_length index) 10)))
-              (dat (pref samples index)))
+              (lgth:i64 (convert (- (aref samples_length index) 10)))
+              (dat (aref samples index)))
           (* amp (if (or (> posi lgth) (< posi 0)) 0.0 (pref dat posx))))))))
 
 
@@ -173,10 +127,10 @@
 (bind-func sampler_note_hermite_c
   (lambda (samples:|128,SAMPLE*|* samples_length:|128,i64|* samples_offsets:|128,i64|* samples_channels:|128,i64|* index pan:SAMPLE offset:SAMPLE rev:i1)
     (let ((idx_freq (midi2frq (convert index)))
-          (channels:i64 (convert (pref samples_channels index)))
-          (phase (+ offset (convert (pref samples_offsets index))))) ;; phase unit is audio frames
+          (channels:i64 (convert (aref samples_channels index)))
+          (phase (+ offset (convert (aref samples_offsets index))))) ;; phase unit is audio frames
       (if (and rev (< phase 0.01))
-          (set! phase (convert (- (pref samples_length index) 10))))
+          (set! phase (convert (- (aref samples_length index) 10))))
       (lambda (time:i64 chan:i64 freq:SAMPLE amp:SAMPLE)
         (let ((rate (/ freq idx_freq))              
               (pos:SAMPLE (if (= chan 0) ;; only increment once per frame
@@ -186,8 +140,8 @@
                               phase))
               (posi:i64 (convert (floor pos)))
               (posx (+ (* posi channels) (if (< chan channels) chan 0)))
-              (lgth:i64 (- (pref samples_length index) 10))
-              (dat (pref samples index)))
+              (lgth:i64 (- (aref samples_length index) 10))
+              (dat (aref samples index)))
           (if (< (fabs (- rate 1.0)) 0.01)
               (if (or (> posi lgth) (< posi 0))  0.0 (* amp (panner chan pan) (pref dat posx)))
               (let ((y1 (if (or (> posi lgth) (< posi 1)) 0.0
@@ -205,6 +159,23 @@
                                 (pref dat (+ posx (* 2 channels)))))))
                 (* (panner chan pan)
                    amp (hermite_interp (modulo pos 1.0) y1 x0 x1 x2)))))))))
+
+
+(bind-func set_sampler_audiobuffer
+  (lambda (inst:[SAMPLE,SAMPLE,i64,i64,SAMPLE*]* buf:AudioBuffer* index:i64 bank:i32)
+    (let ((channels:i64 (AudioBuffer_channels buf))
+          (num (AudioBuffer_frames buf))
+          (adat:SAMPLE* (AudioBuffer_ptr buf 0 0))
+          (offsets:|20,|128,i64||* (inst.samples_offsets))
+          (samples:|20,|128,SAMPLE*||* (inst.samples))
+          (samples_channels:|20,|128,i64||* (inst.samples_channels))
+          (samples_length:|20,|128,i64||* (inst.samples_length)))
+            ;;(printf "%lld samples read into: %lld\n" samples_read index)
+      (aset! (aref-ptr samples_channels bank) index (convert channels))
+      (aset! (aref-ptr samples bank) index adat)
+      (aset! (aref-ptr offsets bank) index (AudioBuffer_loop_start buf))
+      (aset! (aref-ptr samples_length bank) index num)          
+      1)))
 
 
 (bind-func sampler_fx 400000
@@ -269,11 +240,11 @@
 
 
 (sys:load "libs/external/instruments_ext-scm.xtm")
-;; make sure we load them with precompiled code as well
-(sys:precomp:insert-sexp
- '(sys:load "libs/external/instruments_ext-scm.xtm"))
+;; make sure we load them with AOT-compiled code as well
+(impc:aot:insert-forms
+ (sys:load "libs/external/instruments_ext-scm.xtm"))
 
 ;; (println 'Establish 'audio 'on 'utility 'process)
 ;; (ipc:audio-setup "utility")
 
-(sys:precomp:insert-footer "xtminstruments_ext")
+(impc:aot:insert-footer "xtminstruments_ext")

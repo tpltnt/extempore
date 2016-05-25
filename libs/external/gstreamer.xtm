@@ -11,55 +11,27 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/gstreamer.xtm" 'quiet)
+(sys:load "libs/aot-cache/gstreamer.xtm" 'quiet)
 (sys:load-preload-check 'gstreamer)
 
-(sys:precomp:suppress-precomp-do
- (sys:load "libs/core/std.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/base/base.xtm")
+ (sys:load "libs/external/glib.xtm"))
+(impc:aot:insert-forms
+ (sys:load "libs/base/base.xtm" 'quiet)
+ (sys:load "libs/external/glib.xtm" 'quiet))
 
 ;; make sure that glib is loaded
-(sys:load "libs/external/glib.xtm")
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'gstlib
- (cond ((string=? (sys:platform) "OSX")
-        "libgstreamer-1.0.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libgstreamer-1.0.so")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
 
-;; load the dylib
-(define gstlib
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib gstlib
+  (cond ((string=? (sys:platform) "OSX")
+         "libgstreamer-1.0.dylib")
+        ((string=? (sys:platform) "Linux")
+         "libgstreamer-1.0.so")))
 
-(if (not gstlib)
-    (sys:load-escape "Could not load 'gstreamer' dynamic library"))
-
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'gstapplib
- (cond ((string=? (sys:platform) "OSX")
-        "libgstapp-1.0.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libgstapp-1.0.so")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
-
-;; load the dylib
-(define gstapplib
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
-
-(if (not gstapplib)
-    (sys:load-escape "Could not load 'gstreamer' app library\nMake sure you have install at least the core plugins!"))
-
-(sys:precomp:insert-header "xtmgstreamer")
+(impc:aot:insert-header "xtmgstreamer")
 
 (define *xtmlib-gstreamer-loaded* #f)
 
@@ -273,14 +245,19 @@
 
 (bind-alias GstSample i8) ;; opaque
 (bind-alias GstAppSink i8) ;; opaque
-(bind-alias GstSample i8) ;; opaque
-
 (bind-alias GstFlowReturn i32)
 (bind-val GST_FLOW_OK i32 0)
 (bind-val GST_FLOW_EOS i32 -3)
 (bind-val GST_FLOW_NOT_NEGOTIATED i32 -4)
 (bind-val GST_FLOW_ERROR i32 -5)
 (bind-val GST_FLOW_NOT_SUPPORTED i32 -6)
+
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib gstapplib
+  (cond ((string=? (sys:platform) "OSX")
+         "libgstapp-1.0.dylib")
+        ((string=? (sys:platform) "Linux")
+         "libgstapp-1.0.so")))
 
 ;; (bind-type GstAppSinkCallbacks <[void,GstAppSink*,gpointer]*,[GstFlowReturn,GstAppSink*,gpointer]*,[GstFlowReturn,GstAppSink*,gpointer]*>)
 (bind-type GstAppSinkCallbacks <i8*,i8*,i8*>) ;;[void,GstAppSink*,gpointer]*,[GstFlowReturn,GstAppSink*,gpointer]*,[GstFlowReturn,GstAppSink*,gpointer]*>)
@@ -296,4 +273,4 @@
 
 (define *xtmlib-gstreamer-loaded* #t)
 
-(sys:precomp:insert-footer "xtmgstreamer")
+(impc:aot:insert-footer "xtmgstreamer")

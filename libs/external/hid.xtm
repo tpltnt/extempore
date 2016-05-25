@@ -9,26 +9,23 @@
 ;;; Code:
 
 ;; lib-loading config
-(sys:load "libs/hid.xtm" 'quiet)
+(sys:load "libs/aot-cache/hid.xtm" 'quiet)
 (sys:load-preload-check 'libhid)
 
-(sys:precomp:suppress-precomp-do
- (sys:load "libs/core/std.xtm"))
-(sys:precomp:insert-sexp '(sys:load "libs/core/std.xtm"))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/base/base.xtm"))
+(impc:aot:insert-forms (sys:load "libs/base/base.xtm" 'quiet))
 
 ;; lib assimp
-(define libhid
-  (let ((platform (sys:platform)))
-    (cond ((string=? platform "Linux") (sys:load-dylib "libhid.so"))
-          ((string=? platform "Windows") (sys:load-dylib "libhid.dll"))
-          ((string=? platform "OSX") (sys:load-dylib "libhid.dylib"))
-          (else (print "Unknown platform: " platform)))))
+(bind-dylib libhid
+  (cond ((string=? (sys:platform) "OSX")
+         "libhid.dylib")
+        ((string=? (sys:platform) "Linux")
+         "libhid.so")
+        ((string=? (sys:platform) "Windows")
+         "libhid.dll")))
 
-(if (or (eq? #f libhid)
-        (null? libhid))
-    (sys:load-escape "Error loading HID library"))
-
-(sys:precomp:insert-header "xtmhid")
+(impc:aot:insert-header "xtmhid")
 
 (define *xtmlib-hid-loaded* #f)
 
@@ -170,4 +167,4 @@
 
 (define *xtmlib-hid-loaded* #t)
 
-(sys:precomp:insert-footer "xtmhid")
+(impc:aot:insert-footer "xtmhid")

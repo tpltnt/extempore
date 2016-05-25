@@ -6,35 +6,39 @@
 
 ;;; Commentary:
 
-;; to install nanovg (where you have 'make'):
+;; if you've already tapped the benswift/extempore homebrew tap, then
+;; you can install an Extempore-ready fork of nanovg with
 
-;; - get the source: https:;;github.com/memononen/nanovg
-;; - change premake4.lua:12 to: kind "SharedLib"
-;; - premake4 gmake (for gnu makefiles, use "premake4 gmake")
-;; - cd build && make nanovg
+;; brew install libnanovg
+
+;; Otherwise, to build from source:
+
+;; - get the source from https://github.com/extemporelang/nanovg
+;; - premake4 gmake && cd build && make config=release nanovg
 
 ;;; Code:
 
+(sys:load "libs/aot-cache/nanovg.xtm" 'quiet)
 (sys:load-preload-check 'nanovg)
 (define *xtmlib-nanovg-loaded* #f)
 
-;; set up the current dylib name and path (for precompilation)
-(sys:precomp:set-dylib-name-info
- 'libnanovg
- (cond ((string=? (sys:platform) "OSX")
-        "/Users/ben/Code/nanovg/build/libnanovg_shared.dylib")
-       ((string=? (sys:platform) "Linux")
-        "libnanovg.so")
-       ((string=? (sys:platform) "Windows")
-        "libnanovg.dll")
-       (else
-        (begin (print-with-colors 'red 'default #f (print "Error"))
-               (print ": unsupported platform ")
-               (print-with-colors 'yellow 'default #f (print (sys:platform)))))))
+(impc:aot:suppress-aot-do
+ (sys:load "libs/base/base.xtm")
+ (sys:load "libs/external/gl.xtm"))
+(impc:aot:insert-forms
+ (sys:load "libs/base/base.xtm" 'quiet)
+ (sys:load "libs/external/gl.xtm" 'quiet))
 
-;; load the dylib
-(define libnanovg
-  (sys:load-dylib (cdr *sys:precomp:current-load-dylib-info*)))
+(impc:aot:insert-header "xtmnanovg")
+
+;; set up the current dylib name and path (for AOT compilation)
+(bind-dylib libnanovg
+  (cond ((string=? (sys:platform) "OSX")
+         "libnanovg.dylib")
+        ((string=? (sys:platform) "Linux")
+         "libnanovg.so")
+        ((string=? (sys:platform) "Windows")
+         "nanovg.dll")))
 
 ;;;;;;;;;;;;;;
 ;; nanovg.h ;;
@@ -50,7 +54,31 @@
 ;;   };
 ;;  };
 ;; };
-(bind-type NVGcolor <float,float,float,float>)
+(bind-type NVGcolor <float,float,float,float> (printer? . #f))
+
+(bind-func print
+  (lambda (color:NVGcolor*)
+    (printf "<NVGcolor: r=%.3f, g=%.3f, b=%.3f, a=%.3f>"
+            (convert (tref color 0) double)
+            (convert (tref color 1) double)
+            (convert (tref color 2) double)
+            (convert (tref color 3) double))
+    void))
+
+(bind-func NVGcolor_hex
+  "takes a 8-digit hex string (e.g. #x12ab3eff) and returns an NVGcolor
+
+@param hex_value - should be RGBA, with two digits per channel.
+
+@example
+ (set! red   (NVGcolor_hex #xFF0000FF))
+ (set! green (NVGcolor_hex #x00FF00FF))
+ (set! blue  (NVGcolor_hex #x0000FFFF))"
+  (lambda (hex_value:i64)
+    (NVGcolor (/ (convert (>> (& hex_value #xFF000000) (* 4 6)) float) (convert #xFF float))
+              (/ (convert (>> (& hex_value #x00FF0000) (* 4 4)) float) (convert #xFF float))
+              (/ (convert (>> (& hex_value #x0000FF00) (* 4 2)) float) (convert #xFF float))
+              (/ (convert (& hex_value #x000000FF) float) (convert #xFF float)))))
 
 ;; struct NVGpaint {
 ;;  float xform[6];
@@ -61,7 +89,35 @@
 ;;  NVGcolor outerColor;
 ;;  int image;
 ;; };
-(bind-type NVGpaint <float,float,float,float,NVGcolor,NVGcolor,i32>)
+(bind-type NVGpaint <|6,float|,|2,float|,float,float,NVGcolor,NVGcolor,i32> (printer? . #f))
+
+(bind-func print
+  (lambda (paint:NVGpaint*)
+    (printf "<NVGpaint:\n    xform=|")
+    (printf "%.3f " (convert (aref (tref paint 0) 0) double))
+    (printf "%.3f " (convert (aref (tref paint 0) 1) double))
+    (printf "%.3f " (convert (aref (tref paint 0) 2) double))
+    (printf "%.3f " (convert (aref (tref paint 0) 3) double))
+    (printf "%.3f " (convert (aref (tref paint 0) 4) double))
+    (printf "%.3f|" (convert (aref (tref paint 0) 5) double))
+    (printf "\n    extent=|%.3f %.3f|\n"
+            (convert (aref (tref paint 1) 0) double)
+            (convert (aref (tref paint 1) 1) double))
+    (printf "    radius=%.3f\n    feather=%.3f\n"
+            (convert (tref paint 2) double)
+            (convert (tref paint 3) double))
+    (printf "    innerColor=<NVGcolor: r=%.3f, g=%.3f, b=%.3f, a=%.3f>\n"
+            (convert (tref (tref paint 4) 0) double)
+            (convert (tref (tref paint 4) 1) double)
+            (convert (tref (tref paint 4) 2) double)
+            (convert (tref (tref paint 4) 3) double))
+    (printf "    outerColor=<NVGcolor: r=%.3f, g=%.3f, b=%.3f, a=%.3f>\n"
+            (convert (tref (tref paint 5) 0) double)
+            (convert (tref (tref paint 5) 1) double)
+            (convert (tref (tref paint 5) 2) double)
+            (convert (tref (tref paint 5) 3) double))
+    (printf "    image=%d>" (tref paint 6))
+    void))
 
 
 (bind-alias NVGwinding enum)
@@ -71,25 +127,25 @@
 
 (bind-alias NVGsolidity enum)
 (bind-val NVG_SOLID NVGsolidity 1)
-(bind-val NVG_hole NVGsolidity 2)
+(bind-val NVG_HOLE NVGsolidity 2)
 
 (bind-alias NVGlineCap enum)
 (bind-val NVG_BUTT NVGlineCap 0)
-(bind-val NVGROUND NVGlineCap 1)
+(bind-val NVG_ROUND NVGlineCap 1)
 (bind-val NVG_SQUARE NVGlineCap 2)
 (bind-val NVG_BEVEL NVGlineCap 3)
 (bind-val NVG_MITER NVGlineCap 4)
 
 (bind-alias NVGalign enum)
  ;; Horizontal align
-(bind-val NVG_ALIGN_LEFT     NVGalign (real->integer (expt 2 0))) ;; Default, align text horizontally to left.
-(bind-val NVG_ALIGN_CENTER   NVGalign (real->integer (expt 2 1))) ;; Align text horizontally to center.
-(bind-val NVG_ALIGN_RIGHT    NVGalign (real->integer (expt 2 2))) ;; Align text horizontally to right.
+(bind-val NVG_ALIGN_LEFT     NVGalign (<< 1 0)) ;; Default, align text horizontally to left.
+(bind-val NVG_ALIGN_CENTER   NVGalign (<< 1 1)) ;; Align text horizontally to center.
+(bind-val NVG_ALIGN_RIGHT    NVGalign (<< 1 2)) ;; Align text horizontally to right.
  ;; Vertical align
-(bind-val NVG_ALIGN_TOP      NVGalign (real->integer (expt 2 3))) ;; Align text vertically to top.
-(bind-val NVG_ALIGN_MIDDLE   NVGalign (real->integer (expt 2 4))) ;; Align text vertically to middle.
-(bind-val NVG_ALIGN_BOTTOM   NVGalign (real->integer (expt 2 5))) ;; Align text vertically to bottom.
-(bind-val NVG_ALIGN_BASELINE NVGalign (real->integer (expt 2 6))) ;; Default, align text vertically to baseline.
+(bind-val NVG_ALIGN_TOP      NVGalign (<< 1 3)) ;; Align text vertically to top.
+(bind-val NVG_ALIGN_MIDDLE   NVGalign (<< 1 4)) ;; Align text vertically to middle.
+(bind-val NVG_ALIGN_BOTTOM   NVGalign (<< 1 5)) ;; Align text vertically to bottom.
+(bind-val NVG_ALIGN_BASELINE NVGalign (<< 1 6)) ;; Default, align text vertically to baseline.
 
 ;; struct NVGglyphPosition {
 ;;  const char* str; ;; Position of the glyph in the input string.
@@ -108,11 +164,11 @@
 (bind-type NVGtextRow <i8*,i8*,i8*,float,float,float>)
 
 (bind-alias NVGimageFlags enum)
-(bind-val NVG_IMAGE_GENERATE_MIPMAPS NVGimageFlags (real->integer (expt 2 0))) ;; Generate mipmaps during creation of the image.
-(bind-val NVG_IMAGE_REPEATX NVGimageFlags          (real->integer (expt 2 1))) ;; Repeat image in X direction.
-(bind-val NVG_IMAGE_REPEATY NVGimageFlags          (real->integer (expt 2 2))) ;; Repeat image in Y direction.
-(bind-val NVG_IMAGE_FLIPY NVGimageFlags            (real->integer (expt 2 3))) ;; Flips (inverses) image in Y direction when rendered.
-(bind-val NVG_IMAGE_PREMULTIPLIED NVGimageFlags    (real->integer (expt 2 4))) ;; Image data has premultiplied alpha.
+(bind-val NVG_IMAGE_GENERATE_MIPMAPS NVGimageFlags (<< 1 0)) ;; Generate mipmaps during creation of the image.
+(bind-val NVG_IMAGE_REPEATX NVGimageFlags          (<< 1 1)) ;; Repeat image in X direction.
+(bind-val NVG_IMAGE_REPEATY NVGimageFlags          (<< 1 2)) ;; Repeat image in Y direction.
+(bind-val NVG_IMAGE_FLIPY NVGimageFlags            (<< 1 3)) ;; Flips (inverses) image in Y direction when rendered.
+(bind-val NVG_IMAGE_PREMULTIPLIED NVGimageFlags    (<< 1 4)) ;; Image data has premultiplied alpha.
 
 ;; Begin drawing a new frame
 ;; Calls to nanovg drawing API should be wrapped in nvgBeginFrame() & nvgEndFrame()
@@ -616,20 +672,20 @@
 
 (bind-alias NVGcreateFlags enum)
 ;; Flag indicating if geometry based anti-aliasing is used (may not be needed when using MSAA).
-(bind-val NVG_ANTIALIAS NVGcreateFlags (real->integer (expt 2 0)))
+(bind-val NVG_ANTIALIAS NVGcreateFlags (<< 1 0))
 ;; Flag indicating if strokes should be drawn using stencil buffer. The rendering will be a little
 ;; slower, but path overlaps (i.e. self-intersecting or sharp turns) will be drawn just once.
-(bind-val NVG_STENCIL_STROKES NVGcreateFlags (real->integer (expt 2 1)))
+(bind-val NVG_STENCIL_STROKES NVGcreateFlags (<< 1 1))
 ;; Flag indicating that additional debug checks are done.
-(bind-val NVG_DEBUG  NVGcreateFlags (real->integer (expt 2 2)))
+(bind-val NVG_DEBUG  NVGcreateFlags (<< 1 2))
 
 ;; if built with NANOVG_GL2
-(bind-lib libnanovg nvgCreateGL2 [NVGcontext*,i32]*)
-(bind-lib libnanovg nvgDeleteGL2 [void,NVGcontext*]*)
+;; (bind-lib libnanovg nvgCreateGL2 [NVGcontext*,i32]*)
+;; (bind-lib libnanovg nvgDeleteGL2 [void,NVGcontext*]*)
 
 ;; ;; if built with NANOVG_GL3
-;; (bind-lib libnanovg nvgCreateGL3 [NVGcontext*,i32]*)
-;; (bind-lib libnanovg nvgDeleteGL3 [void,NVGcontext*]*)
+(bind-lib libnanovg nvgCreateGL3 [NVGcontext*,i32]*)
+(bind-lib libnanovg nvgDeleteGL3 [void,NVGcontext*]*)
 
 ;; ;; if built with NANOVG_GLES2
 ;; (bind-lib libnanovg nvgCreateGLES2 [NVGcontext*,i32]*)
@@ -639,4 +695,127 @@
 ;; (bind-lib libnanovg nvgCreateGLES3 [NVGcontext*,i32]*)
 ;; (bind-lib libnanovg nvgDeleteGLES3 [void,NVGcontext*]*)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pass-struct-by-reference helpers ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(bind-lib libnanovg _nvgLinearGradient [NVGpaint*,NVGcontext*,float,float,float,float,NVGcolor*,NVGcolor*]*)
+(bind-lib libnanovg _nvgBoxGradient [NVGpaint*,NVGcontext*,float,float,float,float,float,float,NVGcolor*,NVGcolor*]*)
+(bind-lib libnanovg _nvgRadialGradient [NVGpaint*,NVGcontext*,float,float,float,float,NVGcolor*,NVGcolor*]*)
+(bind-lib libnanovg _nvgImagePattern [NVGpaint*,NVGcontext*,float,float,float,float,float,i32,float]*)
+(bind-lib libnanovg _nvgStrokeColor [void,NVGcontext*,NVGcolor*]*)
+(bind-lib libnanovg _nvgStrokePaint [void,NVGcontext*,NVGpaint*]*)
+(bind-lib libnanovg _nvgFillColor [void,NVGcontext*,NVGcolor*]*)
+(bind-lib libnanovg _nvgFillPaint [void,NVGcontext*,NVGpaint*]*)
+
+;; initialisation
+
+(bind-lib libnanovg nvgInit [i32]*)
+
+(bind-func nvg_init
+  (lambda ()
+    (nvgInit)))
+
+(bind-func nvg_create_font
+  (lambda (vg font_name font_path)
+    (nvgCreateFont vg font_name font_path)))
+
+;;;;;;;;;;;;;;;;;
+;; xtlang code ;;
+;;;;;;;;;;;;;;;;;
+
+(bind-func nvg_create_context
+  (lambda ()
+    (glEnable GL_STENCIL_TEST)
+    (nvgCreateGL3 (+ NVG_ANTIALIAS NVG_STENCIL_STROKES NVG_DEBUG))))
+
+(bind-func nvg_clear
+  (lambda ()
+    (glClear (bitwise-or GL_COLOR_BUFFER_BIT
+                         GL_DEPTH_BUFFER_BIT
+                         GL_STENCIL_BUFFER_BIT))))
+
+;; Rect type
+
+;; <x,y,w,h>
+(bind-type Rect <float,float,float,float> (printer? . #f))
+
+(bind-func print
+  "specialised print function for Rect*"
+  (lambda (rct:Rect*)
+    (if (null? rct)
+        (printf "<Rect 0x0>")
+        (printf "<Rect: x=%.3f y=%.3f w=%.3f h=%.3f>"
+                (convert (tref rct 0) double)
+                (convert (tref rct 1) double)
+                (convert (tref rct 2) double)
+                (convert (tref rct 3) double)))
+    void))
+
+
+(bind-func toString
+  "specialised toString function for Rect*"
+  (lambda (rct:Rect*)
+    (let ((str:i8* (salloc 256)))
+      (if (null? rct)
+          (sprintf str "<Rect 0x0>")
+          (sprintf str "<Rect: x=%.3f y=%.3f w=%.3f h=%.3f>"
+                   (convert (tref rct 0) double)
+                   (convert (tref rct 1) double)
+                   (convert (tref rct 2) double)
+                   (convert (tref rct 3) double)))
+      (Str str))))
+
+
+;; fonts
+
+(bind-func nvg_load_opensans_fonts
+  "Load OpenSans .ttf fonts in opensans_dir
+
+If you don't have OpenSans on your system, you can download it for free from http://www.fontsquirrel.com/fonts/open-sans"
+  (lambda (vg opensans_dir:i8*)
+    (let ((path:i8* (zalloc 256))
+          (create_font (lambda (name:i8*)
+                         (sprintf path "%s/OpenSans-%s.ttf" opensans_dir name)
+                         (nvgCreateFont vg name path))))
+      (cond ((< (create_font "Bold") 0)
+             (println "couldn't load font OpenSans-Bold.ttf")
+             0:i1)
+            ((< (create_font "BoldItalic") 0)
+             (println "couldn't load font OpenSans-BoldItalic.ttf")
+             0:i1)
+            ((< (create_font "ExtraBold") 0)
+             (println "couldn't load font OpenSans-ExtraBold.ttf")
+             0:i1)
+            ((< (create_font "ExtraBoldItalic") 0)
+             (println "couldn't load font OpenSans-ExtraBoldItalic.ttf")
+             0:i1)
+            ((< (create_font "Italic") 0)
+             (println "couldn't load font OpenSans-Italic.ttf")
+             0:i1)
+            ((< (create_font "Light") 0)
+             (println "couldn't load font OpenSans-Light.ttf")
+             0:i1)
+            ((< (create_font "LightItalic") 0)
+             (println "couldn't load font OpenSans-LightItalic.ttf")
+             0:i1)
+            ((< (create_font "Regular") 0)
+             (println "couldn't load font OpenSans-Regular.ttf")
+             0:i1)
+            ((< (create_font "Semibold") 0)
+             (println "couldn't load font OpenSans-Semibold.ttf")
+             0:i1)
+            ((< (create_font "SemiboldItalic") 0)
+             (println "couldn't load font OpenSans-SemiboldItalic.ttf")
+             0:i1)
+            (else
+             (println "OpenSans fonts successfully loaded")
+             1:i1)))))
+
+;; run the init code
+;; (impc:aot:do-and-emit
+;;  (if (not (impc:aot:currently-compiling?))
+;;      (nvg_init)))
+
+(impc:aot:insert-footer "xtmnanovg")
 (define *xtmlib-nanovg-loaded* #t)

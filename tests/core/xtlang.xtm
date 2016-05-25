@@ -71,6 +71,48 @@
 
          (int-literal-test 30))
 
+;; array literals tests
+(xtmtest '(bind-func i64-array-lit-test
+            (lambda ()
+              (let ((a 5)
+                    (b 6))
+                (array a b)
+                void)))
+         
+         (i64-array-lit-test))
+
+(xtmtest '(bind-func float-array-lit-test
+            (lambda ()
+              (array 1.0:f 2.0 3.0 4.0 5.0)
+              void))
+         
+         (float-array-lit-test))
+
+(xtmtest '(bind-func float-ref-array-lit-test
+            (lambda ()
+              (let ((a (array 1.0:f 2.0 3.0)))
+                (aref a 2))))
+         
+         (float-ref-array-lit-test) 3.0)
+
+(xtmtest '(bind-func tuple-lit-test
+            (lambda ()
+              (let ((a 5:i64)
+                    (b 5.0:double))
+                (tuple a b)
+                void)))
+
+         (tuple-lit-test))
+
+(xtmtest '(bind-func tuple-ref-lit-test
+            (lambda ()
+              (let ((a 5:i64)
+                    (b 5.0:double)
+                    (c (tuple a b a)))
+                (tref c 1))))
+
+         (tuple-ref-lit-test) 5.0) 
+
 (xtmtest '(bind-func closure-test1
             (let ((power 0))
               (lambda (x)
@@ -88,8 +130,8 @@
 
 (xtmtest '(bind-func incrementer-test1
             (lambda (i:i64)
-              (lambda (inc)
-                (set! i (+ i inc))
+              (lambda (incr)
+                (set! i (+ i incr))
                 i)))
 
          (incrementer-test1 0))
@@ -178,6 +220,21 @@
              (tail_opt_test 200)))
     
 (println 'A 'segfault 'here 'incidates 'that 'tail-call-optimizations 'are 'not 'working!)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  dotimes test
+;;
+
+;; this for type inference check only
+(xtmtest '(bind-func dotimes_inf_test
+            (lambda (len)
+              (let ((buf:i8* (salloc len)))
+                (doloop (i len)
+                  (pref buf i)))))
+         
+         (dotimes_inf_test 10))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -506,12 +563,12 @@
 (bind-type vec3 <double,double,double>)
 
 ;; String printing!
-(bind-func vec3_print:[void,vec3*]*
+(bind-func print:[void,vec3*]*
   (lambda (x)
     (printf "<%d,%d,%d>" (tref x 0) (tref x 1) (tref x 2))
     void))
 
-(bind-poly print vec3_print)
+;; (bind-poly print vec3_print)
 
 ;; note that point is deallocated at the
 ;; end of the function call.  You can
@@ -607,8 +664,8 @@
 ;; increment g_var_a by inc
 ;; and return new value of g_var_a
 (xtmtest '(bind-func global_var_test1
-            (lambda (inc)
-              (set! g_var_a (+ g_var_a inc))
+            (lambda (incr)
+              (set! g_var_a (+ g_var_a incr))
               g_var_a))
 
          (global_var_test1 3) 8) ;; 8
@@ -640,25 +697,17 @@
             (lambda ()
               (let ((test_cstring "Niblot.")
                     (i 0)
-                    (sum 0))
+                    (total 0))
                 (dotimes (i 7)
                   (let ((c1 (pref g_cstring i))
                         (c2 (pref test_cstring i)))
                     (printf "checking %c against %c\n" c1 c2)
                     (if (= c1 c2)
-                        (set! sum (+ sum 1)))))
-                sum)))
+                        (set! total (+ total 1)))))
+                total)))
 
          (test_g_cstring1) 5)
 
-(sys:load "libs/core/xstring.xtm")
-
-(xtmtest '(bind-func test_g_cstring2
-            (lambda ()
-              (xstring_levenshtein (xstring g_cstring)
-                                   (xstring g_cstring))))
-
-         (test_g_cstring2) 0)
 
 
 
@@ -718,7 +767,7 @@
               (let ((i 0))
                 (dotimes (i 100000000)
                   (aset! g_array3 i i))
-                (= (pref g_array3 87654321)
+                (= (aref g_array3 87654321)
                    87654321))))
 
          (test_g_array3) 1)
@@ -730,12 +779,12 @@
 
 (xtmtest '(bind-func test_g_ptr0
             (lambda ()
-              (let ((sum 0.0)
+              (let ((total 0.0)
                     (i 0))
                 (dotimes (i 10)
                   (pset! g_ptr0 i (i64tod i))
-                  (set! sum (+ sum (pref g_ptr0 i))))
-                sum)))
+                  (set! total (+ total (pref g_ptr0 i))))
+                total)))
 
          (test_g_ptr0) 45.0)
 
@@ -769,7 +818,7 @@
 ;;
 (xtmtest '(bind-func callback-test
             (lambda (time:i64 count:i64)
-              #t))
+              void))
 
          (callback-test))
 
@@ -864,22 +913,22 @@
 ;; mixed argument lengths
 ;;
 ;; so for example:
-(bind-func poly-test4
+(bind-func testprint
   (lambda (a:i8*)
     (printf "%s\n" a)))
 
-(bind-func poly-test5
+(bind-func testprint
   (lambda (a:i8* b:i8*)
     (printf "%s %s\n" a b)))
 
-(bind-func poly-test6
+(bind-func testprint
   (lambda (a:i8* b:i8* c:i8*)
     (printf "%s %s %s\n" a b c)))
 
 ;; bind these three functions to poly 'print'
-(bind-poly testprint poly-test4)
-(bind-poly testprint poly-test5)
-(bind-poly testprint poly-test6)
+;; (bind-poly testprint poly-test4)
+;; (bind-poly testprint poly-test5)
+;; (bind-poly testprint poly-test6)
 
 (xtmtest '(bind-func poly-test7
             (lambda ()
@@ -891,16 +940,16 @@
 
 ;; polys can Also specialize
 ;; on the return type
-(bind-func poly-test8
+(bind-func sqrd
   (lambda (a:double)
     (* a a)))
 
-(bind-func poly-test9
+(bind-func sqrd
   (lambda (a:double)
     (dtoi64 (* a a))))
 
-(bind-poly sqrd poly-test8)
-(bind-poly sqrd poly-test9)
+;; (bind-poly sqrd poly-test8)
+;; (bind-poly sqrd poly-test9)
 
 ;; specialize on [i64,double]*
 ;;
@@ -915,6 +964,29 @@
               (+ 1.0 (sqrd a))))
 
          (poly-test11 5.0))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; a little test for zone cleanup
+;;
+(bind-func MyLittleCleanupTest
+  (lambda ()
+    (let ((tmp2:i8* (alloc 8)))
+      (zone_cleanup (println "Clean up before leaving zone!"))
+      tmp2)))
+
+(xtmtest '(bind-func cleanup-test
+            (lambda ()
+              (letz ((tmp:i8* (alloc 8))
+                     (t2 (MyLittleCleanupTest)))
+                (begin
+                  (println "In Zone ...")
+                  1))
+              (println "Out of zone ...")
+              void))
+
+         (cleanup-test))
 
 ;;;;;;;;;;;;;;;;;;
 ;; vector types
@@ -938,7 +1010,7 @@
 (bind-func vector-test2
   (lambda ()
     (let ((v1:/4,float/* (alloc))
-	  (v2:/4,float/* (alloc)))
+          (v2:/4,float/* (alloc)))
       (vfill! v1 1.0 2.0 4.0 8.0)
       (vfill! v2 2.0 2.5 2.25 2.125)
       (* v1 v2))))
@@ -964,8 +1036,8 @@
         (f2:/4,float/* (alloc))
         (i:i32 0)
         (p_ 0.225)
-        (b_ (dtof (/ 4.0 PI)))
-        (c_ (dtof (/ -4.0 (* PI PI)))))
+        (b_ (dtof (/ 4.0 3.1415)))
+        (c_ (dtof (/ -4.0 (* 3.1415 3.1415)))))
     (dotimes (i 4) (vset! p i p_) (vset! b i b_) (vset! c i c_))
     (lambda (x:/4,float/)
       ;; no SIMD for abs yet!
@@ -984,9 +1056,9 @@
 	(f2:/4,float/* (alloc))
 	(i:i32 0)
 	(p_ 0.225)
-	(d_ (dtof (/ PI 2.0)))
-	(b_ (dtof (/ 4.0 PI)))
-	(c_ (dtof (/ -4.0 (* PI PI)))))
+	(d_ (dtof (/ 3.1415 2.0)))
+	(b_ (dtof (/ 4.0 3.1415)))
+	(c_ (dtof (/ -4.0 (* 3.1415 3.1415)))))
     (dotimes (i 4)
       (vset! p i p_) (vset! b i b_) (vset! c i c_) (vset! d i d_))
     (lambda (x:/4,float/)
@@ -1037,6 +1109,208 @@
 (xtmtest-result (call-as-xtlang (println 1) (println 2) 5)
                 5)
 
+
+(bind-func print:[void,/4,float/]*
+  (lambda (v)
+    (printout "/" (vref v 0) " " (vref v 1) " " (vref v 2) " " (vref v 3) "/")))
+
+(bind-func print:[void,/4,double/]*
+  (lambda (v)
+    (printout "/" (vref v 0) " " (vref v 1) " " (vref v 2) " " (vref v 3) "/")))
+
+;; (bind-poly print print_v4f32)
+;; (bind-poly print print_v4f64)
+
+(xtmtest
+ '(bind-func vector-test5:[/4,float/]*
+    (lambda ()
+      (* (vector 1.0 2.0 3.0 4.0)
+         (vector 2.0 2.0 2.0 2.0))))
+
+ (call-as-xtlang (println (vector-test5))))
+
+(xtmtest
+ '(bind-func vector-test6:[/4,float/]*
+    (lambda ()
+      (* (vector 1.0 2.0 3.0 4.0)
+         2.0)))
+
+ (call-as-xtlang (println (vector-test6))))
+
+(xtmtest
+ '(bind-func vector-test7:[/4,double/]*
+   (lambda ()
+     (cos (vector 0.0 1.0 2.0 3.0))))
+
+ (call-as-xtlang (println (vector-test7))))
+
+(xtmtest
+ '(bind-func vector-test8:[/4,double/]*
+   (lambda ()
+     (cos 2.0)))
+
+ (call-as-xtlang (println (vector-test8))))
+
+(xtmtest
+ '(bind-func vector-test9:[/4,double/]*
+    (lambda ()
+      (* (cos 2.0) (log (vector 1.0 2.0 3.0 4.0)))))
+
+ (call-as-xtlang (println (vector-test9))))
+
+(xtmtest
+ '(bind-func vector-test10:[/4,double/]*
+   (lambda ()
+     (pow (vector 1.0 2.0 3.0 4.0)
+          (vector 1.0 2.0 3.0 4.0))))
+
+ (call-as-xtlang (println (vector-test10))))
+
+(xtmtest
+ '(bind-func vector-test11:[/4,double/]*
+    (lambda ()
+      (pow (vector 1.0 2.0 3.0 4.0)
+           2.0)))
+
+ (call-as-xtlang (println (vector-test11))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; test globalvar as closure
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(bind-func testinc
+  (lambda (incr:i64)
+    (lambda (x:i64)
+      (+ x incr))))
+
+(bind-val GlobalInc [i64,i64]* (testinc 2))
+
+(xtmtest '(bind-func ginc
+            (lambda ()
+              (GlobalInc 5)))
+         (ginc) 7)
+                       
+
+;; new xtlang macros
+
+(xtmtest
+ '(bind-func test_inc_macro
+    (lambda ()
+      (let ((x 3))
+        (inc x 10))))
+ (test_inc_macro) 13)
+
+(xtmtest '(bind-func test_thread_first1
+            (lambda ()
+              (-> "this string is 33 characters long"
+                  (strlen)
+                  )))
+         (test_thread_first1) 33)
+
+(xtmtest '(bind-func test_thread_first2
+            (lambda ()
+              (-> 1
+                  (+ 2)
+                  (* 2)
+                  (modulo 2)
+                  )))
+         (test_thread_first2) 0)
+
+(sys:load "libs/core/adt.xtm")
+
+(xtmtest '(bind-func test_thread_last1
+            (lambda ()
+              (->> (list 1 2 3)
+                   (map (lambda (x) (+ x 1)))
+                   (filter (lambda (x) (= (modulo x 2) 0)))
+                   (car)
+                   )))
+         (test_thread_last1) 2)
+
+(xtmtest '(bind-func test_thread_last2
+            (lambda ()
+              (->> 1
+                  (+ 2)
+                  (* 2)
+                  (modulo 2)
+                  )))
+         (test_thread_last2) 2)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; closure ref/set checks
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(xtmtest 
+ '(bind-func lvl1
+    (let ((lvl2
+           (let ((lvl3
+                  (let ((x 5))
+                    (lambda (x:double) (+ 1 2)))))
+             (lambda (y:|4,float|*) (+ 3 4)))))
+      (lambda () (+ 5 6))))
+ 
+ (xtmX (begin
+         (lvl1.lvl2.lvl3.x:i64 128)
+         (lvl1.lvl2.lvl3.x:i64))) 128)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; vector, array, tuple constructors
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(xtmtest
+ '(bind-func a1_test
+    (lambda ()
+      (let ((a1:|4,float|* (array_ref 5.0:f 6.0 7.0 8.0)))
+        a1)))
+
+ (xtmX (begin (a1_test) 1)))
+
+(xtmtest
+ '(bind-func a2_test
+    (lambda ()
+      (let ((a1:|4,float| (array 5.0:f 6.0 7.0 8.0)))
+        a1)))
+
+ (xtmX (begin (a2_test) 1)))
+
+(xtmtest
+ '(bind-func v1_test
+    (lambda ()
+      (let ((a1:/4,float/* (vector_ref 5.0:f 6.0 7.0 8.0)))
+        a1)))
+
+ (xtmX (begin (v1_test) 1)))
+
+(xtmtest
+ '(bind-func v2_test
+    (lambda ()
+      (let ((a1:/4,float/ (vector 5.0:f 6.0 7.0 8.0)))
+        a1)))
+
+ (xtmX (begin (v2_test) 1)))
+
+(xtmtest
+ '(bind-func t1_test
+    (lambda ()
+      (let ((a1:<float,Symbol*,i64>* (tuple_ref 5.0:f 'fred 1:i64)))
+        a1)))
+ 
+ (xtmX (begin (t1_test) 1)))
+
+(xtmtest
+ '(bind-func t2_test
+    (lambda ()
+      (let ((a1:<float,Symbol*,i64> (tuple 5.0:f 'fred 1:i64)))
+        a1)))
+ 
+ (xtmX (begin (t2_test) 1)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; syntax highlighting tests ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1064,5 +1338,5 @@
 
 ;; (and 4 5)
 ;; (bind-val hl_test4 double* 10)
-;; (bind-type hl_test_type <i64>)
+;; (bind-type hl_test_type <i64> "docstring")
 ;; (bind-lib testlib testfn [i32,i32]*)
